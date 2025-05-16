@@ -3,6 +3,7 @@ const {
   verifyOtpUser,
   resendOtpUser,
   updateUserProfileService,
+  signInSendOtpUser,
 } = require("../services/authServices");
 
 const signUpSendOtp = async (req, res) => {
@@ -45,9 +46,20 @@ const updateUserProfile = async (req, res) => {
   }
 };
 
+const signInSendOtp = async (req, res) => {
+  try {
+    const payload = req.body;
+    const result = await signInSendOtpUser(payload);
+    res.status(result.status).json(result);
+  } catch (err) {
+    res.status(err?.status).json(err);
+  }
+};
+
 module.exports = {
   signUpSendOtp,
   verifyOtp,
   resendOtp,
   updateUserProfile,
+  signInSendOtp,
 };

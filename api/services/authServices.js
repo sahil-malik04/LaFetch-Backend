@@ -1,5 +1,5 @@
 const users = require("../models/userModel");
-const { getRandomNumber } = require("../utils/commonFunc");
+const { getRandomNumber, generateToken } = require("../utils/commonFunc");
 const { rejectResponse, successResponse } = require("../utils/response");
 const StatusCode = require("../utils/statusCode");
 const { sendCodeInNumber } = require("./bulkSMSService");
@@ -25,9 +25,10 @@ const signUpSendOtpUser = async (payload) => {
           "This phone number is already registered. Please log in instead."
         );
       } else {
-        const code = getRandomNumber(100000, 900000);
+        const code = getRandomNumber(1000, 9999);
         const data = {
           sentOtp: code,
+          updatedAt: new Date(),
         };
         const isMessageSent = await sendCodeInNumber(code, phone);
 
@@ -88,10 +89,26 @@ const verifyOtpUser = async (payload) => {
         );
       } else {
         if (Number(isPhoneExist?.sentOtp) === Number(otp)) {
-          return successResponse(
-            StatusCode.SUCCESS.OK,
-            "OTP verified successfully!"
-          );
+          if (payload?.type === "login") {
+            const tokenData = {
+              id: isPhoneExist?.id,
+              fullName: isPhoneExist?.fullName,
+              email: isPhoneExist?.email,
+              phone: isPhoneExist?.phone,
+            };
+            const generateTokenResult = generateToken(tokenData);
+            tokenData.token = generateTokenResult;
+            return successResponse(
+              StatusCode.SUCCESS.OK,
+              "OTP verified successfully!",
+              tokenData
+            );
+          } else {
+            return successResponse(
+              StatusCode.SUCCESS.OK,
+              "OTP verified successfully!"
+            );
+          }
         } else {
           return rejectResponse(
             StatusCode.CLIENT_ERROR.NOT_FOUND,
@@ -128,8 +145,9 @@ const resendOtpUser = async (payload) => {
         if (findUser) {
           const data = {
             sentOtp: code,
+            updatedAt: new Date(),
           };
-          const updateUser = findUser.update(data);
+          const updateUser = await findUser.update(data);
           if (updateUser) {
             return successResponse(
               StatusCode.SUCCESS.OK,
@@ -173,13 +191,30 @@ const updateUserProfileService = async (payload) => {
           gender,
           isActive: true,
           isLoggedIn: true,
+          updatedAt: new Date(),
         };
-        const updateUser = findUser.update(data);
+        const updateUser = await findUser.update(data);
         if (updateUser) {
-          return successResponse(
-            StatusCode.SUCCESS.OK,
-            "Profile created Successfully"
-          );
+          if (payload?.type === "signup") {
+            const tokenData = {
+              id: updateUser?.id,
+              fullName: updateUser?.fullName,
+              email: updateUser?.email,
+              phone: updateUser?.phone,
+            };
+            const generateTokenResult = generateToken(tokenData);
+            tokenData.token = generateTokenResult;
+            return successResponse(
+              StatusCode.SUCCESS.OK,
+              "Profile created Successfully",
+              tokenData
+            );
+          } else {
+            return successResponse(
+              StatusCode.SUCCESS.OK,
+              "Profile updated Successfully"
+            );
+          }
         }
       } else {
         return rejectResponse(
@@ -196,9 +231,70 @@ const updateUserProfileService = async (payload) => {
   }
 };
 
+const signInSendOtpUser = async (payload) => {
+  try {
+    const { phone } = payload;
+    if (!phone) {
+      return rejectResponse(
+        StatusCode.CLIENT_ERROR.NOT_FOUND,
+        "Phone is required!"
+      );
+    } else {
+      const isPhoneExist = await users.findOne({
+        where: {
+          phone,
+          isActive: false,
+        },
+      });
+      if (isPhoneExist) {
+        return rejectResponse(
+          StatusCode.CLIENT_ERROR.CONFLICT,
+          "Your profile is incomplete. Please complete your signup to proceed."
+        );
+      } else {
+        const isActivePhoneExist = await users.findOne({
+          where: {
+            phone,
+            isActive: true,
+          },
+        });
+
+        if (isActivePhoneExist) {
+          const code = getRandomNumber(100000, 900000);
+          const data = {
+            sentOtp: code,
+            updatedAt: new Date(),
+          };
+          const isMessageSent = await sendCodeInNumber(code, phone);
+          if (isMessageSent?.code === 200) {
+            const updateUser = await isActivePhoneExist.update(data);
+            if (updateUser) {
+              return successResponse(
+                StatusCode.SUCCESS.OK,
+                "OTP has been sent successfully."
+              );
+            }
+          }
+        } else {
+          return rejectResponse(
+            StatusCode.CLIENT_ERROR.UNAUTHORIZED,
+            "Unauthorized! Your account is not active."
+          );
+        }
+      }
+    }
+  } catch (err) {
+    throw rejectResponse(
+      StatusCode.SERVER_ERROR.INTERNAL_SERVER_ERROR,
+      err?.message
+    );
+  }
+};
+
 module.exports = {
   signUpSendOtpUser,
   verifyOtpUser,
   resendOtpUser,
   updateUserProfileService,
+  signInSendOtpUser,
 };
