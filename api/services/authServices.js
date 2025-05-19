@@ -1,5 +1,6 @@
 const users = require("../models/userModel");
 const { getRandomNumber, generateToken } = require("../utils/commonFunc");
+const { otpStartRange, otpEndRange } = require("../utils/dataUtils");
 const { rejectResponse, successResponse } = require("../utils/response");
 const StatusCode = require("../utils/statusCode");
 const { sendCodeInNumber } = require("./bulkSMSService");
@@ -25,7 +26,7 @@ const signUpSendOtpUser = async (payload) => {
           "This phone number is already registered. Please log in instead."
         );
       } else {
-        const code = getRandomNumber(1000, 9999);
+        const code = getRandomNumber(otpStartRange, otpEndRange);
         const data = {
           sentOtp: code,
           updatedAt: new Date(),
@@ -96,8 +97,18 @@ const verifyOtpUser = async (payload) => {
               email: isPhoneExist?.email,
               phone: isPhoneExist?.phone,
             };
-            const generateTokenResult = generateToken(tokenData);
-            tokenData.token = generateTokenResult;
+            const generateTokenResult = generateToken(tokenData, "1h");
+            const generateRefreshTokenResult = generateToken(tokenData, "7d");
+            if (generateToken) tokenData.token = generateTokenResult;
+            if (generateRefreshTokenResult) {
+              const data = {
+                refreshToken: generateRefreshTokenResult,
+              };
+              const updateUser = await isPhoneExist.update(data);
+              if (updateUser) {
+                tokenData.refreshToken = generateRefreshTokenResult;
+              }
+            }
             return successResponse(
               StatusCode.SUCCESS.OK,
               "OTP verified successfully!",
@@ -134,7 +145,7 @@ const resendOtpUser = async (payload) => {
         "Phone is required!"
       );
     } else {
-      const code = getRandomNumber(100000, 900000);
+      const code = getRandomNumber(otpStartRange, otpEndRange);
       const isMessageSent = await sendCodeInNumber(code, phone);
       if (isMessageSent?.code === 200) {
         const findUser = await users.findOne({
@@ -202,8 +213,18 @@ const updateUserProfileService = async (payload) => {
               email: updateUser?.email,
               phone: updateUser?.phone,
             };
-            const generateTokenResult = generateToken(tokenData);
-            tokenData.token = generateTokenResult;
+            const generateTokenResult = generateToken(tokenData, "1h");
+            const generateRefreshTokenResult = generateToken(tokenData, "7d");
+            if (generateTokenResult) tokenData.token = generateTokenResult;
+            if (generateRefreshTokenResult) {
+              const data = {
+                refreshToken: generateRefreshTokenResult,
+              };
+              const updateUser = await findUser.update(data);
+              if (updateUser) {
+                tokenData.refreshToken = generateRefreshTokenResult;
+              }
+            }
             return successResponse(
               StatusCode.SUCCESS.OK,
               "Profile created Successfully",
@@ -260,7 +281,7 @@ const signInSendOtpUser = async (payload) => {
         });
 
         if (isActivePhoneExist) {
-          const code = getRandomNumber(100000, 900000);
+          const code = getRandomNumber(otpStartRange, otpEndRange);
           const data = {
             sentOtp: code,
             updatedAt: new Date(),

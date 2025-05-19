@@ -9,8 +9,10 @@ const getRandomNumber = (start, end) => {
   }
 };
 
-const generateToken = (data) => {
-  const token = jwt.sign(data, process.env.TOKEN_SECRET);
+const generateToken = (data, expiresIn) => {
+  const token = jwt.sign(data, process.env.TOKEN_SECRET, {
+    expiresIn,
+  });
   return token;
 };
 

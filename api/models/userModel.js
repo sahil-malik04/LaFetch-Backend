@@ -45,6 +45,10 @@ const users = sequelize.define("users", {
     allowNull: false,
     defaultValue: false,
   },
+  refreshToken: {
+    type: DataTypes.TEXT,
+    allowNull: true,
+  },
 });
 
 // sequelize
