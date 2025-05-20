@@ -1,13 +1,13 @@
 const users = require("../models/userModel");
 const { verifyToken } = require("../utils/commonFunc");
 const { rejectResponse } = require("../utils/response");
-const StatusCode = require("../utils/statusCode");
+const { statusCode } = require("../utils/statusCode");
 
 const isAuthorized = async (req, res, next) => {
   const token = req.headers?.authorization;
   if (!token) {
-    res.status(StatusCode.CLIENT_ERROR.UNAUTHORIZED).send({
-      status: StatusCode.CLIENT_ERROR.UNAUTHORIZED,
+    res.status(statusCode.CLIENT_ERROR.UNAUTHORIZED).send({
+      status: statusCode.CLIENT_ERROR.UNAUTHORIZED,
       message: "Unauthorized!",
     });
   } else {
@@ -22,8 +22,8 @@ const isAuthorized = async (req, res, next) => {
           },
         });
         if (isAccountDeleted) {
-          res.status(StatusCode.CLIENT_ERROR.FORBIDDEN).send({
-            status: StatusCode.CLIENT_ERROR.FORBIDDEN,
+          res.status(statusCode.CLIENT_ERROR.FORBIDDEN).send({
+            status: statusCode.CLIENT_ERROR.FORBIDDEN,
             message:
               "Access denied. Your account is no longer active. Please reach out to the administrator for support.",
           });
@@ -37,8 +37,8 @@ const isAuthorized = async (req, res, next) => {
           if (isAccountActive) {
             next();
           } else {
-            res.status(StatusCode.CLIENT_ERROR.UNAUTHORIZED).send({
-              status: StatusCode.CLIENT_ERROR.UNAUTHORIZED,
+            res.status(statusCode.CLIENT_ERROR.UNAUTHORIZED).send({
+              status: statusCode.CLIENT_ERROR.UNAUTHORIZED,
               message: "Unauthorized!",
             });
           }
@@ -46,7 +46,7 @@ const isAuthorized = async (req, res, next) => {
       }
     } catch (err) {
       res.send(
-        rejectResponse(StatusCode.CLIENT_ERROR.UNAUTHORIZED, err?.message)
+        rejectResponse(statusCode.CLIENT_ERROR.UNAUTHORIZED, err?.message)
       );
     }
   }

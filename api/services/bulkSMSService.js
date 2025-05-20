@@ -1,6 +1,6 @@
 const { default: axios } = require("axios");
 const { rejectResponse } = require("../utils/response");
-const StatusCode = require("../utils/statusCode");
+const { statusCode } = require("../utils/statusCode");
 
 // Function to send code in mobile number
 const sendCodeInNumber = async (code, phone) => {
@@ -21,7 +21,7 @@ const sendCodeInNumber = async (code, phone) => {
     }
   } catch (error) {
     throw rejectResponse(
-      StatusCode.SERVER_ERROR.INTERNAL_SERVER_ERROR,
+      statusCode.SERVER_ERROR.INTERNAL_SERVER_ERROR,
       error.message
     );
   }

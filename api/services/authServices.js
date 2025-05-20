@@ -10,7 +10,7 @@ const {
   responseMessages,
 } = require("../utils/dataUtils");
 const { rejectResponse, successResponse } = require("../utils/response");
-const StatusCode = require("../utils/statusCode");
+const { statusCode } = require("../utils/statusCode");
 const { sendCodeInNumber } = require("./bulkSMSService");
 
 const signUpSendOtpUser = async (payload) => {
@@ -18,7 +18,7 @@ const signUpSendOtpUser = async (payload) => {
     const { phone } = payload;
     if (!phone) {
       return rejectResponse(
-        StatusCode.CLIENT_ERROR.NOT_FOUND,
+        statusCode.CLIENT_ERROR.NOT_FOUND,
         "Phone is required!"
       );
     } else {
@@ -30,7 +30,7 @@ const signUpSendOtpUser = async (payload) => {
       });
       if (isAccountDeleted) {
         return rejectResponse(
-          StatusCode.CLIENT_ERROR.FORBIDDEN,
+          statusCode.CLIENT_ERROR.FORBIDDEN,
           responseMessages.ACCOUNT_DELETED
         );
       } else {
@@ -42,7 +42,7 @@ const signUpSendOtpUser = async (payload) => {
         });
         if (isActivePhoneExist) {
           return rejectResponse(
-            StatusCode.CLIENT_ERROR.CONFLICT,
+            statusCode.CLIENT_ERROR.CONFLICT,
             responseMessages.PHONE_ALREADY_EXIST
           );
         } else {
@@ -51,9 +51,9 @@ const signUpSendOtpUser = async (payload) => {
             sentOtp: code,
             updatedAt: new Date(),
           };
-          // const isMessageSent = await sendCodeInNumber(code, phone);
+          const isMessageSent = await sendCodeInNumber(code, phone);
 
-          // if (isMessageSent?.code === 200) {
+          if (isMessageSent?.code === 200) {
           const isPhoneExist = await users.findOne({
             where: {
               phone,
@@ -63,28 +63,28 @@ const signUpSendOtpUser = async (payload) => {
             const updateUser = await isPhoneExist.update(data);
             if (updateUser) {
               return successResponse(
-                StatusCode.SUCCESS.OK,
+                statusCode.SUCCESS.OK,
                 responseMessages.OTP_SENT
               );
             }
           } else {
-            data.phone = phone;
+            data.phone = `+91${phone}`;
 
             const createUser = await users.create(data);
             if (createUser) {
               return successResponse(
-                StatusCode.SUCCESS.OK,
+                statusCode.SUCCESS.OK,
                 responseMessages.OTP_SENT
               );
             }
           }
-          // }
+          }
         }
       }
     }
   } catch (err) {
     throw rejectResponse(
-      StatusCode.SERVER_ERROR.INTERNAL_SERVER_ERROR,
+      statusCode.SERVER_ERROR.INTERNAL_SERVER_ERROR,
       err?.message
     );
   }
@@ -95,7 +95,7 @@ const verifyOtpUser = async (payload) => {
     const { phone, otp } = payload;
     if (!phone || !otp) {
       return rejectResponse(
-        StatusCode.CLIENT_ERROR.NOT_FOUND,
+        statusCode.CLIENT_ERROR.NOT_FOUND,
         "Phone and otp is required!"
       );
     } else {
@@ -106,13 +106,13 @@ const verifyOtpUser = async (payload) => {
       });
       if (!isPhoneExist) {
         return rejectResponse(
-          StatusCode.CLIENT_ERROR.NOT_FOUND,
+          statusCode.CLIENT_ERROR.NOT_FOUND,
           responseMessages.PHONE_NOT_EXIST
         );
       } else {
         if (isPhoneExist.isAccountDeleted) {
           return rejectResponse(
-            StatusCode.CLIENT_ERROR.FORBIDDEN,
+            statusCode.CLIENT_ERROR.FORBIDDEN,
             responseMessages.ACCOUNT_DELETED
           );
         } else {
@@ -137,19 +137,19 @@ const verifyOtpUser = async (payload) => {
                 }
               }
               return successResponse(
-                StatusCode.SUCCESS.OK,
+                statusCode.SUCCESS.OK,
                 responseMessages.OTP_VERIFIED,
                 tokenData
               );
             } else {
               return successResponse(
-                StatusCode.SUCCESS.OK,
+                statusCode.SUCCESS.OK,
                 responseMessages.OTP_VERIFIED
               );
             }
           } else {
             return rejectResponse(
-              StatusCode.CLIENT_ERROR.NOT_FOUND,
+              statusCode.CLIENT_ERROR.NOT_FOUND,
               responseMessages.INCORRECT_OTP
             );
           }
@@ -158,7 +158,7 @@ const verifyOtpUser = async (payload) => {
     }
   } catch (err) {
     throw rejectResponse(
-      StatusCode.SERVER_ERROR.INTERNAL_SERVER_ERROR,
+      statusCode.SERVER_ERROR.INTERNAL_SERVER_ERROR,
       err?.message
     );
   }
@@ -169,7 +169,7 @@ const resendOtpUser = async (payload) => {
     const { phone } = payload;
     if (!phone) {
       return rejectResponse(
-        StatusCode.CLIENT_ERROR.NOT_FOUND,
+        statusCode.CLIENT_ERROR.NOT_FOUND,
         "Phone is required!"
       );
     } else {
@@ -183,12 +183,12 @@ const resendOtpUser = async (payload) => {
       if (findUser) {
         if (findUser.isAccountDeleted) {
           return rejectResponse(
-            StatusCode.CLIENT_ERROR.FORBIDDEN,
+            statusCode.CLIENT_ERROR.FORBIDDEN,
             responseMessages.ACCOUNT_DELETED
           );
         } else {
-          // const isMessageSent = await sendCodeInNumber(code, phone);
-          // if (isMessageSent?.code === 200) {
+          const isMessageSent = await sendCodeInNumber(code, phone);
+          if (isMessageSent?.code === 200) {
           const data = {
             sentOtp: code,
             updatedAt: new Date(),
@@ -196,22 +196,22 @@ const resendOtpUser = async (payload) => {
           const updateUser = await findUser.update(data);
           if (updateUser) {
             return successResponse(
-              StatusCode.SUCCESS.OK,
+              statusCode.SUCCESS.OK,
               responseMessages.OTP_SENT
             );
           }
-          // }
+          }
         }
       } else {
         return rejectResponse(
-          StatusCode.CLIENT_ERROR.NOT_FOUND,
+          statusCode.CLIENT_ERROR.NOT_FOUND,
           responseMessages.PHONE_NOT_EXIST
         );
       }
     }
   } catch (err) {
     throw rejectResponse(
-      StatusCode.SERVER_ERROR.INTERNAL_SERVER_ERROR,
+      statusCode.SERVER_ERROR.INTERNAL_SERVER_ERROR,
       err?.message
     );
   }
@@ -222,7 +222,7 @@ const updateUserProfileService = async (payload) => {
     const { phone, email, gender, fullName } = payload;
     if (!phone || !email || !gender || !fullName) {
       return rejectResponse(
-        StatusCode.CLIENT_ERROR.BAD_REQUEST,
+        statusCode.CLIENT_ERROR.BAD_REQUEST,
         "Validation Error!"
       );
     } else {
@@ -234,7 +234,7 @@ const updateUserProfileService = async (payload) => {
       if (findUser) {
         if (findUser.isAccountDeleted) {
           return rejectResponse(
-            StatusCode.CLIENT_ERROR.FORBIDDEN,
+            statusCode.CLIENT_ERROR.FORBIDDEN,
             responseMessages.ACCOUNT_DELETED
           );
         } else {
@@ -268,13 +268,13 @@ const updateUserProfileService = async (payload) => {
                 }
               }
               return successResponse(
-                StatusCode.SUCCESS.OK,
+                statusCode.SUCCESS.OK,
                 "Profile created Successfully",
                 tokenData
               );
             } else {
               return successResponse(
-                StatusCode.SUCCESS.OK,
+                statusCode.SUCCESS.OK,
                 "Profile updated Successfully"
               );
             }
@@ -282,14 +282,14 @@ const updateUserProfileService = async (payload) => {
         }
       } else {
         return rejectResponse(
-          StatusCode.CLIENT_ERROR.NOT_FOUND,
+          statusCode.CLIENT_ERROR.NOT_FOUND,
           responseMessages.PHONE_NOT_EXIST
         );
       }
     }
   } catch (err) {
     throw rejectResponse(
-      StatusCode.SERVER_ERROR.INTERNAL_SERVER_ERROR,
+      statusCode.SERVER_ERROR.INTERNAL_SERVER_ERROR,
       err?.message
     );
   }
@@ -300,33 +300,25 @@ const signInSendOtpUser = async (payload) => {
     const { phone } = payload;
     if (!phone) {
       return rejectResponse(
-        StatusCode.CLIENT_ERROR.NOT_FOUND,
+        statusCode.CLIENT_ERROR.NOT_FOUND,
         "Phone is required!"
       );
     } else {
       const isPhoneExist = await users.findOne({
         where: {
           phone,
-          isActive: false,
         },
       });
       if (isPhoneExist) {
-        return rejectResponse(
-          StatusCode.CLIENT_ERROR.CONFLICT,
-          responseMessages.INCOMPLETE_USER_PROFILE
-        );
-      } else {
-        const isActivePhoneExist = await users.findOne({
-          where: {
-            phone,
-            isActive: true,
-          },
-        });
-
-        if (isActivePhoneExist) {
-          if (isActivePhoneExist.isAccountDeleted) {
+        if (!isPhoneExist.isActive) {
+          return rejectResponse(
+            statusCode.CLIENT_ERROR.CONFLICT,
+            responseMessages.INCOMPLETE_USER_PROFILE
+          );
+        } else {
+          if (isPhoneExist.isAccountDeleted) {
             return rejectResponse(
-              StatusCode.CLIENT_ERROR.FORBIDDEN,
+              statusCode.CLIENT_ERROR.FORBIDDEN,
               responseMessages.ACCOUNT_DELETED
             );
           } else {
@@ -335,28 +327,28 @@ const signInSendOtpUser = async (payload) => {
               sentOtp: code,
               updatedAt: new Date(),
             };
-            // const isMessageSent = await sendCodeInNumber(code, phone);
-            // if (isMessageSent?.code === 200) {
-            const updateUser = await isActivePhoneExist.update(data);
+            const isMessageSent = await sendCodeInNumber(code, phone);
+            if (isMessageSent?.code === 200) {
+            const updateUser = await isPhoneExist.update(data);
             if (updateUser) {
               return successResponse(
-                StatusCode.SUCCESS.OK,
+                statusCode.SUCCESS.OK,
                 responseMessages.OTP_SENT
               );
             }
-            // }
+            }
           }
-        } else {
-          return rejectResponse(
-            StatusCode.CLIENT_ERROR.UNAUTHORIZED,
-            "Unauthorized! Your account is not active."
-          );
         }
+      } else {
+        return rejectResponse(
+          statusCode.CLIENT_ERROR.NOT_FOUND,
+          responseMessages.PHONE_NOT_EXIST
+        );
       }
     }
   } catch (err) {
     throw rejectResponse(
-      StatusCode.SERVER_ERROR.INTERNAL_SERVER_ERROR,
+      statusCode.SERVER_ERROR.INTERNAL_SERVER_ERROR,
       err?.message
     );
   }
@@ -375,19 +367,19 @@ const deleteAccountUser = async (payload) => {
       const result = await isUserExist.update(data);
       if (result) {
         return successResponse(
-          StatusCode.SUCCESS.OK,
+          statusCode.SUCCESS.OK,
           "Your account has been deleted successfully!"
         );
       }
     } else {
       return rejectResponse(
-        StatusCode.CLIENT_ERROR.NOT_FOUND,
+        statusCode.CLIENT_ERROR.NOT_FOUND,
         responseMessages.USER_NOT_EXIST
       );
     }
   } catch (err) {
     throw rejectResponse(
-      StatusCode.SERVER_ERROR.INTERNAL_SERVER_ERROR,
+      statusCode.SERVER_ERROR.INTERNAL_SERVER_ERROR,
       err?.message
     );
   }
@@ -405,17 +397,17 @@ const signOutUser = async (payload) => {
       };
       const result = await isUserExist.update(data);
       if (result) {
-        return successResponse(StatusCode.SUCCESS.OK, "Logout success!");
+        return successResponse(statusCode.SUCCESS.OK, "Logout success!");
       }
     } else {
       return rejectResponse(
-        StatusCode.CLIENT_ERROR.NOT_FOUND,
+        statusCode.CLIENT_ERROR.NOT_FOUND,
         responseMessages.USER_NOT_EXIST
       );
     }
   } catch (err) {
     throw rejectResponse(
-      StatusCode.SERVER_ERROR.INTERNAL_SERVER_ERROR,
+      statusCode.SERVER_ERROR.INTERNAL_SERVER_ERROR,
       err?.message
     );
   }
@@ -426,7 +418,7 @@ const refreshTokenUser = async (payload) => {
 
   if (!refreshToken)
     return rejectResponse(
-      StatusCode.CLIENT_ERROR.UNAUTHORIZED,
+      statusCode.CLIENT_ERROR.UNAUTHORIZED,
       "Missing refresh token"
     );
 
@@ -442,7 +434,7 @@ const refreshTokenUser = async (payload) => {
 
     if (!findUser || findUser.refreshToken !== refreshToken) {
       return rejectResponse(
-        StatusCode.CLIENT_ERROR.FORBIDDEN,
+        statusCode.CLIENT_ERROR.FORBIDDEN,
         "Invalid refresh token"
       );
     }
@@ -465,14 +457,14 @@ const refreshTokenUser = async (payload) => {
         tokenData.refreshToken = generateRefreshTokenResult;
       }
       return successResponse(
-        StatusCode.SUCCESS.OK,
+        statusCode.SUCCESS.OK,
         "Refresh token generated successfully!",
         tokenData
       );
     }
   } catch (err) {
     throw rejectResponse(
-      StatusCode.SERVER_ERROR.INTERNAL_SERVER_ERROR,
+      statusCode.SERVER_ERROR.INTERNAL_SERVER_ERROR,
       err?.message
     );
   }
