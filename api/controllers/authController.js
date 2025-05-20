@@ -4,6 +4,9 @@ const {
   resendOtpUser,
   updateUserProfileService,
   signInSendOtpUser,
+  deleteAccountUser,
+  signOutUser,
+  refreshTokenUser,
 } = require("../services/authServices");
 
 const signUpSendOtp = async (req, res) => {
@@ -56,10 +59,43 @@ const signInSendOtp = async (req, res) => {
   }
 };
 
+const deleteAccount = async (req, res) => {
+  try {
+    const payload = req.params;
+    const result = await deleteAccountUser(payload);
+    res.status(result.status).json(result);
+  } catch (err) {
+    res.status(err?.status).json(err);
+  }
+};
+
+const signOut = async (req, res) => {
+  try {
+    const payload = req.params;
+    const result = await signOutUser(payload);
+    res.status(result.status).json(result);
+  } catch (err) {
+    res.status(err?.status).json(err);
+  }
+};
+
+const refreshToken = async (req, res) => {
+  try {
+    const payload = req.body;
+    const result = await refreshTokenUser(payload);
+    res.status(result.status).json(result);
+  } catch (err) {
+    res.status(err?.status).json(err);
+  }
+};
+
 module.exports = {
   signUpSendOtp,
   verifyOtp,
   resendOtp,
   updateUserProfile,
   signInSendOtp,
+  deleteAccount,
+  signOut,
+  refreshToken,
 };

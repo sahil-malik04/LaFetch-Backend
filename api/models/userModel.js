@@ -26,6 +26,7 @@ const users = sequelize.define("users", {
     validate: {
       is: /^[0-9\-+\s()]*$/i,
     },
+    unique: true
   },
   sentOtp: {
     type: DataTypes.INTEGER,
@@ -48,6 +49,11 @@ const users = sequelize.define("users", {
   refreshToken: {
     type: DataTypes.TEXT,
     allowNull: true,
+  },
+  isAccountDeleted: {
+    type: DataTypes.BOOLEAN,
+    allowNull: false,
+    defaultValue: false,
   },
 });
 

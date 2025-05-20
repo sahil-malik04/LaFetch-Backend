@@ -1,2 +1,17 @@
 export const otpStartRange = 1000;
 export const otpEndRange = 9999;
+
+export const responseMessages = {
+  ACCOUNT_DELETED:
+    "Access denied. Your account is no longer active. Please reach out to the administrator for support.",
+  PHONE_NOT_EXIST:
+    "Phone No. doesn't Exist! Please check your Phone No. and try again!",
+  PHONE_ALREADY_EXIST:
+    "This phone number is already registered. Please log in instead.",
+  OTP_SENT: "OTP has been sent successfully.",
+  USER_NOT_EXIST: "Unauthorized! User account doesn't exist.",
+  INCOMPLETE_USER_PROFILE:
+    "Your profile is incomplete. Please complete your signup to proceed.",
+  OTP_VERIFIED: "OTP verified successfully!",
+  INCORRECT_OTP: "Incorrect OTP, Please try again!",
+};

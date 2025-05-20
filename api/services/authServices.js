@@ -1,6 +1,14 @@
 const users = require("../models/userModel");
-const { getRandomNumber, generateToken } = require("../utils/commonFunc");
-const { otpStartRange, otpEndRange } = require("../utils/dataUtils");
+const {
+  getRandomNumber,
+  generateToken,
+  verifyToken,
+} = require("../utils/commonFunc");
+const {
+  otpStartRange,
+  otpEndRange,
+  responseMessages,
+} = require("../utils/dataUtils");
 const { rejectResponse, successResponse } = require("../utils/response");
 const StatusCode = require("../utils/statusCode");
 const { sendCodeInNumber } = require("./bulkSMSService");
@@ -14,26 +22,38 @@ const signUpSendOtpUser = async (payload) => {
         "Phone is required!"
       );
     } else {
-      const isActivePhoneExist = await users.findOne({
+      const isAccountDeleted = await users.findOne({
         where: {
           phone,
-          isActive: true,
+          isAccountDeleted: true,
         },
       });
-      if (isActivePhoneExist) {
+      if (isAccountDeleted) {
         return rejectResponse(
-          StatusCode.CLIENT_ERROR.CONFLICT,
-          "This phone number is already registered. Please log in instead."
+          StatusCode.CLIENT_ERROR.FORBIDDEN,
+          responseMessages.ACCOUNT_DELETED
         );
       } else {
-        const code = getRandomNumber(otpStartRange, otpEndRange);
-        const data = {
-          sentOtp: code,
-          updatedAt: new Date(),
-        };
-        const isMessageSent = await sendCodeInNumber(code, phone);
+        const isActivePhoneExist = await users.findOne({
+          where: {
+            phone,
+            isActive: true,
+          },
+        });
+        if (isActivePhoneExist) {
+          return rejectResponse(
+            StatusCode.CLIENT_ERROR.CONFLICT,
+            responseMessages.PHONE_ALREADY_EXIST
+          );
+        } else {
+          const code = getRandomNumber(otpStartRange, otpEndRange);
+          const data = {
+            sentOtp: code,
+            updatedAt: new Date(),
+          };
+          // const isMessageSent = await sendCodeInNumber(code, phone);
 
-        if (isMessageSent?.code === 200) {
+          // if (isMessageSent?.code === 200) {
           const isPhoneExist = await users.findOne({
             where: {
               phone,
@@ -44,7 +64,7 @@ const signUpSendOtpUser = async (payload) => {
             if (updateUser) {
               return successResponse(
                 StatusCode.SUCCESS.OK,
-                "OTP has been sent successfully."
+                responseMessages.OTP_SENT
               );
             }
           } else {
@@ -54,10 +74,11 @@ const signUpSendOtpUser = async (payload) => {
             if (createUser) {
               return successResponse(
                 StatusCode.SUCCESS.OK,
-                "OTP has been sent successfully."
+                responseMessages.OTP_SENT
               );
             }
           }
+          // }
         }
       }
     }
@@ -86,45 +107,52 @@ const verifyOtpUser = async (payload) => {
       if (!isPhoneExist) {
         return rejectResponse(
           StatusCode.CLIENT_ERROR.NOT_FOUND,
-          "Phone No. doesn't Exist! Please check your Phone No. and try again!"
+          responseMessages.PHONE_NOT_EXIST
         );
       } else {
-        if (Number(isPhoneExist?.sentOtp) === Number(otp)) {
-          if (payload?.type === "login") {
-            const tokenData = {
-              id: isPhoneExist?.id,
-              fullName: isPhoneExist?.fullName,
-              email: isPhoneExist?.email,
-              phone: isPhoneExist?.phone,
-            };
-            const generateTokenResult = generateToken(tokenData, "1h");
-            const generateRefreshTokenResult = generateToken(tokenData, "7d");
-            if (generateToken) tokenData.token = generateTokenResult;
-            if (generateRefreshTokenResult) {
-              const data = {
-                refreshToken: generateRefreshTokenResult,
+        if (isPhoneExist.isAccountDeleted) {
+          return rejectResponse(
+            StatusCode.CLIENT_ERROR.FORBIDDEN,
+            responseMessages.ACCOUNT_DELETED
+          );
+        } else {
+          if (Number(isPhoneExist?.sentOtp) === Number(otp)) {
+            if (payload?.type === "login") {
+              const tokenData = {
+                id: isPhoneExist?.id,
+                fullName: isPhoneExist?.fullName,
+                email: isPhoneExist?.email,
+                phone: isPhoneExist?.phone,
               };
-              const updateUser = await isPhoneExist.update(data);
-              if (updateUser) {
-                tokenData.refreshToken = generateRefreshTokenResult;
+              const generateTokenResult = generateToken(tokenData, "1h");
+              const generateRefreshTokenResult = generateToken(tokenData, "7d");
+              if (generateToken) tokenData.token = generateTokenResult;
+              if (generateRefreshTokenResult) {
+                const data = {
+                  refreshToken: generateRefreshTokenResult,
+                };
+                const updateUser = await isPhoneExist.update(data);
+                if (updateUser) {
+                  tokenData.refreshToken = generateRefreshTokenResult;
+                }
               }
+              return successResponse(
+                StatusCode.SUCCESS.OK,
+                responseMessages.OTP_VERIFIED,
+                tokenData
+              );
+            } else {
+              return successResponse(
+                StatusCode.SUCCESS.OK,
+                responseMessages.OTP_VERIFIED
+              );
             }
-            return successResponse(
-              StatusCode.SUCCESS.OK,
-              "OTP verified successfully!",
-              tokenData
-            );
           } else {
-            return successResponse(
-              StatusCode.SUCCESS.OK,
-              "OTP verified successfully!"
+            return rejectResponse(
+              StatusCode.CLIENT_ERROR.NOT_FOUND,
+              responseMessages.INCORRECT_OTP
             );
           }
-        } else {
-          return rejectResponse(
-            StatusCode.CLIENT_ERROR.NOT_FOUND,
-            "Incorrect OTP, Please try again!"
-          );
         }
       }
     }
@@ -146,14 +174,21 @@ const resendOtpUser = async (payload) => {
       );
     } else {
       const code = getRandomNumber(otpStartRange, otpEndRange);
-      const isMessageSent = await sendCodeInNumber(code, phone);
-      if (isMessageSent?.code === 200) {
-        const findUser = await users.findOne({
-          where: {
-            phone,
-          },
-        });
-        if (findUser) {
+
+      const findUser = await users.findOne({
+        where: {
+          phone,
+        },
+      });
+      if (findUser) {
+        if (findUser.isAccountDeleted) {
+          return rejectResponse(
+            StatusCode.CLIENT_ERROR.FORBIDDEN,
+            responseMessages.ACCOUNT_DELETED
+          );
+        } else {
+          // const isMessageSent = await sendCodeInNumber(code, phone);
+          // if (isMessageSent?.code === 200) {
           const data = {
             sentOtp: code,
             updatedAt: new Date(),
@@ -162,15 +197,16 @@ const resendOtpUser = async (payload) => {
           if (updateUser) {
             return successResponse(
               StatusCode.SUCCESS.OK,
-              "OTP has been sent successfully."
+              responseMessages.OTP_SENT
             );
           }
-        } else {
-          return rejectResponse(
-            StatusCode.CLIENT_ERROR.NOT_FOUND,
-            "Phone No. doesn't Exist! Please check your Phone No. and try again!"
-          );
+          // }
         }
+      } else {
+        return rejectResponse(
+          StatusCode.CLIENT_ERROR.NOT_FOUND,
+          responseMessages.PHONE_NOT_EXIST
+        );
       }
     }
   } catch (err) {
@@ -196,51 +232,58 @@ const updateUserProfileService = async (payload) => {
         },
       });
       if (findUser) {
-        const data = {
-          fullName,
-          email,
-          gender,
-          isActive: true,
-          isLoggedIn: true,
-          updatedAt: new Date(),
-        };
-        const updateUser = await findUser.update(data);
-        if (updateUser) {
-          if (payload?.type === "signup") {
-            const tokenData = {
-              id: updateUser?.id,
-              fullName: updateUser?.fullName,
-              email: updateUser?.email,
-              phone: updateUser?.phone,
-            };
-            const generateTokenResult = generateToken(tokenData, "1h");
-            const generateRefreshTokenResult = generateToken(tokenData, "7d");
-            if (generateTokenResult) tokenData.token = generateTokenResult;
-            if (generateRefreshTokenResult) {
-              const data = {
-                refreshToken: generateRefreshTokenResult,
+        if (findUser.isAccountDeleted) {
+          return rejectResponse(
+            StatusCode.CLIENT_ERROR.FORBIDDEN,
+            responseMessages.ACCOUNT_DELETED
+          );
+        } else {
+          const data = {
+            fullName,
+            email,
+            gender,
+            isActive: true,
+            isLoggedIn: true,
+            updatedAt: new Date(),
+          };
+          const updateUser = await findUser.update(data);
+          if (updateUser) {
+            if (payload?.type === "signup") {
+              const tokenData = {
+                id: updateUser?.id,
+                fullName: updateUser?.fullName,
+                email: updateUser?.email,
+                phone: updateUser?.phone,
               };
-              const updateUser = await findUser.update(data);
-              if (updateUser) {
-                tokenData.refreshToken = generateRefreshTokenResult;
+              const generateTokenResult = generateToken(tokenData, "1h");
+              const generateRefreshTokenResult = generateToken(tokenData, "7d");
+              if (generateTokenResult) tokenData.token = generateTokenResult;
+              if (generateRefreshTokenResult) {
+                const data = {
+                  refreshToken: generateRefreshTokenResult,
+                };
+                const updateUser = await findUser.update(data);
+                if (updateUser) {
+                  tokenData.refreshToken = generateRefreshTokenResult;
+                }
               }
+              return successResponse(
+                StatusCode.SUCCESS.OK,
+                "Profile created Successfully",
+                tokenData
+              );
+            } else {
+              return successResponse(
+                StatusCode.SUCCESS.OK,
+                "Profile updated Successfully"
+              );
             }
-            return successResponse(
-              StatusCode.SUCCESS.OK,
-              "Profile created Successfully",
-              tokenData
-            );
-          } else {
-            return successResponse(
-              StatusCode.SUCCESS.OK,
-              "Profile updated Successfully"
-            );
           }
         }
       } else {
         return rejectResponse(
           StatusCode.CLIENT_ERROR.NOT_FOUND,
-          "Phone No. doesn't Exist! Please check your Phone No. and try again!"
+          responseMessages.PHONE_NOT_EXIST
         );
       }
     }
@@ -270,7 +313,7 @@ const signInSendOtpUser = async (payload) => {
       if (isPhoneExist) {
         return rejectResponse(
           StatusCode.CLIENT_ERROR.CONFLICT,
-          "Your profile is incomplete. Please complete your signup to proceed."
+          responseMessages.INCOMPLETE_USER_PROFILE
         );
       } else {
         const isActivePhoneExist = await users.findOne({
@@ -281,20 +324,27 @@ const signInSendOtpUser = async (payload) => {
         });
 
         if (isActivePhoneExist) {
-          const code = getRandomNumber(otpStartRange, otpEndRange);
-          const data = {
-            sentOtp: code,
-            updatedAt: new Date(),
-          };
-          const isMessageSent = await sendCodeInNumber(code, phone);
-          if (isMessageSent?.code === 200) {
+          if (isActivePhoneExist.isAccountDeleted) {
+            return rejectResponse(
+              StatusCode.CLIENT_ERROR.FORBIDDEN,
+              responseMessages.ACCOUNT_DELETED
+            );
+          } else {
+            const code = getRandomNumber(otpStartRange, otpEndRange);
+            const data = {
+              sentOtp: code,
+              updatedAt: new Date(),
+            };
+            // const isMessageSent = await sendCodeInNumber(code, phone);
+            // if (isMessageSent?.code === 200) {
             const updateUser = await isActivePhoneExist.update(data);
             if (updateUser) {
               return successResponse(
                 StatusCode.SUCCESS.OK,
-                "OTP has been sent successfully."
+                responseMessages.OTP_SENT
               );
             }
+            // }
           }
         } else {
           return rejectResponse(
@@ -312,10 +362,129 @@ const signInSendOtpUser = async (payload) => {
   }
 };
 
+const deleteAccountUser = async (payload) => {
+  try {
+    const isUserExist = await users.findOne({
+      id: payload?.userId,
+    });
+    if (isUserExist) {
+      const data = {
+        isAccountDeleted: true,
+        updatedAt: new Date(),
+      };
+      const result = await isUserExist.update(data);
+      if (result) {
+        return successResponse(
+          StatusCode.SUCCESS.OK,
+          "Your account has been deleted successfully!"
+        );
+      }
+    } else {
+      return rejectResponse(
+        StatusCode.CLIENT_ERROR.NOT_FOUND,
+        responseMessages.USER_NOT_EXIST
+      );
+    }
+  } catch (err) {
+    throw rejectResponse(
+      StatusCode.SERVER_ERROR.INTERNAL_SERVER_ERROR,
+      err?.message
+    );
+  }
+};
+
+const signOutUser = async (payload) => {
+  try {
+    const isUserExist = await users.findOne({
+      id: payload?.userId,
+    });
+    if (isUserExist) {
+      const data = {
+        isLoggedIn: false,
+        updatedAt: new Date(),
+      };
+      const result = await isUserExist.update(data);
+      if (result) {
+        return successResponse(StatusCode.SUCCESS.OK, "Logout success!");
+      }
+    } else {
+      return rejectResponse(
+        StatusCode.CLIENT_ERROR.NOT_FOUND,
+        responseMessages.USER_NOT_EXIST
+      );
+    }
+  } catch (err) {
+    throw rejectResponse(
+      StatusCode.SERVER_ERROR.INTERNAL_SERVER_ERROR,
+      err?.message
+    );
+  }
+};
+
+const refreshTokenUser = async (payload) => {
+  const { refreshToken } = payload;
+
+  if (!refreshToken)
+    return rejectResponse(
+      StatusCode.CLIENT_ERROR.UNAUTHORIZED,
+      "Missing refresh token"
+    );
+
+  try {
+    const userData = verifyToken(refreshToken);
+
+    const findUser = await users.findOne({
+      where: {
+        phone: userData?.phone,
+        isActive: true,
+      },
+    });
+
+    if (!findUser || findUser.refreshToken !== refreshToken) {
+      return rejectResponse(
+        StatusCode.CLIENT_ERROR.FORBIDDEN,
+        "Invalid refresh token"
+      );
+    }
+
+    const tokenData = {
+      id: findUser?.id,
+      fullName: findUser?.fullName,
+      email: findUser?.email,
+      phone: findUser?.phone,
+    };
+    const generateTokenResult = generateToken(tokenData, "1h");
+    const generateRefreshTokenResult = generateToken(tokenData, "7d");
+    if (generateToken) tokenData.token = generateTokenResult;
+    if (generateRefreshTokenResult) {
+      const data = {
+        refreshToken: generateRefreshTokenResult,
+      };
+      const updateUser = await findUser.update(data);
+      if (updateUser) {
+        tokenData.refreshToken = generateRefreshTokenResult;
+      }
+      return successResponse(
+        StatusCode.SUCCESS.OK,
+        "Refresh token generated successfully!",
+        tokenData
+      );
+    }
+  } catch (err) {
+    throw rejectResponse(
+      StatusCode.SERVER_ERROR.INTERNAL_SERVER_ERROR,
+      err?.message
+    );
+  }
+};
+
 module.exports = {
   signUpSendOtpUser,
   verifyOtpUser,
   resendOtpUser,
   updateUserProfileService,
   signInSendOtpUser,
+  deleteAccountUser,
+  signOutUser,
+  refreshTokenUser,
 };
