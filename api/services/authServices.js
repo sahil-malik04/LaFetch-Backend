@@ -54,30 +54,30 @@ const signUpSendOtpUser = async (payload) => {
           const isMessageSent = await sendCodeInNumber(code, phone);
 
           if (isMessageSent?.code === 200) {
-          const isPhoneExist = await users.findOne({
-            where: {
-              phone,
-            },
-          });
-          if (isPhoneExist) {
-            const updateUser = await isPhoneExist.update(data);
-            if (updateUser) {
-              return successResponse(
-                statusCode.SUCCESS.OK,
-                responseMessages.OTP_SENT
-              );
-            }
-          } else {
-            data.phone = `+91${phone}`;
+            const isPhoneExist = await users.findOne({
+              where: {
+                phone,
+              },
+            });
+            if (isPhoneExist) {
+              const updateUser = await isPhoneExist.update(data);
+              if (updateUser) {
+                return successResponse(
+                  statusCode.SUCCESS.OK,
+                  responseMessages.OTP_SENT
+                );
+              }
+            } else {
+              data.phone = phone;
 
-            const createUser = await users.create(data);
-            if (createUser) {
-              return successResponse(
-                statusCode.SUCCESS.OK,
-                responseMessages.OTP_SENT
-              );
+              const createUser = await users.create(data);
+              if (createUser) {
+                return successResponse(
+                  statusCode.SUCCESS.OK,
+                  responseMessages.OTP_SENT
+                );
+              }
             }
-          }
           }
         }
       }
@@ -189,17 +189,17 @@ const resendOtpUser = async (payload) => {
         } else {
           const isMessageSent = await sendCodeInNumber(code, phone);
           if (isMessageSent?.code === 200) {
-          const data = {
-            sentOtp: code,
-            updatedAt: new Date(),
-          };
-          const updateUser = await findUser.update(data);
-          if (updateUser) {
-            return successResponse(
-              statusCode.SUCCESS.OK,
-              responseMessages.OTP_SENT
-            );
-          }
+            const data = {
+              sentOtp: code,
+              updatedAt: new Date(),
+            };
+            const updateUser = await findUser.update(data);
+            if (updateUser) {
+              return successResponse(
+                statusCode.SUCCESS.OK,
+                responseMessages.OTP_SENT
+              );
+            }
           }
         }
       } else {
@@ -329,13 +329,13 @@ const signInSendOtpUser = async (payload) => {
             };
             const isMessageSent = await sendCodeInNumber(code, phone);
             if (isMessageSent?.code === 200) {
-            const updateUser = await isPhoneExist.update(data);
-            if (updateUser) {
-              return successResponse(
-                statusCode.SUCCESS.OK,
-                responseMessages.OTP_SENT
-              );
-            }
+              const updateUser = await isPhoneExist.update(data);
+              if (updateUser) {
+                return successResponse(
+                  statusCode.SUCCESS.OK,
+                  responseMessages.OTP_SENT
+                );
+              }
             }
           }
         }
@@ -362,6 +362,8 @@ const deleteAccountUser = async (payload) => {
     if (isUserExist) {
       const data = {
         isAccountDeleted: true,
+        isActive: false,
+        isLoggedIn: false,
         updatedAt: new Date(),
       };
       const result = await isUserExist.update(data);
