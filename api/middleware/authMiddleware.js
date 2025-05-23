@@ -45,9 +45,11 @@ const isAuthorized = async (req, res, next) => {
         }
       }
     } catch (err) {
-      res.send(
-        rejectResponse(statusCode.CLIENT_ERROR.UNAUTHORIZED, err?.message)
-      );
+      res
+        .status(statusCode.CLIENT_ERROR.UNAUTHORIZED)
+        .send(
+          rejectResponse(statusCode.CLIENT_ERROR.UNAUTHORIZED, err?.message)
+        );
     }
   }
 };

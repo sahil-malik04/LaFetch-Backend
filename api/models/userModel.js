@@ -26,15 +26,11 @@ const users = sequelize.define("users", {
     validate: {
       is: /^[0-9\-+\s()]*$/i,
     },
-    unique: true
+    unique: true,
   },
   sentOtp: {
     type: DataTypes.INTEGER,
     allowNull: false,
-  },
-  defaultAddressId: {
-    type: DataTypes.INTEGER,
-    allowNull: true,
   },
   isLoggedIn: {
     type: DataTypes.BOOLEAN,
