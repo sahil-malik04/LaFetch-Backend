@@ -41,6 +41,14 @@ const user_addresses = sequelize.define("user_addresses", {
     allowNull: false,
     defaultValue: false,
   },
+  latitude: {
+    type: DataTypes.DECIMAL(10, 8),
+    allowNull: true,
+  },
+  longitude: {
+    type: DataTypes.DECIMAL(11, 8),
+    allowNull: true,
+  },
 });
 
 user_addresses.belongsTo(users, { foreignKey: "userId" });
