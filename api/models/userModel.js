@@ -16,13 +16,17 @@ const users = sequelize.define("users", {
     allowNull: true,
     unique: true,
   },
+  password: {
+    type: DataTypes.STRING,
+    allowNull: true,
+  },
   gender: {
     type: DataTypes.ENUM("male", "female", "other"),
     allowNull: true,
   },
   phone: {
     type: DataTypes.STRING,
-    allowNull: false,
+    allowNull: true,
     validate: {
       is: /^[0-9\-+\s()]*$/i,
     },
@@ -30,7 +34,15 @@ const users = sequelize.define("users", {
   },
   sentOtp: {
     type: DataTypes.INTEGER,
+    allowNull: true,
+  },
+  role: {
+    type: DataTypes.STRING,
     allowNull: false,
+  },
+  permissions: {
+    type: DataTypes.ARRAY(DataTypes.STRING),
+    allowNull: true,
   },
   isLoggedIn: {
     type: DataTypes.BOOLEAN,

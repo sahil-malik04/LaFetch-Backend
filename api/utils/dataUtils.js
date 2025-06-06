@@ -14,4 +14,12 @@ export const responseMessages = {
     "Your profile is incomplete. Please complete your signup to proceed.",
   OTP_VERIFIED: "OTP verified successfully!",
   INCORRECT_OTP: "Incorrect OTP, Please try again!",
+  PRODUCT_NOT_EXIST: "Product Doesn't Exist!",
+  BANNER_NOT_EXIST: "Banner Doesn't Exist!",
 };
+
+export const ROLES = Object.freeze({
+  ADMIN: "ADMIN",
+  USER: "USER",
+  VENDOR: "VENDOR",
+});

@@ -8,6 +8,7 @@ const {
   otpStartRange,
   otpEndRange,
   responseMessages,
+  ROLES,
 } = require("../utils/dataUtils");
 const { rejectResponse, successResponse } = require("../utils/response");
 const { statusCode } = require("../utils/statusCode");
@@ -49,6 +50,7 @@ const signUpSendOtpUser = async (payload) => {
           const code = getRandomNumber(otpStartRange, otpEndRange);
           const data = {
             sentOtp: code,
+            role: ROLES.USER,
             updatedAt: new Date(),
           };
           const isMessageSent = await sendCodeInNumber(code, phone);

@@ -58,7 +58,6 @@ const addAddressUser = async (payload) => {
       );
     }
   } catch (err) {
-    console.log(err, "Err");
     throw rejectResponse(
       statusCode.SERVER_ERROR.INTERNAL_SERVER_ERROR,
       err?.message
