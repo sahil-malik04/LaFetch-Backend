@@ -9,7 +9,9 @@ const products = sequelize.define("products", {
 
   type: { type: DataTypes.STRING, allowNull: false },
   title: { type: DataTypes.STRING, allowNull: false },
+  shortDescription: { type: DataTypes.STRING, allowNull: true },
   description: { type: DataTypes.TEXT, allowNull: true },
+  slug: { type: DataTypes.STRING, allowNull: true },
 
   categoryId: { type: DataTypes.INTEGER, allowNull: false },
   brandId: { type: DataTypes.INTEGER, allowNull: false },
@@ -32,6 +34,7 @@ const products = sequelize.define("products", {
 
   seoTitle: { type: DataTypes.STRING, allowNull: true },
   seoDescription: { type: DataTypes.TEXT, allowNull: true },
+  sku: { type: DataTypes.STRING, allowNull: true },
 
   targetGenders: { type: DataTypes.ARRAY(DataTypes.STRING), allowNull: true },
   fabrics: { type: DataTypes.ARRAY(DataTypes.STRING), allowNull: true },
@@ -45,8 +48,14 @@ const products = sequelize.define("products", {
       "standard"
     ),
     allowNull: true,
-    defaultValue: "Standard",
+    defaultValue: "standard",
   },
+  hasCOD: { type: DataTypes.BOOLEAN, allowNull: false },
+  hasExchange: { type: DataTypes.BOOLEAN, allowNull: false },
+  exchangeDays: { type: DataTypes.INTEGER, allowNull: false },
+  manufacturingAmount: { type: DataTypes.FLOAT, allowNull: false },
+  sellingAmount: { type: DataTypes.FLOAT, allowNull: false },
+  netAmount: { type: DataTypes.FLOAT, allowNull: false },
 });
 
 products.belongsTo(brands, { foreignKey: "brandId" });

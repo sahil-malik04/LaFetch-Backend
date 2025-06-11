@@ -12,6 +12,10 @@ const user_addresses = sequelize.define("user_addresses", {
     type: DataTypes.INTEGER,
     allowNull: false,
   },
+  cityId: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+  },
   line1: {
     type: DataTypes.STRING,
     allowNull: false,
@@ -19,18 +23,6 @@ const user_addresses = sequelize.define("user_addresses", {
   line2: {
     type: DataTypes.STRING,
     allowNull: true,
-  },
-  city: {
-    type: DataTypes.STRING,
-    allowNull: false,
-  },
-  state: {
-    type: DataTypes.STRING,
-    allowNull: false,
-  },
-  country: {
-    type: DataTypes.STRING,
-    allowNull: false,
   },
   postalCode: {
     type: DataTypes.STRING,

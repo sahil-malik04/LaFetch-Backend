@@ -23,6 +23,10 @@ const brands = sequelize.define("brands", {
     type: DataTypes.STRING,
     allowNull: false,
   },
+  commission: {
+    type: DataTypes.FLOAT,
+    allowNull: true,
+  },
   isFeatured: {
     type: DataTypes.BOOLEAN,
     defaultValue: false,

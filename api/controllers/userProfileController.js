@@ -4,12 +4,23 @@ const {
   getAddressUser,
   updateAddressUser,
   deleteAddressUser,
+  fetchLocationsUser,
 } = require("../services/userProfileServices");
 
 const getUserProfile = async (req, res) => {
   try {
     const payload = req.params;
     const result = await getUserProfileService(payload);
+    res.status(result.status).json(result);
+  } catch (err) {
+    res.status(err?.status).json(err);
+  }
+};
+
+const fetchLocations = async (req, res) => {
+  try {
+    const query = req.query;
+    const result = await fetchLocationsUser(query);
     res.status(result.status).json(result);
   } catch (err) {
     res.status(err?.status).json(err);
@@ -58,8 +69,9 @@ const deleteAddress = async (req, res) => {
 
 module.exports = {
   getUserProfile,
+  fetchLocations,
   addAddress,
   getAddress,
   updateAddress,
-  deleteAddress
+  deleteAddress,
 };

@@ -19,7 +19,7 @@ app.use("/api", routes);
 
 cron.schedule('* * * * *', async () => {
   try {
-    console.log(`🕒 Task running at ${new Date().toISOString()}`);
+    console.log(`Task running at ${new Date().toISOString()}`);
     // const result = await syncShopifyProducts();
     // console.log('Sync completed:', result);
   } catch (error) {

@@ -6,10 +6,12 @@ const {
   getAddress,
   updateAddress,
   deleteAddress,
+  fetchLocations,
 } = require("../controllers/userProfileController");
 const { isAuthorized } = require("../middleware/authMiddleware");
 
 router.get("/user-profile/:userId", isAuthorized, getUserProfile);
+router.get("/", fetchLocations);
 // address
 router.post("/address", isAuthorized, addAddress);
 router.get("/addresses/:userId", isAuthorized, getAddress);

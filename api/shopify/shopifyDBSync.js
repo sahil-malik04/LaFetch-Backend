@@ -41,6 +41,13 @@ async function syncShopifyProducts() {
         fabrics: fabricOptions,
         colorPatterns: colorOptions,
 
+        hasCOD: true,
+        hasExchange: true,
+        exchangeDays: 2,
+        manufacturingAmount: 10.6,
+        sellingAmount: 12.5,
+        netAmount: 9.0,
+
         brandId: 1,
         categoryId: 1,
         warehouseId: null,

@@ -50,12 +50,12 @@ const signUpSendOtpUser = async (payload) => {
           const code = getRandomNumber(otpStartRange, otpEndRange);
           const data = {
             sentOtp: code,
-            role: ROLES.USER,
+            roleId: ROLES.USER,
             updatedAt: new Date(),
           };
-          const isMessageSent = await sendCodeInNumber(code, phone);
+          // const isMessageSent = await sendCodeInNumber(code, phone);
 
-          if (isMessageSent?.code === 200) {
+          // if (isMessageSent?.code === 200) {
             const isPhoneExist = await users.findOne({
               where: {
                 phone,
@@ -80,7 +80,7 @@ const signUpSendOtpUser = async (payload) => {
                 );
               }
             }
-          }
+          // }
         }
       }
     }

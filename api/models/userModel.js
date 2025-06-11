@@ -1,5 +1,6 @@
 const { DataTypes } = require("sequelize");
 const { sequelize } = require("../db/dbConfig.js");
+const roles = require("./roleModel.js");
 
 const users = sequelize.define("users", {
   id: {
@@ -36,14 +37,7 @@ const users = sequelize.define("users", {
     type: DataTypes.INTEGER,
     allowNull: true,
   },
-  role: {
-    type: DataTypes.STRING,
-    allowNull: false,
-  },
-  permissions: {
-    type: DataTypes.ARRAY(DataTypes.STRING),
-    allowNull: true,
-  },
+
   isLoggedIn: {
     type: DataTypes.BOOLEAN,
     allowNull: false,
@@ -63,7 +57,13 @@ const users = sequelize.define("users", {
     allowNull: false,
     defaultValue: false,
   },
+  roleId: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+  },
 });
+
+users.belongsTo(roles, { foreignKey: "brandId" });
 
 // sequelize
 //   .sync({ force: false })

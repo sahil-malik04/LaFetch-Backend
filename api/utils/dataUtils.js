@@ -19,7 +19,7 @@ export const responseMessages = {
 };
 
 export const ROLES = Object.freeze({
-  ADMIN: "ADMIN",
-  USER: "USER",
-  VENDOR: "VENDOR",
+  ADMIN: 1,
+  USER: 3,
+  VENDOR: 2,
 });
