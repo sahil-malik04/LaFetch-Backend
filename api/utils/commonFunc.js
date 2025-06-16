@@ -1,4 +1,5 @@
 const jwt = require("jsonwebtoken");
+const CryptoJS = require("crypto-js");
 // Function to get random number
 const getRandomNumber = (start, end) => {
   try {
@@ -10,11 +11,11 @@ const getRandomNumber = (start, end) => {
 };
 
 const generateToken = (data, expiresIn) => {
-  const token = jwt.sign(data, process.env.TOKEN_SECRET, {
-    expiresIn,
-  });
+  const options = expiresIn ? { expiresIn } : {};
+  const token = jwt.sign(data, process.env.TOKEN_SECRET, options);
   return token;
 };
+
 
 const verifyToken = (token) => {
   try {
@@ -25,8 +26,15 @@ const verifyToken = (token) => {
   }
 };
 
+const decryptText = (ciphertext) => {
+  const bytes = CryptoJS.AES.decrypt(ciphertext, process.env.CRYPT_SECRET);
+  const originalText = bytes.toString(CryptoJS.enc.Utf8);
+  return originalText;
+};
+
 module.exports = {
   getRandomNumber,
   generateToken,
   verifyToken,
+  decryptText
 };

@@ -22,7 +22,7 @@ const getBrandsUser = async (query) => {
   }
 };
 
-const getProductsByBrandUser = async (params) => {
+const viewBrandUser = async (params) => {
   try {
     const brandInfo = await brands.findOne({
       where: { id: params?.brandId },
@@ -46,5 +46,5 @@ const getProductsByBrandUser = async (params) => {
 
 module.exports = {
   getBrandsUser,
-  getProductsByBrandUser,
+  viewBrandUser,
 };

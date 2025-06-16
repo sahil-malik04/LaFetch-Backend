@@ -1,8 +1,4 @@
-const {
-  getBrandsUser,
-  getBrandByIdUser,
-  getProductsByBrandUser,
-} = require("../services/brandServices");
+const { getBrandsUser, viewBrandUser } = require("../services/brandServices");
 
 const getBrands = async (req, res) => {
   try {
@@ -14,10 +10,10 @@ const getBrands = async (req, res) => {
   }
 };
 
-const getProductsByBrand = async (req, res) => {
+const viewBrand = async (req, res) => {
   try {
     const params = req.params;
-    const result = await getProductsByBrandUser(params);
+    const result = await viewBrandUser(params);
     res.status(result.status).json(result);
   } catch (err) {
     res.status(err?.status).json(err);
@@ -26,5 +22,5 @@ const getProductsByBrand = async (req, res) => {
 
 module.exports = {
   getBrands,
-  getProductsByBrand,
+  viewBrand,
 };

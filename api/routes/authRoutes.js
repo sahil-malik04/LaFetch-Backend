@@ -9,6 +9,7 @@ const {
   deleteAccount,
   signOut,
   refreshToken,
+  signIn,
 } = require("../controllers/authController");
 const { isAuthorized } = require("../middleware/authMiddleware");
 
@@ -17,6 +18,9 @@ router.post("/sign-up-send-otp", signUpSendOtp);
 router.post("/verify-otp", verifyOtp);
 router.post("/resend-otp", resendOtp);
 router.put("/update-user-profile", updateUserProfile);
+
+// admin-sign-in
+router.post("/sign-in", signIn);
 
 // sign-in
 router.post("/sign-in-send-otp", signInSendOtp);

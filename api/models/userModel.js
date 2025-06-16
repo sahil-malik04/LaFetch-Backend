@@ -63,10 +63,10 @@ const users = sequelize.define("users", {
   },
 });
 
-users.belongsTo(roles, { foreignKey: "brandId" });
+users.belongsTo(roles, { foreignKey: "roleId" });
 
 // sequelize
-//   .sync({ force: false })
+//   .sync({ force: true })
 //   .then(() => {
 //     console.log("user table created successfully.");
 //   })

@@ -3,6 +3,7 @@ const {
   getRandomNumber,
   generateToken,
   verifyToken,
+  decryptText,
 } = require("../utils/commonFunc");
 const {
   otpStartRange,
@@ -56,30 +57,30 @@ const signUpSendOtpUser = async (payload) => {
           // const isMessageSent = await sendCodeInNumber(code, phone);
 
           // if (isMessageSent?.code === 200) {
-            const isPhoneExist = await users.findOne({
-              where: {
-                phone,
-              },
-            });
-            if (isPhoneExist) {
-              const updateUser = await isPhoneExist.update(data);
-              if (updateUser) {
-                return successResponse(
-                  statusCode.SUCCESS.OK,
-                  responseMessages.OTP_SENT
-                );
-              }
-            } else {
-              data.phone = phone;
-
-              const createUser = await users.create(data);
-              if (createUser) {
-                return successResponse(
-                  statusCode.SUCCESS.OK,
-                  responseMessages.OTP_SENT
-                );
-              }
+          const isPhoneExist = await users.findOne({
+            where: {
+              phone,
+            },
+          });
+          if (isPhoneExist) {
+            const updateUser = await isPhoneExist.update(data);
+            if (updateUser) {
+              return successResponse(
+                statusCode.SUCCESS.OK,
+                responseMessages.OTP_SENT
+              );
             }
+          } else {
+            data.phone = phone;
+
+            const createUser = await users.create(data);
+            if (createUser) {
+              return successResponse(
+                statusCode.SUCCESS.OK,
+                responseMessages.OTP_SENT
+              );
+            }
+          }
           // }
         }
       }
@@ -297,6 +298,57 @@ const updateUserProfileService = async (payload) => {
   }
 };
 
+const signInUser = async (payload) => {
+  try {
+    const { email, password } = payload;
+    const isEmailExist = await users.findOne({
+      where: {
+        email,
+      },
+    });
+
+    if (isEmailExist) {
+      const decryptUserPassword = decryptText(password);
+      const decryptDBPassword = decryptText(isEmailExist?.password);
+      if (decryptUserPassword === decryptDBPassword) {
+        const updateUser = await isEmailExist.update({
+          isLoggedIn: true,
+          updatedAt: new Date(),
+        });
+        if (updateUser) {
+          const data = {
+            fullName: isEmailExist?.fullName,
+            email: isEmailExist?.email,
+            roleId: isEmailExist?.roleId,
+            permissions: isEmailExist?.permissions,
+          };
+          const generateTokenResult = generateToken(data, "");
+          if (generateTokenResult) {
+            data.token = generateTokenResult;
+          }
+
+          return successResponse(statusCode.SUCCESS.OK, "Success!", data);
+        }
+      } else {
+        return rejectResponse(
+          statusCode.CLIENT_ERROR.UNAUTHORIZED,
+          "Incorrect password! Please try again"
+        );
+      }
+    } else {
+      return rejectResponse(
+        statusCode.CLIENT_ERROR.NOT_FOUND,
+        "Email doesn't exist!"
+      );
+    }
+  } catch (err) {
+    throw rejectResponse(
+      statusCode.SERVER_ERROR.INTERNAL_SERVER_ERROR,
+      err?.message
+    );
+  }
+};
+
 const signInSendOtpUser = async (payload) => {
   try {
     const { phone } = payload;
@@ -476,6 +528,7 @@ const refreshTokenUser = async (payload) => {
 
 module.exports = {
   signUpSendOtpUser,
+  signInUser,
   verifyOtpUser,
   resendOtpUser,
   updateUserProfileService,
