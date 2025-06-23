@@ -54,34 +54,34 @@ const signUpSendOtpUser = async (payload) => {
             roleId: ROLES.USER,
             updatedAt: new Date(),
           };
-          // const isMessageSent = await sendCodeInNumber(code, phone);
+          const isMessageSent = await sendCodeInNumber(code, phone);
 
-          // if (isMessageSent?.code === 200) {
-          const isPhoneExist = await users.findOne({
-            where: {
-              phone,
-            },
-          });
-          if (isPhoneExist) {
-            const updateUser = await isPhoneExist.update(data);
-            if (updateUser) {
-              return successResponse(
-                statusCode.SUCCESS.OK,
-                responseMessages.OTP_SENT
-              );
-            }
-          } else {
-            data.phone = phone;
+          if (isMessageSent?.code === 200) {
+            const isPhoneExist = await users.findOne({
+              where: {
+                phone,
+              },
+            });
+            if (isPhoneExist) {
+              const updateUser = await isPhoneExist.update(data);
+              if (updateUser) {
+                return successResponse(
+                  statusCode.SUCCESS.OK,
+                  responseMessages.OTP_SENT
+                );
+              }
+            } else {
+              data.phone = phone;
 
-            const createUser = await users.create(data);
-            if (createUser) {
-              return successResponse(
-                statusCode.SUCCESS.OK,
-                responseMessages.OTP_SENT
-              );
+              const createUser = await users.create(data);
+              if (createUser) {
+                return successResponse(
+                  statusCode.SUCCESS.OK,
+                  responseMessages.OTP_SENT
+                );
+              }
             }
           }
-          // }
         }
       }
     }
@@ -127,7 +127,7 @@ const verifyOtpUser = async (payload) => {
                 email: isPhoneExist?.email,
                 phone: isPhoneExist?.phone,
               };
-              const generateTokenResult = generateToken(tokenData, "1h");
+              const generateTokenResult = generateToken(tokenData);
               const generateRefreshTokenResult = generateToken(tokenData, "7d");
               if (generateToken) tokenData.token = generateTokenResult;
               if (generateRefreshTokenResult) {
@@ -258,7 +258,7 @@ const updateUserProfileService = async (payload) => {
                 email: updateUser?.email,
                 phone: updateUser?.phone,
               };
-              const generateTokenResult = generateToken(tokenData, "1h");
+              const generateTokenResult = generateToken(tokenData);
               const generateRefreshTokenResult = generateToken(tokenData, "7d");
               if (generateTokenResult) tokenData.token = generateTokenResult;
               if (generateRefreshTokenResult) {
@@ -501,7 +501,7 @@ const refreshTokenUser = async (payload) => {
       email: findUser?.email,
       phone: findUser?.phone,
     };
-    const generateTokenResult = generateToken(tokenData, "1h");
+    const generateTokenResult = generateToken(tokenData);
     const generateRefreshTokenResult = generateToken(tokenData, "7d");
     if (generateToken) tokenData.token = generateTokenResult;
     if (generateRefreshTokenResult) {
