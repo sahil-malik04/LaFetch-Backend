@@ -2,7 +2,7 @@ const { DataTypes } = require("sequelize");
 const { sequelize } = require("../db/dbConfig.js");
 const users = require("./userModel.js");
 const products = require("./productsModel.js");
-const wishlistBoards = require("./wishlistBoards.js");
+const wishlistBoards = require("./wishlistBoardsModel.js");
 
 const wishlist = sequelize.define("wishlist", {
   id: { type: DataTypes.INTEGER, autoIncrement: true, primaryKey: true },

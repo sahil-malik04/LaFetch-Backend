@@ -3,9 +3,6 @@ const { statusCode } = require("../utils/statusCode");
 const { successResponse, rejectResponse } = require("../utils/response");
 const { responseMessages } = require("../utils/dataUtils");
 const user_addresses = require("../models/userAddressesModel");
-const countries = require("../models/countryModel");
-const states = require("../models/stateModel");
-const cities = require("../models/citiesModel");
 
 const getUserProfileService = async (payload) => {
   try {
@@ -21,39 +18,6 @@ const getUserProfileService = async (payload) => {
       return rejectResponse(
         statusCode.CLIENT_ERROR.NOT_FOUND,
         responseMessages.USER_NOT_EXIST
-      );
-    }
-  } catch (err) {
-    throw rejectResponse(
-      statusCode.SERVER_ERROR.INTERNAL_SERVER_ERROR,
-      err?.message
-    );
-  }
-};
-
-const fetchLocationsUser = async (query) => {
-  try {
-    const locationModels = {
-      countries,
-      states,
-      cities,
-    };
-    const dataToFetch = locationModels[query.fetch];
-
-    if (dataToFetch) {
-      const result = await dataToFetch.findAll();
-      if (result) {
-        return successResponse(statusCode.SUCCESS.OK, "Success!", result);
-      } else {
-        return rejectResponse(
-          statusCode.CLIENT_ERROR.NOT_FOUND,
-          responseMessages.USER_NOT_EXIST
-        );
-      }
-    } else {
-      return rejectResponse(
-        statusCode.CLIENT_ERROR.BAD_REQUEST,
-        "Invalid fetch type!"
       );
     }
   } catch (err) {
@@ -199,7 +163,6 @@ const deleteAddressUser = async (payload) => {
 
 module.exports = {
   getUserProfileService,
-  fetchLocationsUser,
   addAddressUser,
   getAddressUser,
   updateAddressUser,

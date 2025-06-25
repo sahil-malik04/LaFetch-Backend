@@ -12,14 +12,23 @@ const category = sequelize.define("category", {
     allowNull: false,
     unique: true,
   },
-  parentId: {
-    type: DataTypes.INTEGER,
-    allowNull: true,
-  },
   slug: {
     type: DataTypes.STRING,
     allowNull: true,
     unique: true,
+  },
+  parentId: {
+    type: DataTypes.INTEGER,
+    allowNull: true,
+  },
+  type: {
+    type: DataTypes.ENUM("super", "category", "sub"),
+    allowNull: false,
+    defaultValue: "category",
+  },
+  genderType: {
+    type: DataTypes.ENUM("men", "women", "accessories"),
+    allowNull: false,
   },
   image: {
     type: DataTypes.STRING,

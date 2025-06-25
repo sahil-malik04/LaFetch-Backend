@@ -8,18 +8,30 @@ const warehouse = require("../models/warehouseModel");
 const { responseMessages } = require("../utils/dataUtils");
 const banners = require("../models/bannerModel");
 const productVariants = require("../models/productVariantModel");
+const { Op } = require("sequelize");
+const { identifyGender } = require("../utils/commonFunc");
 
-const getProductsUser = async (params) => {
+// products
+const getProductsUser = async (query) => {
   try {
-    const categoryId = params?.categoryId;
-    const collectionType = params.collectionType;
+    const genderParam = query.gender;
+    const collectionType = query.collectionType;
 
     const whereClause = {
       status: "ACTIVE",
     };
-
-    if (categoryId) {
-      whereClause.categoryId = categoryId;
+    let genderFilter;
+    if (genderParam === "1") {
+      genderFilter = "Male";
+    } else if (genderParam === "2") {
+      genderFilter = "Female";
+    } else if (genderParam === "3") {
+      genderFilter = "Accessories";
+    }
+    if (genderFilter) {
+      whereClause.targetGenders = {
+        [Op.eq]: [genderFilter],
+      };
     }
     if (collectionType) {
       whereClause.collectionType = collectionType;
@@ -80,9 +92,67 @@ const getProductByIdUser = async (params) => {
   }
 };
 
-const getBannersUser = async () => {
+const updateProductUser = async (params, body) => {
   try {
-    const result = await banners.findAll();
+    const isProductExist = await products.findOne({
+      where: {
+        id: params?.productId,
+      },
+    });
+    if (isProductExist) {
+      const data = {
+        type: body?.type,
+        title: body?.title,
+        description: body?.description,
+        tags: body?.tags,
+
+        categoryId: body?.categoryId,
+        brandId: body?.brandId,
+        warehouseId: body?.warehouseId,
+
+        seoTitle: body?.seoTitle,
+        seoDescription: body?.seoDescription,
+
+        targetGenders: body?.targetGenders,
+        fabrics: body?.fabrics,
+        colorPatterns: body?.colorPatterns,
+
+        hasCOD: body?.hasCOD,
+        hasExchange: body?.hasExchange,
+        exchangeDays: body?.exchangeDays,
+        manufacturingAmount: body?.manufacturingAmount,
+        sellingAmount: body?.sellingAmount,
+        netAmount: body?.netAmount,
+      };
+      const result = await isProductExist.update(data);
+      return successResponse(statusCode.SUCCESS.OK, "Success!", result);
+    } else {
+      return rejectResponse(
+        statusCode.CLIENT_ERROR.NOT_FOUND,
+        responseMessages.PRODUCT_NOT_EXIST
+      );
+    }
+  } catch (err) {
+    throw rejectResponse(
+      statusCode.SERVER_ERROR.INTERNAL_SERVER_ERROR,
+      err?.message
+    );
+  }
+};
+
+// banner
+const getBannersUser = async (query) => {
+  try {
+    const genderParam = query.gender;
+
+    const genderFilter = identifyGender(genderParam);
+    let whereClause = {};
+    if (genderFilter) {
+      whereClause.genderType = genderFilter;
+    }
+    const result = await banners.findAll({
+      where: whereClause,
+    });
     return successResponse(statusCode.SUCCESS.OK, "Success!", result);
   } catch (err) {
     throw rejectResponse(
@@ -94,10 +164,12 @@ const getBannersUser = async () => {
 
 const addBannerUser = async (payload) => {
   try {
-    const { image, title } = payload;
+    const { image, title, genderType, brandId } = payload;
     const data = {
       image,
       title,
+      genderType,
+      brandId,
     };
     const result = await banners.create(data);
     return successResponse(statusCode.SUCCESS.CREATED, "Success!", result);
@@ -162,9 +234,18 @@ const deleteBannerUser = async (params) => {
   }
 };
 
-const getCategoriesUser = async () => {
+const getCategoriesUser = async (query) => {
   try {
-    const result = await category.findAll();
+    const genderParam = query.gender;
+
+    const genderFilter = identifyGender(genderParam);
+    let whereClause = {};
+    if (genderFilter) {
+      whereClause.genderType = genderFilter;
+    }
+    const result = await category.findAll({
+      where: whereClause,
+    });
     return successResponse(statusCode.SUCCESS.OK, "Success!", result);
   } catch (err) {
     throw rejectResponse(
@@ -177,6 +258,7 @@ const getCategoriesUser = async () => {
 module.exports = {
   getProductsUser,
   getProductByIdUser,
+  updateProductUser,
   getBannersUser,
   addBannerUser,
   updateBannerUser,

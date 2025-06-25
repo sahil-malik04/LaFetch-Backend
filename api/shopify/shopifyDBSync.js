@@ -48,9 +48,6 @@ async function syncShopifyProducts() {
         sellingAmount: 12.5,
         netAmount: 9.0,
 
-        brandId: 1,
-        categoryId: 1,
-        warehouseId: null,
       };
 
       const createdProduct = await products.create(productPayload);

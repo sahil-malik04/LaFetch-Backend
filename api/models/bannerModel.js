@@ -1,5 +1,6 @@
 const { DataTypes } = require("sequelize");
 const { sequelize } = require("../db/dbConfig.js");
+const brands = require("./brandsModel.js");
 
 const banners = sequelize.define("banners", {
   id: {
@@ -15,7 +16,22 @@ const banners = sequelize.define("banners", {
     type: DataTypes.STRING,
     allowNull: true,
   },
+  genderType: {
+    type: DataTypes.ENUM("men", "women", "accessories"),
+    allowNull: false,
+  },
+  brandId: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+  },
+  isActive: {
+    type: DataTypes.BOOLEAN,
+    defaultValue: true,
+    allowNull: false,
+  },
 });
+
+banners.belongsTo(brands, { foreignKey: "brandId" });
 
 // sequelize
 //   .sync({ force: false })

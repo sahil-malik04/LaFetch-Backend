@@ -9,10 +9,12 @@ const {
   updateBanner,
   deleteBanner,
   getCategories,
+  updateProduct,
 } = require("../controllers/productController");
 
 router.get("/products", getProducts);
 router.get("/product/:productId", getProductById);
+router.put("/product/:productId", updateProduct);
 
 // banner routes
 router.get("/banners", getBanners);

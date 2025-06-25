@@ -37,6 +37,7 @@ const renameBoard = async (req, res) => {
     res.status(err?.status).json(err);
   }
 };
+
 const getWishlist = async (req, res) => {
   try {
     const payload = req.params;

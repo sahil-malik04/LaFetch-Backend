@@ -3,7 +3,7 @@ const { successResponse, rejectResponse } = require("../utils/response");
 const { responseMessages } = require("../utils/dataUtils");
 const wishlist = require("../models/wishlistModel");
 const products = require("../models/productsModel");
-const wishlistBoards = require("../models/wishlistBoards");
+const wishlistBoards = require("../models/wishlistBoardsModel");
 
 const addWishlistBoardUser = async (payload) => {
   try {

@@ -16,7 +16,6 @@ const generateToken = (data, expiresIn) => {
   return token;
 };
 
-
 const verifyToken = (token) => {
   try {
     const decoded = jwt.verify(token, process.env.TOKEN_SECRET);
@@ -32,9 +31,22 @@ const decryptText = (ciphertext) => {
   return originalText;
 };
 
+const identifyGender = (genderParam) => {
+  let genderFilter;
+  if (genderParam === "1") {
+    genderFilter = "men";
+  } else if (genderParam === "2") {
+    genderFilter = "women";
+  } else if (genderParam === "3") {
+    genderFilter = "accessories";
+  }
+  return genderFilter;
+};
+
 module.exports = {
   getRandomNumber,
   generateToken,
   verifyToken,
-  decryptText
+  decryptText,
+  identifyGender
 };

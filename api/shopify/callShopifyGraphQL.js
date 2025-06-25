@@ -4,10 +4,19 @@ const SHOPIFY_API_URL =
   "https://backend-testbuild-store.myshopify.com/admin/api/2025-04/graphql.json";
 const ACCESS_TOKEN = "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";
 
-const fetchProductQuery = `{
-  products(first: 3) {
-    edges {
-      node {
+const fetchProductQuery = `
+    {
+      locations(first: 10) {
+        edges {
+          node {
+            id
+            name
+          }
+        }
+      }
+      products(first: 10) {
+        edges {
+          node {
         id
         title
         handle
@@ -21,7 +30,7 @@ const fetchProductQuery = `{
         createdAt
         updatedAt
         publishedAt
-        metafield(namespace: "shopify", key: "target-gender") {
+                metafield(namespace: "shopify", key: "target-gender") {
           type
           references(first: 10) {
             edges {
@@ -38,7 +47,7 @@ const fetchProductQuery = `{
             }
           }
         }
-        seo {
+                seo {
           title
           description
         }
@@ -47,27 +56,37 @@ const fetchProductQuery = `{
           name
           values
         }
-        variants(first: 10) {
-          edges {
-            node {
-              id
+            variants(first: 10) {
+              edges {
+                node {
+                             id
               title
               sku
               price
               compareAtPrice
               inventoryQuantity
-              inventoryItem {
-                id
-                tracked
-              }
-              selectedOptions {
+                  inventoryItem {
+                    id
+                    inventoryLevels(first: 10) {
+                      edges {
+                        node {
+                          
+                          location {
+                            id
+                            name
+                          }
+                        }
+                      }
+                    }
+                  }
+                        selectedOptions {
                 name
                 value
               }
+                }
+              }
             }
-          }
-        }
-        images(first: 10) {
+                     images(first: 10) {
           edges {
             node {
               id
@@ -78,11 +97,11 @@ const fetchProductQuery = `{
             }
           }
         }
+          }
+        }
       }
     }
-  }
-}
-`;
+  `;
 
 async function callShopifyGraphQL() {
   try {
