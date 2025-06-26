@@ -1,7 +1,7 @@
-export const otpStartRange = 1000;
-export const otpEndRange = 9999;
+const otpStartRange = 1000;
+const otpEndRange = 9999;
 
-export const responseMessages = {
+const responseMessages = {
   ACCOUNT_DELETED:
     "Access denied. Your account is no longer active. Please reach out to the administrator for support.",
   PHONE_NOT_EXIST:
@@ -18,8 +18,15 @@ export const responseMessages = {
   BANNER_NOT_EXIST: "Banner Doesn't Exist!",
 };
 
-export const ROLES = Object.freeze({
+const ROLES = Object.freeze({
   ADMIN: 1,
   USER: 3,
   VENDOR: 2,
 });
+
+module.exports = {
+  otpStartRange,
+  otpEndRange,
+  responseMessages,
+  ROLES,
+};
