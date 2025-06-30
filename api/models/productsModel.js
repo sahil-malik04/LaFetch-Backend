@@ -64,13 +64,13 @@ products.belongsTo(brands, { foreignKey: "brandId" });
 products.belongsTo(category, { foreignKey: "superCatId" });
 products.belongsTo(warehouse, { foreignKey: "warehouseId" });
 
-sequelize
-  .sync({ force: true })
-  .then(() => {
-    console.log("products table created successfully.");
-  })
-  .catch((err) => {
-    console.error("Error creating table:", err);
-  });
+// sequelize
+//   .sync({ force: true })
+//   .then(() => {
+//     console.log("products table created successfully.");
+//   })
+//   .catch((err) => {
+//     console.error("Error creating table:", err);
+//   });
 
 module.exports = products;
