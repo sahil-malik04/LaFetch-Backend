@@ -5,7 +5,6 @@ const {
   addBannerUser,
   updateBannerUser,
   deleteBannerUser,
-  getCategoriesUser,
   updateProductUser,
 } = require("../services/productServices");
 
@@ -81,16 +80,6 @@ const deleteBanner = async (req, res) => {
   }
 };
 
-const getCategories = async (req, res) => {
-  try {
-    const query = req.query
-    const result = await getCategoriesUser(query);
-    res.status(result.status).json(result);
-  } catch (err) {
-    res.status(err?.status).json(err);
-  }
-};
-
 module.exports = {
   getProducts,
   getProductById,
@@ -99,5 +88,4 @@ module.exports = {
   addBanner,
   updateBanner,
   deleteBanner,
-  getCategories,
 };

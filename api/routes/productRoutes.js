@@ -8,7 +8,6 @@ const {
   addBanner,
   updateBanner,
   deleteBanner,
-  getCategories,
   updateProduct,
 } = require("../controllers/productController");
 
@@ -21,8 +20,5 @@ router.get("/banners", getBanners);
 router.post("/banner", addBanner);
 router.put("/banner/:bannerId", updateBanner);
 router.delete("/banner/:bannerId", deleteBanner);
-
-// categories routes
-router.get("/categories", getCategories);
 
 module.exports = router;

@@ -10,6 +10,7 @@ const reviewRoutes = require("./reviewRoutes");
 const taxesRoutes = require("./taxesRoutes");
 const locationRoutes = require("./locationRoutes");
 const returnPolicyRoutes = require("./returnPolicyRoutes");
+const categoryRoutes = require("./categoryRoutes");
 
 router.get("/", (req, res) => {
   res.send("Welcome to la-fetch backend");
@@ -24,5 +25,6 @@ router.use("/", reviewRoutes);
 router.use("/", taxesRoutes);
 router.use("/location", locationRoutes);
 router.use("/", returnPolicyRoutes);
+router.use("/", categoryRoutes);
 
 module.exports = router;

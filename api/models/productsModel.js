@@ -13,7 +13,9 @@ const products = sequelize.define("products", {
   description: { type: DataTypes.TEXT, allowNull: true },
   slug: { type: DataTypes.STRING, allowNull: true },
 
-  categoryId: { type: DataTypes.INTEGER, allowNull: true },
+  superCatId: { type: DataTypes.INTEGER, allowNull: true },
+  catId: { type: DataTypes.INTEGER, allowNull: true },
+  subCatId: { type: DataTypes.INTEGER, allowNull: true },
   brandId: { type: DataTypes.INTEGER, allowNull: true },
   warehouseId: { type: DataTypes.INTEGER, allowNull: true },
 
@@ -59,7 +61,7 @@ const products = sequelize.define("products", {
 });
 
 products.belongsTo(brands, { foreignKey: "brandId" });
-products.belongsTo(category, { foreignKey: "categoryId" });
+products.belongsTo(category, { foreignKey: "superCatId" });
 products.belongsTo(warehouse, { foreignKey: "warehouseId" });
 
 // sequelize

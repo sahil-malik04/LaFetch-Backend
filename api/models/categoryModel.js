@@ -26,10 +26,6 @@ const category = sequelize.define("category", {
     allowNull: false,
     defaultValue: "category",
   },
-  genderType: {
-    type: DataTypes.ENUM("men", "women", "accessories"),
-    allowNull: false,
-  },
   image: {
     type: DataTypes.STRING,
     allowNull: true,
@@ -39,5 +35,14 @@ const category = sequelize.define("category", {
     allowNull: true,
   },
 });
+
+// sequelize
+//   .sync({ force: true })
+//   .then(() => {
+//     console.log("category table created successfully.");
+//   })
+//   .catch((err) => {
+//     console.error("Error creating table:", err);
+//   });
 
 module.exports = category;

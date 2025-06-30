@@ -1,40 +1,28 @@
 const { successResponse, rejectResponse } = require("../utils/response");
 const { statusCode } = require("../utils/statusCode");
 const products = require("../models/productsModel");
-const { syncShopifyProducts } = require("../shopify/shopifyDBSync");
 const brands = require("../models/brandsModel");
 const category = require("../models/categoryModel");
 const warehouse = require("../models/warehouseModel");
 const { responseMessages } = require("../utils/dataUtils");
 const banners = require("../models/bannerModel");
 const productVariants = require("../models/productVariantModel");
-const { Op } = require("sequelize");
-const { identifyGender } = require("../utils/commonFunc");
 
 // products
 const getProductsUser = async (query) => {
   try {
-    const genderParam = query.gender;
+    const genderParam = Number(query.gender);
     const collectionType = query.collectionType;
 
     const whereClause = {
       status: "ACTIVE",
     };
-    let genderFilter;
-    if (genderParam === "1") {
-      genderFilter = "Male";
-    } else if (genderParam === "2") {
-      genderFilter = "Female";
-    } else if (genderParam === "3") {
-      genderFilter = "Accessories";
-    }
-    if (genderFilter) {
-      whereClause.targetGenders = {
-        [Op.eq]: [genderFilter],
-      };
-    }
+
     if (collectionType) {
       whereClause.collectionType = collectionType;
+    }
+    if (genderParam) {
+      whereClause.superCatId = genderParam;
     }
 
     const result = await products.findAll({
@@ -106,7 +94,9 @@ const updateProductUser = async (params, body) => {
         description: body?.description,
         tags: body?.tags,
 
-        categoryId: body?.categoryId,
+        superCatId: body?.superCatId,
+        catId: body?.catId,
+        subCatId: body?.subCatId,
         brandId: body?.brandId,
         warehouseId: body?.warehouseId,
 
@@ -143,15 +133,12 @@ const updateProductUser = async (params, body) => {
 // banner
 const getBannersUser = async (query) => {
   try {
-    const genderParam = query.gender;
+    const genderParam = Number(query.gender);
 
-    const genderFilter = identifyGender(genderParam);
-    let whereClause = {};
-    if (genderFilter) {
-      whereClause.genderType = genderFilter;
-    }
     const result = await banners.findAll({
-      where: whereClause,
+      where: {
+        categoryId: genderParam,
+      },
     });
     return successResponse(statusCode.SUCCESS.OK, "Success!", result);
   } catch (err) {
@@ -164,15 +151,22 @@ const getBannersUser = async (query) => {
 
 const addBannerUser = async (payload) => {
   try {
-    const { image, title, genderType, brandId } = payload;
-    const data = {
-      image,
-      title,
-      genderType,
-      brandId,
-    };
-    const result = await banners.create(data);
-    return successResponse(statusCode.SUCCESS.CREATED, "Success!", result);
+    const { image, title, categoryId, brandId } = payload;
+    if (categoryId > 3 || categoryId < 1) {
+      return rejectResponse(
+        statusCode.CLIENT_ERROR.CONFLICT,
+        "Category can be either men, women or accessories"
+      );
+    } else {
+      const data = {
+        image,
+        title,
+        categoryId,
+        brandId,
+      };
+      const result = await banners.create(data);
+      return successResponse(statusCode.SUCCESS.CREATED, "Success!", result);
+    }
   } catch (err) {
     throw rejectResponse(
       statusCode.SERVER_ERROR.INTERNAL_SERVER_ERROR,
@@ -189,13 +183,22 @@ const updateBannerUser = async (params, payload) => {
       },
     });
     if (isBannerExist) {
-      const { image, title } = payload;
-      const data = {
-        image,
-        title,
-      };
-      const result = await isBannerExist.update(data);
-      return successResponse(statusCode.SUCCESS.OK, "Success!", result);
+      const { image, title, categoryId, brandId } = payload;
+      if (categoryId > 3 || categoryId < 1) {
+        return rejectResponse(
+          statusCode.CLIENT_ERROR.CONFLICT,
+          "Category can be either men, women or accessories"
+        );
+      } else {
+        const data = {
+          image,
+          title,
+          categoryId,
+          brandId,
+        };
+        const result = await isBannerExist.update(data);
+        return successResponse(statusCode.SUCCESS.OK, "Success!", result);
+      }
     } else {
       return rejectResponse(
         statusCode.CLIENT_ERROR.NOT_FOUND,
@@ -234,27 +237,6 @@ const deleteBannerUser = async (params) => {
   }
 };
 
-const getCategoriesUser = async (query) => {
-  try {
-    const genderParam = query.gender;
-
-    const genderFilter = identifyGender(genderParam);
-    let whereClause = {};
-    if (genderFilter) {
-      whereClause.genderType = genderFilter;
-    }
-    const result = await category.findAll({
-      where: whereClause,
-    });
-    return successResponse(statusCode.SUCCESS.OK, "Success!", result);
-  } catch (err) {
-    throw rejectResponse(
-      statusCode.SERVER_ERROR.INTERNAL_SERVER_ERROR,
-      err?.message
-    );
-  }
-};
-
 module.exports = {
   getProductsUser,
   getProductByIdUser,
@@ -263,5 +245,4 @@ module.exports = {
   addBannerUser,
   updateBannerUser,
   deleteBannerUser,
-  getCategoriesUser,
 };

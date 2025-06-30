@@ -1,6 +1,7 @@
 const { DataTypes } = require("sequelize");
 const { sequelize } = require("../db/dbConfig.js");
 const brands = require("./brandsModel.js");
+const category = require("./categoryModel.js");
 
 const banners = sequelize.define("banners", {
   id: {
@@ -16,8 +17,8 @@ const banners = sequelize.define("banners", {
     type: DataTypes.STRING,
     allowNull: true,
   },
-  genderType: {
-    type: DataTypes.ENUM("men", "women", "accessories"),
+  categoryId: {
+    type: DataTypes.INTEGER,
     allowNull: false,
   },
   brandId: {
@@ -32,6 +33,7 @@ const banners = sequelize.define("banners", {
 });
 
 banners.belongsTo(brands, { foreignKey: "brandId" });
+banners.belongsTo(category, { foreignKey: "categoryId" });
 
 // sequelize
 //   .sync({ force: false })
