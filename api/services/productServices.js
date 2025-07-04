@@ -133,12 +133,14 @@ const updateProductUser = async (params, body) => {
 // banner
 const getBannersUser = async (query) => {
   try {
-    const genderParam = Number(query.gender);
+    const categoryId = Number(query.gender);
+    const whereClause = {};
 
+    if (!isNaN(categoryId)) {
+      whereClause.categoryId = categoryId;
+    }
     const result = await banners.findAll({
-      where: {
-        categoryId: genderParam,
-      },
+      where: whereClause,
     });
     return successResponse(statusCode.SUCCESS.OK, "Success!", result);
   } catch (err) {

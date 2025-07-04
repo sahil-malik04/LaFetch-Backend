@@ -7,11 +7,18 @@ const getCategoriesUser = async (query) => {
     const gender = Number(query.gender);
     const catType = query.type;
 
+    const whereClause = {};
+
+    if (!isNaN(gender)) {
+      whereClause.parentId = gender;
+    }
+
+    if (catType) {
+      whereClause.type = catType;
+    }
+
     const result = await category.findAll({
-      where: {
-        parentId: gender,
-        type: catType,
-      },
+      where: whereClause,
     });
 
     return successResponse(statusCode.SUCCESS.OK, "Success!", result);
