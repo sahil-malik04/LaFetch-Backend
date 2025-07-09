@@ -3,12 +3,23 @@ const {
   addCategoryUser,
   updateCategoryUser,
   deleteCategoryUser,
+  getCategoryByIdUser,
 } = require("../services/categoryServices");
 
 const getCategories = async (req, res) => {
   try {
     const query = req.query;
     const result = await getCategoriesUser(query);
+    res.status(result.status).json(result);
+  } catch (err) {
+    res.status(err?.status).json(err);
+  }
+};
+
+const getCategoryById = async (req, res) => {
+  try {
+    const params = req.params;
+    const result = await getCategoryByIdUser(params);
     res.status(result.status).json(result);
   } catch (err) {
     res.status(err?.status).json(err);
@@ -48,6 +59,7 @@ const deleteCategory = async (req, res) => {
 
 module.exports = {
   getCategories,
+  getCategoryById,
   addCategory,
   updateCategory,
   deleteCategory,

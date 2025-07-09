@@ -30,6 +30,23 @@ const getCategoriesUser = async (query) => {
   }
 };
 
+const getCategoryByIdUser = async (params) => {
+  try {
+    const result = await category.findOne({
+      where: {
+        id: params?.categoryId,
+      },
+    });
+
+    return successResponse(statusCode.SUCCESS.OK, "Success!", result);
+  } catch (err) {
+    throw rejectResponse(
+      statusCode.SERVER_ERROR.INTERNAL_SERVER_ERROR,
+      err?.message
+    );
+  }
+};
+
 const addCategoryUser = async (payload) => {
   try {
     const data = {
@@ -130,6 +147,7 @@ const deleteCategoryUser = async (params) => {
 
 module.exports = {
   getCategoriesUser,
+  getCategoryByIdUser,
   addCategoryUser,
   updateCategoryUser,
   deleteCategoryUser,

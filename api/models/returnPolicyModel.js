@@ -9,7 +9,7 @@ const returnPolicies = sequelize.define("return_policies", {
   brandId: { type: DataTypes.INTEGER, allowNull: false },
   isActive: {
     type: DataTypes.BOOLEAN,
-    defaultValue: false,
+    defaultValue: true,
   },
 });
 

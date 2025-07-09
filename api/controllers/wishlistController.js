@@ -5,7 +5,19 @@ const {
   addWishlistBoardUser,
   deleteWishlistBoardUser,
   renameBoardUser,
+  getAllWishlistUser,
+  getWishlistBoardsUser,
 } = require("../services/wishlistServices");
+
+const getWishlistBoards = async (req, res) => {
+  try {
+    const params = req.params;
+    const result = await getWishlistBoardsUser(params);
+    res.status(result.status).json(result);
+  } catch (err) {
+    res.status(err?.status).json(err);
+  }
+};
 
 const addWishlistBoard = async (req, res) => {
   try {
@@ -68,11 +80,22 @@ const removeFromWishlist = async (req, res) => {
   }
 };
 
+const getAllWishlist = async (req, res) => {
+  try {
+    const result = await getAllWishlistUser();
+    res.status(result.status).json(result);
+  } catch (err) {
+    res.status(err?.status).json(err);
+  }
+};
+
 module.exports = {
+  getWishlistBoards,
   addWishlistBoard,
   deleteWishlistBoard,
   renameBoard,
   getWishlist,
   addToWishlist,
   removeFromWishlist,
+  getAllWishlist,
 };

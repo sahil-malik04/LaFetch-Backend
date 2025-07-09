@@ -151,6 +151,22 @@ const getBannersUser = async (query) => {
   }
 };
 
+const getBannerByIdUser = async (params) => {
+  try {
+    const result = await banners.findOne({
+      where: {
+        id: params?.bannerId,
+      },
+    });
+    return successResponse(statusCode.SUCCESS.OK, "Success!", result);
+  } catch (err) {
+    throw rejectResponse(
+      statusCode.SERVER_ERROR.INTERNAL_SERVER_ERROR,
+      err?.message
+    );
+  }
+};
+
 const addBannerUser = async (payload) => {
   try {
     const { image, title, categoryId, brandId } = payload;
@@ -244,6 +260,7 @@ module.exports = {
   getProductByIdUser,
   updateProductUser,
   getBannersUser,
+  getBannerByIdUser,
   addBannerUser,
   updateBannerUser,
   deleteBannerUser,

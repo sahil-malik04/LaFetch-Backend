@@ -9,16 +9,18 @@ const {
   updateBanner,
   deleteBanner,
   updateProduct,
+  getBannerById,
 } = require("../controllers/productController");
 
 router.get("/products", getProducts);
 router.get("/product/:productId", getProductById);
-router.put("/product/:productId", updateProduct);
+router.put("/product/:productId", isAuthorized, updateProduct);
 
 // banner routes
 router.get("/banners", getBanners);
-router.post("/banner", addBanner);
-router.put("/banner/:bannerId", updateBanner);
-router.delete("/banner/:bannerId", deleteBanner);
+router.get("/banner/:bannerId", getBannerById);
+router.post("/banner", isAuthorized, addBanner);
+router.put("/banner/:bannerId", isAuthorized, updateBanner);
+router.delete("/banner/:bannerId", isAuthorized, deleteBanner);
 
 module.exports = router;

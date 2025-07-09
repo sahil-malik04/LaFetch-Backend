@@ -4,6 +4,49 @@ const { responseMessages } = require("../utils/dataUtils");
 const wishlist = require("../models/wishlistModel");
 const products = require("../models/productsModel");
 const wishlistBoards = require("../models/wishlistBoardsModel");
+const users = require("../models/userModel");
+const { sequelize } = require("../db/dbConfig");
+
+const getWishlistBoardsUser = async (params) => {
+  try {
+    const result = await wishlistBoards.findAll({
+      where: {
+        userId: params?.userId,
+      },
+      attributes: {
+        include: [
+          [
+            sequelize.fn("COUNT", sequelize.col("wishlists.id")),
+            "productCount",
+          ],
+        ],
+      },
+      include: [
+        {
+          model: wishlist,
+          attributes: [],
+          as: "wishlists",
+          required: false,
+        },
+      ],
+      group: ["wishlist_boards.id"],
+    });
+
+    if (result) {
+      return successResponse(statusCode.SUCCESS.OK, "Success!", result);
+    } else {
+      return rejectResponse(
+        statusCode.CLIENT_ERROR.NOT_FOUND,
+        responseMessages.USER_NOT_EXIST
+      );
+    }
+  } catch (err) {
+    throw rejectResponse(
+      statusCode.SERVER_ERROR.INTERNAL_SERVER_ERROR,
+      err?.message
+    );
+  }
+};
 
 const addWishlistBoardUser = async (payload) => {
   try {
@@ -100,9 +143,9 @@ const getWishlistUser = async (payload) => {
   try {
     const result = await wishlist.findAll({
       where: {
-        userId: payload?.userId,
+        boardId: payload?.boardId,
       },
-      include: [products, wishlistBoards],
+      include: [products],
       attributes: ["id"],
     });
     if (result) {
@@ -171,11 +214,41 @@ const removeFromWishlistUser = async (payload) => {
   }
 };
 
+const getAllWishlistUser = async (payload) => {
+  try {
+    const usersWithBoards = await users.findAll({
+      include: [
+        {
+          model: wishlistBoards,
+          required: true,
+          attributes: [], // exclude board data from the final output
+        },
+      ],
+      attributes: ["id", "fullName", "email", "isActive", "roleId"],
+    });
+
+    if (usersWithBoards) {
+      return successResponse(
+        statusCode.SUCCESS.OK,
+        "Success!",
+        usersWithBoards
+      );
+    }
+  } catch (err) {
+    throw rejectResponse(
+      statusCode.SERVER_ERROR.INTERNAL_SERVER_ERROR,
+      err?.message
+    );
+  }
+};
+
 module.exports = {
+  getWishlistBoardsUser,
   addWishlistBoardUser,
   deleteWishlistBoardUser,
   renameBoardUser,
   getWishlistUser,
   addToWishlistUser,
   removeFromWishlistUser,
+  getAllWishlistUser,
 };

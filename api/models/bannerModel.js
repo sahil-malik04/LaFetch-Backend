@@ -2,6 +2,7 @@ const { DataTypes } = require("sequelize");
 const { sequelize } = require("../db/dbConfig.js");
 const brands = require("./brandsModel.js");
 const category = require("./categoryModel.js");
+const associateWishlistModels = require("./wishlistAssociations.js");
 
 const banners = sequelize.define("banners", {
   id: {
@@ -35,8 +36,10 @@ const banners = sequelize.define("banners", {
 banners.belongsTo(brands, { foreignKey: "brandId" });
 banners.belongsTo(category, { foreignKey: "categoryId" });
 
+associateWishlistModels()
+
 // sequelize
-//   .sync({ force: false })
+//   .sync({ force: true })
 //   .then(() => {
 //     console.log("banners table created successfully.");
 //   })

@@ -9,11 +9,7 @@ const getReturnPoliciesUser = async () => {
         isActive: true,
       },
     });
-    return successResponse(
-      statusCode.SUCCESS.CREATED,
-      "Success!",
-      isPolicyExist
-    );
+    return successResponse(statusCode.SUCCESS.OK, "Success!", isPolicyExist);
   } catch (err) {
     throw rejectResponse(
       statusCode.SERVER_ERROR.INTERNAL_SERVER_ERROR,

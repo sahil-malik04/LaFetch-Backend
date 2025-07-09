@@ -6,6 +6,7 @@ const {
   updateBannerUser,
   deleteBannerUser,
   updateProductUser,
+  getBannerByIdUser,
 } = require("../services/productServices");
 
 const getProducts = async (req, res) => {
@@ -41,8 +42,18 @@ const updateProduct = async (req, res) => {
 
 const getBanners = async (req, res) => {
   try {
-    const query = req.query
+    const query = req.query;
     const result = await getBannersUser(query);
+    res.status(result.status).json(result);
+  } catch (err) {
+    res.status(err?.status).json(err);
+  }
+};
+
+const getBannerById = async (req, res) => {
+  try {
+    const params = req.params;
+    const result = await getBannerByIdUser(params);
     res.status(result.status).json(result);
   } catch (err) {
     res.status(err?.status).json(err);
@@ -85,6 +96,7 @@ module.exports = {
   getProductById,
   updateProduct,
   getBanners,
+  getBannerById,
   addBanner,
   updateBanner,
   deleteBanner,
