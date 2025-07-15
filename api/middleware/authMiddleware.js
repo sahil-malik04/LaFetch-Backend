@@ -6,51 +6,61 @@ const { statusCode } = require("../utils/statusCode");
 const isAuthorized = async (req, res, next) => {
   const token = req.headers?.authorization;
   if (!token) {
-    res.status(statusCode.CLIENT_ERROR.UNAUTHORIZED).send({
+    return res.status(statusCode.CLIENT_ERROR.UNAUTHORIZED).send({
       status: statusCode.CLIENT_ERROR.UNAUTHORIZED,
       message: "Unauthorized!",
     });
-  } else {
-    try {
-      const splitToken = token?.split(" ")[1];
-      const authData = verifyToken(splitToken);
-      if (authData) {
-        const isAccountDeleted = await users.findOne({
-          where: {
-            phone: authData.phone,
-            isAccountDeleted: true,
-          },
-        });
-        if (isAccountDeleted) {
-          res.status(statusCode.CLIENT_ERROR.FORBIDDEN).send({
-            status: statusCode.CLIENT_ERROR.FORBIDDEN,
-            message:
-              "Access denied. Your account is no longer active. Please reach out to the administrator for support.",
-          });
-        } else {
-          const isAccountActive = await users.findOne({
-            where: {
-              phone: authData.phone,
-              isActive: true,
-            },
-          });
-          if (isAccountActive) {
-            next();
-          } else {
-            res.status(statusCode.CLIENT_ERROR.UNAUTHORIZED).send({
-              status: statusCode.CLIENT_ERROR.UNAUTHORIZED,
-              message: "Unauthorized!",
-            });
-          }
-        }
-      }
-    } catch (err) {
-      res
-        .status(statusCode.CLIENT_ERROR.UNAUTHORIZED)
-        .send(
-          rejectResponse(statusCode.CLIENT_ERROR.UNAUTHORIZED, err?.message)
-        );
+  }
+
+  try {
+    const splitToken = token.split(" ")[1];
+    const authData = verifyToken(splitToken);
+
+    if (!authData || (!authData.phone && !authData.email)) {
+      return res.status(statusCode.CLIENT_ERROR.UNAUTHORIZED).send({
+        status: statusCode.CLIENT_ERROR.UNAUTHORIZED,
+        message: "Invalid token payload!",
+      });
     }
+
+    const userWhereClause = authData.phone
+      ? { phone: authData.phone }
+      : { email: authData.email };
+
+    const isAccountDeleted = await users.findOne({
+      where: {
+        ...userWhereClause,
+        isAccountDeleted: true,
+      },
+    });
+
+    if (isAccountDeleted) {
+      return res.status(statusCode.CLIENT_ERROR.FORBIDDEN).send({
+        status: statusCode.CLIENT_ERROR.FORBIDDEN,
+        message:
+          "Access denied. Your account is no longer active. Please contact the administrator.",
+      });
+    }
+
+    const isAccountActive = await users.findOne({
+      where: {
+        ...userWhereClause,
+        isActive: true,
+      },
+    });
+
+    if (isAccountActive) {
+      next();
+    } else {
+      return res.status(statusCode.CLIENT_ERROR.UNAUTHORIZED).send({
+        status: statusCode.CLIENT_ERROR.UNAUTHORIZED,
+        message: "Unauthorized!",
+      });
+    }
+  } catch (err) {
+    return res
+      .status(statusCode.CLIENT_ERROR.UNAUTHORIZED)
+      .send(rejectResponse(statusCode.CLIENT_ERROR.UNAUTHORIZED, err?.message));
   }
 };
 
