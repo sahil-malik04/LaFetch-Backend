@@ -124,7 +124,12 @@ const getVendorsUser = async () => {
         },
       ],
 
-      attributes: ["businessEmail", "onBoardingCompletedAt", "isVerified"],
+      attributes: [
+        "businessEmail",
+        "onBoardingCompletedAt",
+        "isVerified",
+        "isDocumentsSubmitted",
+      ],
     });
     return successResponse(statusCode.SUCCESS.OK, "Success!", findVendor);
   } catch (err) {
