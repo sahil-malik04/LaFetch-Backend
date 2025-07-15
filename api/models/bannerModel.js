@@ -3,6 +3,7 @@ const { sequelize } = require("../db/dbConfig.js");
 const brands = require("./brandsModel.js");
 const category = require("./categoryModel.js");
 const associateWishlistModels = require("./wishlistAssociations.js");
+const associateVendorModels = require("./vendorAssociations.js");
 
 const banners = sequelize.define("banners", {
   id: {
@@ -37,6 +38,7 @@ banners.belongsTo(brands, { foreignKey: "brandId" });
 banners.belongsTo(category, { foreignKey: "categoryId" });
 
 associateWishlistModels()
+associateVendorModels()
 
 // sequelize
 //   .sync({ force: true })

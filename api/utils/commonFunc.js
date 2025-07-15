@@ -25,10 +25,28 @@ const verifyToken = (token) => {
   }
 };
 
+const encryptText = (text) => {
+  const ciphertext = CryptoJS.AES.encrypt(
+    text,
+    process.env.CRYPT_SECRET
+  ).toString();
+  return ciphertext;
+};
+
 const decryptText = (ciphertext) => {
   const bytes = CryptoJS.AES.decrypt(ciphertext, process.env.CRYPT_SECRET);
   const originalText = bytes.toString(CryptoJS.enc.Utf8);
   return originalText;
+};
+
+const generatePassword = (length = 10) => {
+  const chars =
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789@#";
+  let password = "";
+  for (let i = 0; i < length; i++) {
+    password += chars[Math.floor(Math.random() * chars.length)];
+  }
+  return password;
 };
 
 module.exports = {
@@ -36,4 +54,6 @@ module.exports = {
   generateToken,
   verifyToken,
   decryptText,
+  generatePassword,
+  encryptText,
 };

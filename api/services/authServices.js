@@ -310,29 +310,37 @@ const signInUser = async (payload) => {
     if (isEmailExist) {
       const decryptUserPassword = decryptText(password);
       const decryptDBPassword = decryptText(isEmailExist?.password);
-      if (decryptUserPassword === decryptDBPassword) {
-        const updateUser = await isEmailExist.update({
-          isLoggedIn: true,
-          updatedAt: new Date(),
-        });
-        if (updateUser) {
-          const data = {
-            fullName: isEmailExist?.fullName,
-            email: isEmailExist?.email,
-            roleId: isEmailExist?.roleId,
-            permissions: isEmailExist?.permissions,
-          };
-          const generateTokenResult = generateToken(data, "");
-          if (generateTokenResult) {
-            data.token = generateTokenResult;
-          }
+      if (decryptUserPassword.length && decryptDBPassword.length) {
+        if (decryptUserPassword === decryptDBPassword) {
+          const updateUser = await isEmailExist.update({
+            isLoggedIn: true,
+            updatedAt: new Date(),
+          });
+          if (updateUser) {
+            const data = {
+              id: isEmailExist?.id,
+              fullName: isEmailExist?.fullName,
+              email: isEmailExist?.email,
+              roleId: isEmailExist?.roleId,
+              permissions: isEmailExist?.permissions,
+            };
+            const generateTokenResult = generateToken(data, "");
+            if (generateTokenResult) {
+              data.token = generateTokenResult;
+            }
 
-          return successResponse(statusCode.SUCCESS.OK, "Success!", data);
+            return successResponse(statusCode.SUCCESS.OK, "Success!", data);
+          }
+        } else {
+          return rejectResponse(
+            statusCode.CLIENT_ERROR.UNAUTHORIZED,
+            "Incorrect password! Please try again"
+          );
         }
       } else {
         return rejectResponse(
-          statusCode.CLIENT_ERROR.UNAUTHORIZED,
-          "Incorrect password! Please try again"
+          statusCode.CLIENT_ERROR.CONFLICT,
+          "Failed cryptography"
         );
       }
     } else {
