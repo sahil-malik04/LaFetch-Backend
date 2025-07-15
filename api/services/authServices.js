@@ -1,4 +1,5 @@
 const users = require("../models/userModel");
+const vendors = require("../models/vendorsModel");
 const {
   getRandomNumber,
   generateToken,
@@ -126,6 +127,7 @@ const verifyOtpUser = async (payload) => {
                 fullName: isPhoneExist?.fullName,
                 email: isPhoneExist?.email,
                 phone: isPhoneExist?.phone,
+                role: isPhoneExist?.roleId,
               };
               const generateTokenResult = generateToken(tokenData);
               const generateRefreshTokenResult = generateToken(tokenData, "7d");
@@ -257,6 +259,7 @@ const updateUserProfileService = async (payload) => {
                 fullName: updateUser?.fullName,
                 email: updateUser?.email,
                 phone: updateUser?.phone,
+                role: updateUser?.roleId,
               };
               const generateTokenResult = generateToken(tokenData);
               const generateRefreshTokenResult = generateToken(tokenData, "7d");
@@ -324,6 +327,15 @@ const signInUser = async (payload) => {
               roleId: isEmailExist?.roleId,
               permissions: isEmailExist?.permissions,
             };
+            const findVendor = await vendors.findOne({
+              where: {
+                userId: isEmailExist?.id,
+              },
+            });
+            if (findVendor) {
+              data.isVerified = findVendor?.isVerified;
+              data.isDocumentsSubmitted = findVendor?.isDocumentsSubmitted;
+            }
             const generateTokenResult = generateToken(data, "");
             if (generateTokenResult) {
               data.token = generateTokenResult;
@@ -508,6 +520,7 @@ const refreshTokenUser = async (payload) => {
       fullName: findUser?.fullName,
       email: findUser?.email,
       phone: findUser?.phone,
+      role: findUser?.roleId,
     };
     const generateTokenResult = generateToken(tokenData);
     const generateRefreshTokenResult = generateToken(tokenData, "7d");

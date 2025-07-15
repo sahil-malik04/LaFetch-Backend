@@ -43,13 +43,16 @@ const vendors = sequelize.define("vendors", {
   },
   isVerified: {
     type: DataTypes.BOOLEAN,
+    allowNull: true,
+  },
+  isDocumentsSubmitted: {
+    type: DataTypes.BOOLEAN,
     defaultValue: false,
   },
 });
 
 vendors.belongsTo(users, { foreignKey: "userId" });
 vendors.belongsTo(banks, { foreignKey: "bankId" });
-
 
 // sequelize
 //   .sync({ force: false })

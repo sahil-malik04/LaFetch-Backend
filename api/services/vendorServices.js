@@ -92,6 +92,9 @@ const updateVendorUser = async (params, payload) => {
       vendorData.cancelledChequeOrPassbook = payload?.cancelledChequeOrPassbook;
       vendorData.businessRegistrationCertificate =
         payload?.businessRegistrationCertificate;
+      if (payload?.isFormSubmitted) {
+        vendorData.isDocumentsSubmitted = true;
+      }
 
       const updateVendor = isVendorExist.update(vendorData);
       if (updateVendor) {
@@ -117,7 +120,7 @@ const getVendorsUser = async () => {
       include: [
         {
           model: users,
-          attributes: ["id", "fullName", "email", "phone"],
+          attributes: ["id", "fullName", "email", "phone", "isActive"],
         },
       ],
 
@@ -132,8 +135,36 @@ const getVendorsUser = async () => {
   }
 };
 
+const vendorStatusUser = async (query, params) => {
+  try {
+    const findVendorUser = await users.findOne({
+      where: {
+        id: params?.userId,
+      },
+    });
+    if (findVendorUser) {
+      const data = {
+        isActive: query?.isActive === "true",
+      };
+      const result = await findVendorUser.update(data);
+      return successResponse(statusCode.SUCCESS.OK, "Success!");
+    } else {
+      return rejectResponse(
+        statusCode.CLIENT_ERROR.NOT_FOUND,
+        responseMessages.USER_NOT_EXIST
+      );
+    }
+  } catch (err) {
+    throw rejectResponse(
+      statusCode.SERVER_ERROR.INTERNAL_SERVER_ERROR,
+      err?.message
+    );
+  }
+};
+
 module.exports = {
   onboardVendorUser,
   updateVendorUser,
   getVendorsUser,
+  vendorStatusUser,
 };

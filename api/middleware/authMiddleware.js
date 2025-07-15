@@ -22,10 +22,10 @@ const isAuthorized = async (req, res, next) => {
         message: "Invalid token payload!",
       });
     }
-
-    const userWhereClause = authData.phone
-      ? { phone: authData.phone }
-      : { email: authData.email };
+    const userWhereClause =
+      authData.role === 3
+        ? { phone: authData.phone }
+        : { email: authData.email };
 
     const isAccountDeleted = await users.findOne({
       where: {
@@ -54,7 +54,7 @@ const isAuthorized = async (req, res, next) => {
     } else {
       return res.status(statusCode.CLIENT_ERROR.UNAUTHORIZED).send({
         status: statusCode.CLIENT_ERROR.UNAUTHORIZED,
-        message: "Unauthorized!",
+        message: "Your account is currently inactive. Please contact support.",
       });
     }
   } catch (err) {
