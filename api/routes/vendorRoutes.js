@@ -25,6 +25,6 @@ router.put(
 router.get("/vendors", isAuthorized, getVendors);
 router.put("/status/:userId", isAuthorized, vendorStatus);
 router.get("/vendor-documents/:vendorId", isAuthorized, vendorDocuments);
-router.get("/vendor-document-status/:vendorId", isAuthorized, vendorDocumentStatus);
+router.patch("/vendor-document-status/:vendorId", isAuthorized, vendorDocumentStatus);
 
 module.exports = router;
