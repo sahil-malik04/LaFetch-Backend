@@ -26,15 +26,15 @@ const vendors = sequelize.define("vendors", {
     allowNull: true,
   },
   PAN: {
-    type: DataTypes.INTEGER,
+    type: DataTypes.STRING,
     allowNull: true,
   },
   cancelledChequeOrPassbook: {
-    type: DataTypes.INTEGER,
+    type: DataTypes.STRING,
     allowNull: true,
   },
   businessRegistrationCertificate: {
-    type: DataTypes.INTEGER,
+    type: DataTypes.STRING,
     allowNull: true,
   },
   onBoardingCompletedAt: {

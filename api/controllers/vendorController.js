@@ -3,6 +3,7 @@ const {
   updateVendorUser,
   getVendorsUser,
   vendorStatusUser,
+  vendorDocumentsUser,
 } = require("../services/vendorServices");
 
 const onboardVendor = async (req, res) => {
@@ -19,7 +20,8 @@ const updateVendor = async (req, res) => {
   try {
     const params = req.params;
     const body = req.body;
-    const result = await updateVendorUser(params, body);
+    const reqFiles = req.files;
+    const result = await updateVendorUser(params, body, reqFiles);
     res.status(result.status).json(result);
   } catch (err) {
     res.status(err?.status).json(err);
@@ -46,9 +48,20 @@ const vendorStatus = async (req, res) => {
   }
 };
 
+const vendorDocuments = async (req, res) => {
+  try {
+    const params = req.params;
+    const result = await vendorDocumentsUser(params);
+    res.status(result.status).json(result);
+  } catch (err) {
+    res.status(err?.status).json(err);
+  }
+};
+
 module.exports = {
   onboardVendor,
   updateVendor,
   getVendors,
   vendorStatus,
+  vendorDocuments,
 };

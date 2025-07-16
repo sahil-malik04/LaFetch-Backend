@@ -4,6 +4,7 @@ const vendors = require("../models/vendorsModel");
 const { generatePassword, encryptText } = require("../utils/commonFunc");
 const { responseMessages } = require("../utils/dataUtils");
 const { successResponse, rejectResponse } = require("../utils/response");
+const { uploadToS3 } = require("../utils/s3Uploader");
 const { statusCode } = require("../utils/statusCode");
 
 const onboardVendorUser = async (payload) => {
@@ -59,7 +60,7 @@ const onboardVendorUser = async (payload) => {
   }
 };
 
-const updateVendorUser = async (params, payload) => {
+const updateVendorUser = async (params, payload, reqFiles) => {
   try {
     const isVendorExist = await vendors.findOne({
       where: {
@@ -88,10 +89,24 @@ const updateVendorUser = async (params, payload) => {
           vendorData.bankId = createBank.id;
         }
       }
-      vendorData.PAN = payload?.PAN;
-      vendorData.cancelledChequeOrPassbook = payload?.cancelledChequeOrPassbook;
+
+      const uploadedFiles = {};
+
+      for (const [fieldName, files] of Object.entries(reqFiles)) {
+        const file = files[0];
+        const url = await uploadToS3(
+          file.buffer,
+          file.originalname,
+          file.mimetype,
+          "vendor-assets"
+        );
+        uploadedFiles[fieldName] = url;
+      }
+
+      vendorData.PAN = uploadedFiles?.PAN;
+      vendorData.cancelledChequeOrPassbook = uploadedFiles?.cancelledCheque;
       vendorData.businessRegistrationCertificate =
-        payload?.businessRegistrationCertificate;
+        uploadedFiles?.businessRCertificate;
       if (payload?.isFormSubmitted) {
         vendorData.isDocumentsSubmitted = true;
       }
@@ -167,9 +182,39 @@ const vendorStatusUser = async (query, params) => {
   }
 };
 
+const vendorDocumentsUser = async (params) => {
+  try {
+    const findVendor = await vendors.findOne({
+      where: {
+        id: params?.vendorId,
+      },
+      attributes: [
+        "id",
+        "PAN",
+        "cancelledChequeOrPassbook",
+        "businessRegistrationCertificate",
+      ],
+    });
+    if (findVendor) {
+      return successResponse(statusCode.SUCCESS.OK, "Success!", findVendor);
+    } else {
+      return rejectResponse(
+        statusCode.CLIENT_ERROR.NOT_FOUND,
+        responseMessages.USER_NOT_EXIST
+      );
+    }
+  } catch (err) {
+    throw rejectResponse(
+      statusCode.SERVER_ERROR.INTERNAL_SERVER_ERROR,
+      err?.message
+    );
+  }
+};
+
 module.exports = {
   onboardVendorUser,
   updateVendorUser,
   getVendorsUser,
   vendorStatusUser,
+  vendorDocumentsUser,
 };
