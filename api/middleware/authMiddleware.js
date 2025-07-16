@@ -45,7 +45,7 @@ const isAuthorized = async (req, res, next) => {
     const isAccountActive = await users.findOne({
       where: {
         ...userWhereClause,
-        isActive: authData.role === 3 ? true : false,
+        ...(authData.role === 3 && { isActive: true }),
       },
     });
 
