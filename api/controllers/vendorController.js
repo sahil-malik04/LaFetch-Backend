@@ -4,6 +4,7 @@ const {
   getVendorsUser,
   vendorStatusUser,
   vendorDocumentsUser,
+  vendorDocumentStatusUser,
 } = require("../services/vendorServices");
 
 const onboardVendor = async (req, res) => {
@@ -58,10 +59,22 @@ const vendorDocuments = async (req, res) => {
   }
 };
 
+const vendorDocumentStatus = async (req, res) => {
+  try {
+    const params = req.params;
+    const query = req.query;
+    const result = await vendorDocumentStatusUser(params, query);
+    res.status(result.status).json(result);
+  } catch (err) {
+    res.status(err?.status).json(err);
+  }
+};
+
 module.exports = {
   onboardVendor,
   updateVendor,
   getVendors,
   vendorStatus,
   vendorDocuments,
+  vendorDocumentStatus
 };

@@ -8,6 +8,7 @@ const {
   getVendors,
   vendorStatus,
   vendorDocuments,
+  vendorDocumentStatus,
 } = require("../controllers/vendorController");
 
 router.post("/onboard-vendor", isAuthorized, onboardVendor);
@@ -24,5 +25,6 @@ router.put(
 router.get("/vendors", isAuthorized, getVendors);
 router.put("/status/:userId", isAuthorized, vendorStatus);
 router.get("/vendor-documents/:vendorId", isAuthorized, vendorDocuments);
+router.get("/vendor-document-status/:vendorId", isAuthorized, vendorDocumentStatus);
 
 module.exports = router;

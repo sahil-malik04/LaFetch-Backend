@@ -212,10 +212,43 @@ const vendorDocumentsUser = async (params) => {
   }
 };
 
+const vendorDocumentStatusUser = async (params, query) => {
+  try {
+    const findVendor = await vendors.findOne({
+      where: {
+        id: params?.vendorId,
+      },
+    });
+    if (findVendor) {
+      const data = {
+        isVerified:
+          query?.isVerified === "true"
+            ? true
+            : query?.isVerified === "false"
+            ? false
+            : null,
+      };
+      findVendor.update(data);
+      return successResponse(statusCode.SUCCESS.OK, "Success!");
+    } else {
+      return rejectResponse(
+        statusCode.CLIENT_ERROR.NOT_FOUND,
+        responseMessages.USER_NOT_EXIST
+      );
+    }
+  } catch (err) {
+    throw rejectResponse(
+      statusCode.SERVER_ERROR.INTERNAL_SERVER_ERROR,
+      err?.message
+    );
+  }
+};
+
 module.exports = {
   onboardVendorUser,
   updateVendorUser,
   getVendorsUser,
   vendorStatusUser,
   vendorDocumentsUser,
+  vendorDocumentStatusUser,
 };
