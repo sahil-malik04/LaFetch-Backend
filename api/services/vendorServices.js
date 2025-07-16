@@ -140,6 +140,7 @@ const getVendorsUser = async () => {
       ],
 
       attributes: [
+        "id",
         "businessEmail",
         "onBoardingCompletedAt",
         "isVerified",
