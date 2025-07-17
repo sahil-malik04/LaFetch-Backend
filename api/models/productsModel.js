@@ -37,6 +37,7 @@ const products = sequelize.define("products", {
   seoTitle: { type: DataTypes.STRING, allowNull: true },
   seoDescription: { type: DataTypes.TEXT, allowNull: true },
   sku: { type: DataTypes.STRING, allowNull: true },
+  lfSku: { type: DataTypes.STRING, allowNull: true },
 
   targetGenders: { type: DataTypes.ARRAY(DataTypes.STRING), allowNull: true },
   fabrics: { type: DataTypes.ARRAY(DataTypes.STRING), allowNull: true },
@@ -52,12 +53,20 @@ const products = sequelize.define("products", {
     allowNull: true,
     defaultValue: "standard",
   },
-  hasCOD: { type: DataTypes.BOOLEAN, allowNull: false },
-  hasExchange: { type: DataTypes.BOOLEAN, allowNull: false },
-  exchangeDays: { type: DataTypes.INTEGER, allowNull: false },
-  manufacturingAmount: { type: DataTypes.FLOAT, allowNull: false },
-  sellingAmount: { type: DataTypes.FLOAT, allowNull: false },
-  netAmount: { type: DataTypes.FLOAT, allowNull: false },
+  hasCOD: { type: DataTypes.BOOLEAN, allowNull: true },
+  hasExchange: { type: DataTypes.BOOLEAN, allowNull: true },
+  exchangeDays: { type: DataTypes.INTEGER, allowNull: true },
+  manufacturingAmount: { type: DataTypes.FLOAT, allowNull: true },
+  mrp: { type: DataTypes.FLOAT, allowNull: true },
+  msp: { type: DataTypes.FLOAT, allowNull: true },
+  lfMsp: { type: DataTypes.FLOAT, allowNull: true },
+  sellingAmount: { type: DataTypes.FLOAT, allowNull: true },
+  netAmount: { type: DataTypes.FLOAT, allowNull: true },
+  addedBy: {
+    type: DataTypes.ENUM("admin", "vendor", "shopify"),
+    allowNull: true,
+    defaultValue: "standard",
+  },
 });
 
 products.belongsTo(brands, { foreignKey: "brandId" });
