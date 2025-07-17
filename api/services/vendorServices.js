@@ -194,6 +194,8 @@ const vendorDocumentsUser = async (params) => {
         "PAN",
         "cancelledChequeOrPassbook",
         "businessRegistrationCertificate",
+        "isVerified",
+        "isDocumentsSubmitted",
       ],
     });
     if (findVendor) {
