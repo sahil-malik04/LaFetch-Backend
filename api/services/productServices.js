@@ -7,6 +7,7 @@ const warehouse = require("../models/warehouseModel");
 const { responseMessages } = require("../utils/dataUtils");
 const banners = require("../models/bannerModel");
 const productVariants = require("../models/productVariantModel");
+const { syncShopifyProducts } = require("../shopify/shopifyDBSync");
 
 // products
 const getProductsUser = async (query) => {
@@ -255,6 +256,18 @@ const deleteBannerUser = async (params) => {
   }
 };
 
+const syncProductsUser = async () => {
+  try {
+    await syncShopifyProducts();
+    return successResponse(statusCode.SUCCESS.OK, "Shopify sync complete!");
+  } catch (err) {
+    throw rejectResponse(
+      statusCode.SERVER_ERROR.INTERNAL_SERVER_ERROR,
+      err?.message
+    );
+  }
+};
+
 module.exports = {
   getProductsUser,
   getProductByIdUser,
@@ -264,4 +277,5 @@ module.exports = {
   addBannerUser,
   updateBannerUser,
   deleteBannerUser,
+  syncProductsUser,
 };
