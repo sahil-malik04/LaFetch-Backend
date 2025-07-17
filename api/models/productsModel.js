@@ -65,7 +65,6 @@ const products = sequelize.define("products", {
   addedBy: {
     type: DataTypes.ENUM("admin", "vendor", "shopify"),
     allowNull: true,
-    defaultValue: "standard",
   },
 });
 

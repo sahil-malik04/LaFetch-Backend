@@ -28,15 +28,6 @@ const getProductsUser = async (query) => {
 
     const result = await products.findAll({
       where: whereClause,
-      attributes: [
-        "id",
-        "title",
-        "description",
-        "imageUrls",
-        "isFeatured",
-        "rating",
-        "basePrice",
-      ],
     });
 
     return successResponse(statusCode.SUCCESS.OK, "Success!", result);
