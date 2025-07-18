@@ -8,6 +8,7 @@ const {
   signOutUser,
   refreshTokenUser,
   signInUser,
+  checkAuthUser,
 } = require("../services/authServices");
 
 const signUpSendOtp = async (req, res) => {
@@ -100,6 +101,16 @@ const refreshToken = async (req, res) => {
   }
 };
 
+const checkAuth = async (req, res) => {
+  try {
+    const token = req.headers?.authorization;
+    const result = await checkAuthUser(token);
+    res.status(result.status).json(result);
+  } catch (err) {
+    res.status(err?.status).json(err);
+  }
+};
+
 module.exports = {
   signUpSendOtp,
   verifyOtp,
@@ -110,4 +121,5 @@ module.exports = {
   deleteAccount,
   signOut,
   refreshToken,
+  checkAuth,
 };

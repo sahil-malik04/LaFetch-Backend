@@ -168,7 +168,7 @@ const vendorStatusUser = async (query, params) => {
         isActive: query?.isActive === "true",
       };
       const result = await findVendorUser.update(data);
-      return successResponse(statusCode.SUCCESS.OK, "Success!");
+      if (result) return successResponse(statusCode.SUCCESS.OK, "Success!");
     } else {
       return rejectResponse(
         statusCode.CLIENT_ERROR.NOT_FOUND,

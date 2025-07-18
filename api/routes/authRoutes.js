@@ -10,6 +10,7 @@ const {
   signOut,
   refreshToken,
   signIn,
+  checkAuth,
 } = require("../controllers/authController");
 const { isAuthorized } = require("../middleware/authMiddleware");
 
@@ -28,5 +29,6 @@ router.post("/sign-in-send-otp", signInSendOtp);
 router.post("/delete-account/:userId", isAuthorized, deleteAccount);
 router.post("/sign-out/:userId", signOut);
 router.post("/refresh-token", refreshToken);
+router.post("/check-auth", checkAuth);
 
 module.exports = router;

@@ -464,7 +464,9 @@ const deleteAccountUser = async (payload) => {
 const signOutUser = async (payload) => {
   try {
     const isUserExist = await users.findOne({
-      id: payload?.userId,
+      where: {
+        id: payload?.userId,
+      },
     });
     if (isUserExist) {
       const data = {
@@ -547,6 +549,47 @@ const refreshTokenUser = async (payload) => {
   }
 };
 
+const checkAuthUser = async (token) => {
+  try {
+    if (!token) {
+      return rejectResponse(
+        statusCode.CLIENT_ERROR.UNAUTHORIZED,
+        "No token",
+        false
+      );
+    }
+
+    const splitToken = token.split(" ")[1];
+    const authData = verifyToken(splitToken);
+
+    if (!authData) {
+      return rejectResponse(
+        statusCode.CLIENT_ERROR.UNAUTHORIZED,
+        "Invalid token"
+      );
+    } else {
+      const findUser = await users.findOne({
+        where: {
+          id: authData?.id,
+        },
+      });
+      if (findUser) {
+        const isLoggedIn = findUser.isLoggedIn;
+        let message;
+        isLoggedIn
+          ? (message = "User loggedIn")
+          : (message = "User not loggedIn");
+        return successResponse(statusCode.SUCCESS.OK, message, isLoggedIn);
+      }
+    }
+  } catch (err) {
+    throw rejectResponse(
+      statusCode.SERVER_ERROR.INTERNAL_SERVER_ERROR,
+      err?.message
+    );
+  }
+};
+
 module.exports = {
   signUpSendOtpUser,
   signInUser,
@@ -557,4 +600,5 @@ module.exports = {
   deleteAccountUser,
   signOutUser,
   refreshTokenUser,
+  checkAuthUser,
 };

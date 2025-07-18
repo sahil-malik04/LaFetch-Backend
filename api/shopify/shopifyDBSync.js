@@ -40,14 +40,13 @@ async function syncShopifyProducts() {
         targetGenders: genderLabels,
         fabrics: fabricOptions,
         colorPatterns: colorOptions,
-
+        addedBy: "shopify",
         hasCOD: true,
         hasExchange: true,
         exchangeDays: 2,
         manufacturingAmount: 10.6,
         sellingAmount: 12.5,
         netAmount: 9.0,
-
       };
 
       const createdProduct = await products.create(productPayload);
