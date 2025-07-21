@@ -8,6 +8,7 @@ const { responseMessages } = require("../utils/dataUtils");
 const banners = require("../models/bannerModel");
 const productVariants = require("../models/productVariantModel");
 const { syncShopifyProducts } = require("../shopify/shopifyDBSync");
+const { uploadToS3 } = require("../utils/s3Uploader");
 
 // products
 const getProductsUser = async (query) => {
@@ -159,9 +160,9 @@ const getBannerByIdUser = async (params) => {
   }
 };
 
-const addBannerUser = async (payload) => {
+const addBannerUser = async (payload, reqFiles) => {
   try {
-    const { image, title, categoryId, brandId } = payload;
+    const { title, categoryId, brandId } = payload;
     if (categoryId > 3 || categoryId < 1) {
       return rejectResponse(
         statusCode.CLIENT_ERROR.CONFLICT,
@@ -169,11 +170,21 @@ const addBannerUser = async (payload) => {
       );
     } else {
       const data = {
-        image,
         title,
         categoryId,
         brandId,
       };
+      const image = reqFiles?.image[0];
+      if (image) {
+        const url = await uploadToS3(
+          image.buffer,
+          image.originalname,
+          image.mimetype,
+          "banner-assets"
+        );
+        data.image = url;
+      }
+
       const result = await banners.create(data);
       return successResponse(statusCode.SUCCESS.CREATED, "Success!", result);
     }
@@ -185,7 +196,7 @@ const addBannerUser = async (payload) => {
   }
 };
 
-const updateBannerUser = async (params, payload) => {
+const updateBannerUser = async (params, payload, reqFiles) => {
   try {
     const isBannerExist = await banners.findOne({
       where: {
@@ -193,7 +204,7 @@ const updateBannerUser = async (params, payload) => {
       },
     });
     if (isBannerExist) {
-      const { image, title, categoryId, brandId } = payload;
+      const { title, categoryId, brandId } = payload;
       if (categoryId > 3 || categoryId < 1) {
         return rejectResponse(
           statusCode.CLIENT_ERROR.CONFLICT,
@@ -201,11 +212,21 @@ const updateBannerUser = async (params, payload) => {
         );
       } else {
         const data = {
-          image,
           title,
           categoryId,
           brandId,
         };
+        const image = reqFiles?.image[0];
+        if (image) {
+          const url = await uploadToS3(
+            image.buffer,
+            image.originalname,
+            image.mimetype,
+            "banner-assets"
+          );
+          data.image = url;
+        }
+
         const result = await isBannerExist.update(data);
         return successResponse(statusCode.SUCCESS.OK, "Success!", result);
       }

@@ -64,7 +64,8 @@ const getBannerById = async (req, res) => {
 const addBanner = async (req, res) => {
   try {
     const payload = req.body;
-    const result = await addBannerUser(payload);
+    const reqFiles = req.files;
+    const result = await addBannerUser(payload, reqFiles);
     res.status(result.status).json(result);
   } catch (err) {
     res.status(err?.status).json(err);
@@ -75,7 +76,8 @@ const updateBanner = async (req, res) => {
   try {
     const params = req.params;
     const payload = req.body;
-    const result = await updateBannerUser(params, payload);
+    const reqFiles = req.files;
+    const result = await updateBannerUser(params, payload, reqFiles);
     res.status(result.status).json(result);
   } catch (err) {
     res.status(err?.status).json(err);

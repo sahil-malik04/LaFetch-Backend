@@ -57,7 +57,7 @@ const addWishlistBoardUser = async (payload) => {
 
     const result = await wishlistBoards.create(data);
 
-    if (result) {
+    if (payload?.productId) {
       const data = {
         userId: payload?.userId,
         boardId: result?.id,
@@ -67,8 +67,13 @@ const addWishlistBoardUser = async (payload) => {
       if (addWishlist)
         return successResponse(
           statusCode.SUCCESS.CREATED,
-          "Wishlist Board added successfully!"
+          "Product added to Wishlist Board!"
         );
+    } else {
+      return successResponse(
+        statusCode.SUCCESS.CREATED,
+        "Wishlist Board added successfully!"
+      );
     }
   } catch (err) {
     throw rejectResponse(
