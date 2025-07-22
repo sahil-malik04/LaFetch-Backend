@@ -8,6 +8,10 @@ const {
   updateProductUser,
   getBannerByIdUser,
   syncProductsUser,
+  getSizeChartsUser,
+  addSizeChartUser,
+  updateSizeChartUser,
+  deleteSizeChartUser,
 } = require("../services/productServices");
 
 const getProducts = async (req, res) => {
@@ -103,6 +107,48 @@ const syncProducts = async (req, res) => {
   }
 };
 
+const getSizeCharts = async (req, res) => {
+  try {
+    const result = await getSizeChartsUser();
+    res.status(result.status).json(result);
+  } catch (err) {
+    res.status(err?.status).json(err);
+  }
+};
+
+const addSizeChart = async (req, res) => {
+  try {
+    const body = req.body;
+    const reqFiles = req.files;
+    const result = await addSizeChartUser(body, reqFiles);
+    res.status(result.status).json(result);
+  } catch (err) {
+    res.status(err?.status).json(err);
+  }
+};
+
+const updateSizeChart = async (req, res) => {
+  try {
+    const params = req.params;
+    const body = req.body;
+    const reqFiles = req.files;
+    const result = await updateSizeChartUser(params, body, reqFiles);
+    res.status(result.status).json(result);
+  } catch (err) {
+    res.status(err?.status).json(err);
+  }
+};
+
+const deleteSizeChart = async (req, res) => {
+  try {
+    const params = req.params;
+    const result = await deleteSizeChartUser(params);
+    res.status(result.status).json(result);
+  } catch (err) {
+    res.status(err?.status).json(err);
+  }
+};
+
 module.exports = {
   getProducts,
   getProductById,
@@ -113,4 +159,8 @@ module.exports = {
   updateBanner,
   deleteBanner,
   syncProducts,
+  getSizeCharts,
+  addSizeChart,
+  updateSizeChart,
+  deleteSizeChart,
 };

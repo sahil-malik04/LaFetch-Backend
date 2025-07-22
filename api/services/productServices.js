@@ -9,6 +9,7 @@ const banners = require("../models/bannerModel");
 const productVariants = require("../models/productVariantModel");
 const { syncShopifyProducts } = require("../shopify/shopifyDBSync");
 const { uploadToS3 } = require("../utils/s3Uploader");
+const productSizeCharts = require("../models/productSizeChartsModel");
 
 // products
 const getProductsUser = async (query) => {
@@ -280,6 +281,132 @@ const syncProductsUser = async () => {
   }
 };
 
+const getSizeChartsUser = async () => {
+  try {
+    const result = await productSizeCharts.findAll();
+    return successResponse(statusCode.SUCCESS.OK, "Success!", result);
+  } catch (err) {
+    throw rejectResponse(
+      statusCode.SERVER_ERROR.INTERNAL_SERVER_ERROR,
+      err?.message
+    );
+  }
+};
+
+const addSizeChartUser = async (payload, reqFiles) => {
+  try {
+    const isSizeChartExist = await productSizeCharts.findOne({
+      where: {
+        title: payload?.title,
+      },
+    });
+    if (isSizeChartExist) {
+      return rejectResponse(
+        statusCode.CLIENT_ERROR.CONFLICT,
+        "Size chart already exist with same title"
+      );
+    } else {
+      const data = {
+        title: payload?.title,
+        brandId: payload?.brandId,
+        superCatId: payload?.superCatId,
+        catId: payload?.catId,
+        subCatId: payload?.subCatId,
+        sizeChartData: payload?.sizeChartData,
+      };
+      const image = reqFiles?.sizeGuideImage[0];
+      if (image) {
+        const url = await uploadToS3(
+          image.buffer,
+          image.originalname,
+          image.mimetype,
+          "size-chart-assets"
+        );
+        data.sizeGuideImage = url;
+      }
+      const result = await productSizeCharts.create(data);
+      if (result) {
+        return successResponse(statusCode.SUCCESS.OK, "Success!", result);
+      }
+    }
+    return successResponse(statusCode.SUCCESS.OK, "Success!", result);
+  } catch (err) {
+    throw rejectResponse(
+      statusCode.SERVER_ERROR.INTERNAL_SERVER_ERROR,
+      err?.message
+    );
+  }
+};
+
+const updateSizeChartUser = async (params, payload, reqFiles) => {
+  try {
+    const isSizeChartExist = await productSizeCharts.findOne({
+      where: {
+        id: params?.sizeChartId,
+      },
+    });
+    if (!isSizeChartExist) {
+      return rejectResponse(
+        statusCode.CLIENT_ERROR.NOT_FOUND,
+        "Size chart doesn't exist"
+      );
+    } else {
+      const data = {
+        title: payload?.title,
+        brandId: payload?.brandId,
+        superCatId: payload?.superCatId,
+        catId: payload?.catId,
+        subCatId: payload?.subCatId,
+        sizeChartData: payload?.sizeChartData,
+      };
+      const image = reqFiles?.sizeGuideImage[0];
+      if (image) {
+        const url = await uploadToS3(
+          image.buffer,
+          image.originalname,
+          image.mimetype,
+          "size-chart-assets"
+        );
+        data.sizeGuideImage = url;
+      }
+      const result = await isSizeChartExist.update(data);
+      if (result) {
+        return successResponse(statusCode.SUCCESS.OK, "Success!", result);
+      }
+    }
+    return successResponse(statusCode.SUCCESS.OK, "Success!", result);
+  } catch (err) {
+    throw rejectResponse(
+      statusCode.SERVER_ERROR.INTERNAL_SERVER_ERROR,
+      err?.message
+    );
+  }
+};
+
+const deleteSizeChartUser = async (params) => {
+  try {
+    const isSizeChartExist = await productSizeCharts.findOne({
+      where: {
+        id: params?.sizeChartId,
+      },
+    });
+    if (isSizeChartExist) {
+      const result = await isSizeChartExist.destroy();
+      if (result) return successResponse(statusCode.SUCCESS.OK, "Success!");
+    } else {
+      return rejectResponse(
+        statusCode.CLIENT_ERROR.NOT_FOUND,
+        "Size chart doesn't exist"
+      );
+    }
+  } catch (err) {
+    throw rejectResponse(
+      statusCode.SERVER_ERROR.INTERNAL_SERVER_ERROR,
+      err?.message
+    );
+  }
+};
+
 module.exports = {
   getProductsUser,
   getProductByIdUser,
@@ -290,4 +417,8 @@ module.exports = {
   updateBannerUser,
   deleteBannerUser,
   syncProductsUser,
+  getSizeChartsUser,
+  addSizeChartUser,
+  updateSizeChartUser,
+  deleteSizeChartUser,
 };

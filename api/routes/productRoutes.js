@@ -12,6 +12,10 @@ const {
   updateProduct,
   getBannerById,
   syncProducts,
+  getSizeCharts,
+  addSizeChart,
+  updateSizeChart,
+  deleteSizeChart,
 } = require("../controllers/productController");
 
 router.get("/products", getProducts);
@@ -37,5 +41,25 @@ router.delete("/banner/:bannerId", isAuthorized, deleteBanner);
 
 // sync products
 router.post("/sync-products", isAuthorized, syncProducts);
+
+// size charts
+router.get("/product-size-charts", isAuthorized, getSizeCharts);
+router.post(
+  "/product-size-chart",
+  isAuthorized,
+  upload.fields([{ name: "sizeGuideImage" }]),
+  addSizeChart
+);
+router.put(
+  "/product-size-chart/:sizeChartId",
+  isAuthorized,
+  upload.fields([{ name: "sizeGuideImage" }]),
+  updateSizeChart
+);
+router.delete(
+  "/product-size-chart/:sizeChartId",
+  isAuthorized,
+  deleteSizeChart
+);
 
 module.exports = router;
