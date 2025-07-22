@@ -351,6 +351,17 @@ const updateSizeChartUser = async (params, payload, reqFiles) => {
         "Size chart doesn't exist"
       );
     } else {
+      if (payload?.title && payload?.title !== isSizeChartExist.title) {
+        const isTitleTaken = await productSizeCharts.findOne({
+          where: { title: payload.title },
+        });
+        if (isTitleTaken) {
+          return rejectResponse(
+            statusCode.CLIENT_ERROR.CONFLICT,
+            "Title already in use"
+          );
+        }
+      }
       const data = {
         title: payload?.title,
         brandId: payload?.brandId,
