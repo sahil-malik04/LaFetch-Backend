@@ -29,7 +29,8 @@ const getCategoryById = async (req, res) => {
 const addCategory = async (req, res) => {
   try {
     const body = req.body;
-    const result = await addCategoryUser(body);
+    const reqFiles = req.files;
+    const result = await addCategoryUser(body, reqFiles);
     res.status(result.status).json(result);
   } catch (err) {
     res.status(err?.status).json(err);
@@ -40,7 +41,8 @@ const updateCategory = async (req, res) => {
   try {
     const params = req.params;
     const body = req.body;
-    const result = await updateCategoryUser(params, body);
+    const reqFiles = req.files;
+    const result = await updateCategoryUser(params, body, reqFiles);
     res.status(result.status).json(result);
   } catch (err) {
     res.status(err?.status).json(err);

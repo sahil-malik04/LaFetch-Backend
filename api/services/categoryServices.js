@@ -1,5 +1,6 @@
 const category = require("../models/categoryModel");
 const { successResponse, rejectResponse } = require("../utils/response");
+const { uploadToS3 } = require("../utils/s3Uploader");
 const { statusCode } = require("../utils/statusCode");
 
 const getCategoriesUser = async (query) => {
@@ -47,16 +48,28 @@ const getCategoryByIdUser = async (params) => {
   }
 };
 
-const addCategoryUser = async (payload) => {
+const addCategoryUser = async (payload, reqFiles) => {
   try {
     const data = {
       name: payload?.name,
       slug: payload?.slug,
       parentId: payload?.parentId,
       type: payload?.type,
-      image: "",
-      banner: "",
     };
+    const uploadedFiles = {};
+
+    for (const [fieldName, files] of Object.entries(reqFiles)) {
+      const file = files[0];
+      const url = await uploadToS3(
+        file.buffer,
+        file.originalname,
+        file.mimetype,
+        "category-assets"
+      );
+      uploadedFiles[fieldName] = url;
+    }
+    data.image = uploadedFiles?.image;
+    data.banner = uploadedFiles?.banner;
     const result = await category.create(data);
 
     if (result) return successResponse(statusCode.SUCCESS.CREATED, "Success!");
@@ -68,14 +81,13 @@ const addCategoryUser = async (payload) => {
   }
 };
 
-const updateCategoryUser = async (params, payload) => {
+const updateCategoryUser = async (params, payload, reqFiles) => {
   try {
     const isCategoryExist = await category.findOne({
       where: {
         id: params?.categoryId,
       },
     });
-
     if (
       isCategoryExist &&
       params?.categoryId !== "1" &&
@@ -87,9 +99,21 @@ const updateCategoryUser = async (params, payload) => {
         slug: payload?.slug,
         parentId: payload?.parentId,
         type: payload?.type,
-        image: "",
-        banner: "",
       };
+      const uploadedFiles = {};
+
+      for (const [fieldName, files] of Object.entries(reqFiles)) {
+        const file = files[0];
+        const url = await uploadToS3(
+          file.buffer,
+          file.originalname,
+          file.mimetype,
+          "category-assets"
+        );
+        uploadedFiles[fieldName] = url;
+      }
+      data.image = uploadedFiles?.image;
+      data.banner = uploadedFiles?.banner;
       const result = await isCategoryExist.update(data);
 
       if (result)
