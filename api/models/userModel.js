@@ -37,7 +37,7 @@ const users = sequelize.define("users", {
     type: DataTypes.INTEGER,
     allowNull: true,
   },
-  
+
   isLoggedIn: {
     type: DataTypes.BOOLEAN,
     allowNull: false,
@@ -61,11 +61,6 @@ const users = sequelize.define("users", {
     type: DataTypes.BOOLEAN,
     defaultValue: false,
   },
-  isInvitationAccepted: {
-    type: DataTypes.BOOLEAN,
-    allowNull: true,
-  },
-  invitationAcceptedAt: { type: DataTypes.DATE },
   roleId: {
     type: DataTypes.INTEGER,
     allowNull: false,
