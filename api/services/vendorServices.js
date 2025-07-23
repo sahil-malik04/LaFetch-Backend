@@ -47,8 +47,8 @@ const onboardVendorUser = async (payload) => {
         );
       } else {
         return rejectResponse(
-          statusCode.CLIENT_ERROR.NOT_FOUND,
-          responseMessages.USER_NOT_EXIST
+          statusCode.CLIENT_ERROR.CONFLICT,
+          "Error in creating the user!"
         );
       }
     }
