@@ -175,17 +175,18 @@ const addBannerUser = async (payload, reqFiles) => {
         categoryId,
         brandId,
       };
-      const image = reqFiles?.image[0];
-      if (image) {
-        const url = await uploadToS3(
-          image.buffer,
-          image.originalname,
-          image.mimetype,
-          "banner-assets"
-        );
-        data.image = url;
+      if (Object.keys(reqFiles).length) {
+        const image = reqFiles?.image[0];
+        if (image) {
+          const url = await uploadToS3(
+            image.buffer,
+            image.originalname,
+            image.mimetype,
+            "banner-assets"
+          );
+          data.image = url;
+        }
       }
-
       const result = await banners.create(data);
       return successResponse(statusCode.SUCCESS.CREATED, "Success!", result);
     }
@@ -217,15 +218,17 @@ const updateBannerUser = async (params, payload, reqFiles) => {
           categoryId,
           brandId,
         };
-        const image = reqFiles?.image[0];
-        if (image) {
-          const url = await uploadToS3(
-            image.buffer,
-            image.originalname,
-            image.mimetype,
-            "banner-assets"
-          );
-          data.image = url;
+        if (Object.keys(reqFiles).length) {
+          const image = reqFiles?.image[0];
+          if (image) {
+            const url = await uploadToS3(
+              image.buffer,
+              image.originalname,
+              image.mimetype,
+              "banner-assets"
+            );
+            data.image = url;
+          }
         }
 
         const result = await isBannerExist.update(data);
@@ -314,15 +317,17 @@ const addSizeChartUser = async (payload, reqFiles) => {
         subCatId: payload?.subCatId,
         sizeChartData: payload?.sizeChartData,
       };
-      const image = reqFiles?.sizeGuideImage[0];
-      if (image) {
-        const url = await uploadToS3(
-          image.buffer,
-          image.originalname,
-          image.mimetype,
-          "size-chart-assets"
-        );
-        data.sizeGuideImage = url;
+      if (Object.keys(reqFiles).length) {
+        const image = reqFiles?.sizeGuideImage[0];
+        if (image) {
+          const url = await uploadToS3(
+            image.buffer,
+            image.originalname,
+            image.mimetype,
+            "size-chart-assets"
+          );
+          data.sizeGuideImage = url;
+        }
       }
       const result = await productSizeCharts.create(data);
       if (result) {
@@ -370,15 +375,17 @@ const updateSizeChartUser = async (params, payload, reqFiles) => {
         subCatId: payload?.subCatId,
         sizeChartData: payload?.sizeChartData,
       };
-      const image = reqFiles?.sizeGuideImage[0];
-      if (image) {
-        const url = await uploadToS3(
-          image.buffer,
-          image.originalname,
-          image.mimetype,
-          "size-chart-assets"
-        );
-        data.sizeGuideImage = url;
+      if (Object.keys(reqFiles).length) {
+        const image = reqFiles?.sizeGuideImage[0];
+        if (image) {
+          const url = await uploadToS3(
+            image.buffer,
+            image.originalname,
+            image.mimetype,
+            "size-chart-assets"
+          );
+          data.sizeGuideImage = url;
+        }
       }
       const result = await isSizeChartExist.update(data);
       if (result) {
