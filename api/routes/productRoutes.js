@@ -16,6 +16,7 @@ const {
   addSizeChart,
   updateSizeChart,
   deleteSizeChart,
+  getSizeChartById,
 } = require("../controllers/productController");
 
 router.get("/products", getProducts);
@@ -61,5 +62,6 @@ router.delete(
   isAuthorized,
   deleteSizeChart
 );
+router.get("/product-size-chart/:sizeChartId", isAuthorized, getSizeChartById);
 
 module.exports = router;

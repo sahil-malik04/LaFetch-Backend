@@ -425,6 +425,22 @@ const deleteSizeChartUser = async (params) => {
   }
 };
 
+const getSizeChartByIdUser = async (params) => {
+  try {
+    const result = await productSizeCharts.findOne({
+      where: {
+        id: params?.sizeChartId,
+      },
+    });
+    return successResponse(statusCode.SUCCESS.OK, "Success!", result);
+  } catch (err) {
+    throw rejectResponse(
+      statusCode.SERVER_ERROR.INTERNAL_SERVER_ERROR,
+      err?.message
+    );
+  }
+};
+
 module.exports = {
   getProductsUser,
   getProductByIdUser,
@@ -439,4 +455,5 @@ module.exports = {
   addSizeChartUser,
   updateSizeChartUser,
   deleteSizeChartUser,
+  getSizeChartByIdUser,
 };
