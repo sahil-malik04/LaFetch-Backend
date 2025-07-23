@@ -22,7 +22,6 @@ const getInternalUsersService = async () => {
         "isActive",
         "isAccountDeleted",
         "isInvited",
-        "isInvitationAccepted"
       ],
     });
     return successResponse(statusCode.SUCCESS.CREATED, "Success!", result);
