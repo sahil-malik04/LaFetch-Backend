@@ -67,42 +67,47 @@ const onboardInternalUserService = async (payload) => {
     const isUserExist = await users.findOne({
       where: {
         email: payload?.email,
-        isAccountDeleted: false,
       },
     });
     if (isUserExist) {
-      return rejectResponse(
-        statusCode.CLIENT_ERROR.CONFLICT,
-        "User already exist!"
-      );
-    } else {
-      const password = generatePassword();
-      const userCredentials = {
-        email: payload?.email,
-        password,
-      };
-
-      const userData = {
-        fullName: payload?.fullName,
-        email: payload?.email,
-        password: encryptText(password),
-        phone: payload?.phone,
-        roleId: payload?.roleId,
-        isInvited: true,
-      };
-      const createUser = await users.create(userData);
-      if (createUser) {
-        return successResponse(
-          statusCode.SUCCESS.OK,
-          "Success!",
-          userCredentials
+      if (!isUserExist.isAccountDeleted) {
+        return rejectResponse(
+          statusCode.CLIENT_ERROR.CONFLICT,
+          "User already exists!"
         );
       } else {
         return rejectResponse(
           statusCode.CLIENT_ERROR.CONFLICT,
-          "Error in creating the user!"
+          "This account was deleted. Please contact support."
         );
       }
+    }
+    const password = generatePassword();
+    const userCredentials = {
+      email: payload?.email,
+      password,
+    };
+
+    const userData = {
+      fullName: payload?.fullName,
+      email: payload?.email,
+      password: encryptText(password),
+      phone: payload?.phone,
+      roleId: payload?.roleId,
+      isInvited: true,
+    };
+    const createUser = await users.create(userData);
+    if (createUser) {
+      return successResponse(
+        statusCode.SUCCESS.OK,
+        "Success!",
+        userCredentials
+      );
+    } else {
+      return rejectResponse(
+        statusCode.CLIENT_ERROR.CONFLICT,
+        "Error in creating the user!"
+      );
     }
   } catch (err) {
     throw rejectResponse(
