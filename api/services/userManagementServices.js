@@ -11,6 +11,7 @@ const getInternalUsersService = async () => {
         roleId: {
           [Op.notIn]: [2, 3],
         },
+        isAccountDeleted: false,
       },
       attributes: [
         "id",
@@ -40,6 +41,7 @@ const getCustomersService = async () => {
         roleId: {
           [Op.eq]: 3,
         },
+        isAccountDeleted: false,
       },
       attributes: [
         "id",
@@ -110,8 +112,76 @@ const onboardInternalUserService = async (payload) => {
   }
 };
 
+const updateInternalUserService = async (params, body) => {
+  try {
+    const isUserExist = await users.findOne({
+      where: {
+        id: params?.userId,
+      },
+    });
+    if (isUserExist && isUserExist.roleId !== 2 && isUserExist.roleId !== 3) {
+      const data = {
+        fullName: body?.fullName,
+        phone: body?.phone,
+      };
+      const result = await isUserExist.update(data);
+      if (result) {
+        return successResponse(
+          statusCode.SUCCESS.OK,
+          "User updated successfully!"
+        );
+      }
+    } else {
+      return rejectResponse(
+        statusCode.CLIENT_ERROR.NOT_FOUND,
+        "User not found!"
+      );
+    }
+  } catch (err) {
+    throw rejectResponse(
+      statusCode.SERVER_ERROR.INTERNAL_SERVER_ERROR,
+      err?.message
+    );
+  }
+};
+
+const deleteInternalUserService = async (params) => {
+  try {
+    const isUserExist = await users.findOne({
+      where: {
+        id: params?.userId,
+      },
+    });
+    if (isUserExist && isUserExist.roleId !== 2 && isUserExist.roleId !== 3) {
+      const data = {
+        isActive: false,
+        isAccountDeleted: true,
+      };
+      const result = await isUserExist.update(data);
+      if (result) {
+        return successResponse(
+          statusCode.SUCCESS.OK,
+          "User deleted successfully!"
+        );
+      }
+    } else {
+      return rejectResponse(
+        statusCode.CLIENT_ERROR.NOT_FOUND,
+        "User not found!"
+      );
+    }
+  } catch (err) {
+    throw rejectResponse(
+      statusCode.SERVER_ERROR.INTERNAL_SERVER_ERROR,
+      err?.message
+    );
+  }
+};
+
 module.exports = {
   getInternalUsersService,
   getCustomersService,
   onboardInternalUserService,
+  updateInternalUserService,
+  deleteInternalUserService,
 };

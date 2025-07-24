@@ -33,8 +33,8 @@ const addTaxUser = async (payload) => {
 
 const getTaxesuser = async () => {
   try {
-    const isTaxExist = await taxes.findAll();
-    return successResponse(statusCode.SUCCESS.CREATED, "Success!", isTaxExist);
+    const result = await taxes.findAll();
+    return successResponse(statusCode.SUCCESS.OK, "Success!", result);
   } catch (err) {
     throw rejectResponse(
       statusCode.SERVER_ERROR.INTERNAL_SERVER_ERROR,
