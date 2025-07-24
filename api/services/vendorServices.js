@@ -32,6 +32,7 @@ const onboardVendorUser = async (payload) => {
         fullName: name,
         email,
         password: encryptText(password),
+        phone,
         roleId: 2,
       };
       const createUser = await users.create(userData);
