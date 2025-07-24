@@ -67,6 +67,7 @@ const onboardInternalUserService = async (payload) => {
     const isUserExist = await users.findOne({
       where: {
         email: payload?.email,
+        isAccountDeleted: false,
       },
     });
     if (isUserExist) {
@@ -82,7 +83,7 @@ const onboardInternalUserService = async (payload) => {
       };
 
       const userData = {
-        fullName: payload?.name,
+        fullName: payload?.fullName,
         email: payload?.email,
         password: encryptText(password),
         phone: payload?.phone,
@@ -103,7 +104,6 @@ const onboardInternalUserService = async (payload) => {
         );
       }
     }
-    return successResponse(statusCode.SUCCESS.OK, "Success!", result);
   } catch (err) {
     throw rejectResponse(
       statusCode.SERVER_ERROR.INTERNAL_SERVER_ERROR,
@@ -117,6 +117,7 @@ const updateInternalUserService = async (params, body) => {
     const isUserExist = await users.findOne({
       where: {
         id: params?.userId,
+        isAccountDeleted: false,
       },
     });
     if (isUserExist && isUserExist.roleId !== 2 && isUserExist.roleId !== 3) {
@@ -150,6 +151,7 @@ const deleteInternalUserService = async (params) => {
     const isUserExist = await users.findOne({
       where: {
         id: params?.userId,
+        isAccountDeleted: false,
       },
     });
     if (isUserExist && isUserExist.roleId !== 2 && isUserExist.roleId !== 3) {
