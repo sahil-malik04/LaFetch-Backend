@@ -5,9 +5,13 @@ const products = require("../models/productsModel");
 
 const getBrandsUser = async (query) => {
   try {
-    const whereClause = {
-      isFeatured: query.isFeatured === "true" ? true : false,
-    };
+    let whereClause = {};
+
+    if (query?.isFeatured === "true") {
+      whereClause.isFeatured = true;
+    } else if (query?.isFeatured === "false") {
+      whereClause.isFeatured = false;
+    }
 
     const result = await brands.findAll({
       where: whereClause,

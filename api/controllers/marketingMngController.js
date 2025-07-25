@@ -3,6 +3,7 @@ const {
   getCouponUser,
   updateCouponUser,
   deleteCouponUser,
+  getCouponByIdUser,
 } = require("../services/marketingMngServices");
 
 const addCoupon = async (req, res) => {
@@ -45,9 +46,20 @@ const deleteCoupon = async (req, res) => {
   }
 };
 
+const getCouponById = async (req, res) => {
+  try {
+    const params = req.params;
+    const result = await getCouponByIdUser(params);
+    res.status(result.status).json(result);
+  } catch (err) {
+    res.status(err?.status).json(err);
+  }
+};
+
 module.exports = {
   addCoupon,
   getCoupon,
   updateCoupon,
   deleteCoupon,
+  getCouponById,
 };

@@ -15,6 +15,7 @@ const userManagementRoutes = require("./userManagementRoutes");
 const marketingMngRoutes = require("./marketingMngRoutes");
 const vendorRoutes = require("./vendorRoutes");
 const roleMngRoutes = require("./roleMngRoutes");
+const serviceIntegrationRoutes = require("./serviceIntegrationRoutes");
 
 router.get("/", (req, res) => {
   res.send("Welcome to la-fetch backend");
@@ -34,5 +35,6 @@ router.use("/", userManagementRoutes);
 router.use("/", marketingMngRoutes);
 router.use("/", vendorRoutes);
 router.use("/", roleMngRoutes);
+router.use("/", serviceIntegrationRoutes);
 
 module.exports = router;

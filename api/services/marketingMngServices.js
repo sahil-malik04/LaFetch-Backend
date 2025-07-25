@@ -136,9 +136,33 @@ const deleteCouponUser = async (params) => {
   }
 };
 
+const getCouponByIdUser = async (params) => {
+  try {
+    const isCouponExist = await coupons.findOne({
+      where: {
+        id: params?.couponId,
+      },
+    });
+    if (isCouponExist) {
+      return successResponse(statusCode.SUCCESS.OK, isCouponExist);
+    } else {
+      return rejectResponse(
+        statusCode.CLIENT_ERROR.NOT_FOUND,
+        "Coupon not found!"
+      );
+    }
+  } catch (err) {
+    throw rejectResponse(
+      statusCode.SERVER_ERROR.INTERNAL_SERVER_ERROR,
+      err?.message
+    );
+  }
+};
+
 module.exports = {
   addCouponUser,
   getCouponUser,
   updateCouponUser,
   deleteCouponUser,
+  getCouponByIdUser,
 };
