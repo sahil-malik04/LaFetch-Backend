@@ -13,6 +13,13 @@ async function syncShopifyProducts(SHOPIFY_API_URL, ACCESS_TOKEN) {
       for (const edge of productsDataResult) {
         const node = edge.node;
 
+        const existingProduct = await products.findOne({
+          where: { shopifyProductId: node.id },
+        });
+        if (existingProduct) {
+          continue;
+        }
+
         const genderLabels =
           node.metafield?.references?.edges?.map(
             (e) => e.node.fields.find((f) => f.key === "label")?.value
@@ -86,10 +93,7 @@ async function syncShopifyProducts(SHOPIFY_API_URL, ACCESS_TOKEN) {
       return rejectResponse(statusCode.CLIENT_ERROR.CONFLICT, result);
     }
   } catch (error) {
-    console.error(
-      "Shopify sync error:",
-      error.response?.data || error.message
-    );
+    console.error("Shopify sync error:", error.response?.data || error.message);
   }
 }
 

@@ -20,7 +20,7 @@ const addShopifyAccountUser = async (payload) => {
     } else {
       const data = {
         vendorId: payload?.vendorId,
-        apiURL: payload?.apiURL,
+        apiURL: `https://${payload?.apiURL}/admin/api/graphql.json`,
         accessToken: payload?.accessToken,
       };
       await shopifyAccounts.create(data);
