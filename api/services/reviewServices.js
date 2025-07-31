@@ -41,19 +41,19 @@ const addReviewUser = async (payload) => {
   }
 };
 
-const getReviewsUser = async (params) => {
+const getReviewsUser = async (query) => {
   try {
-    const isReviewExist = await reviews.findAll({
-      where: {
-        productId: params?.productId,
-      },
-    });
-
-    return successResponse(
-      statusCode.SUCCESS.OK,
-      "Success!",
-      isReviewExist
-    );
+    if (query?.productId) {
+      const isReviewExist = await reviews.findOne({
+        where: {
+          productId: query.productId,
+        },
+      });
+      return successResponse(statusCode.SUCCESS.OK, "Success!", isReviewExist);
+    } else {
+      const allReviews = await reviews.findAll();
+      return successResponse(statusCode.SUCCESS.OK, "Success!", allReviews);
+    }
   } catch (err) {
     throw rejectResponse(
       statusCode.SERVER_ERROR.INTERNAL_SERVER_ERROR,

@@ -10,6 +10,7 @@ const productVariants = require("../models/productVariantModel");
 const { syncShopifyProducts } = require("../shopify/shopifyDBSync");
 const { uploadToS3 } = require("../utils/s3Uploader");
 const productSizeCharts = require("../models/productSizeChartsModel");
+const shopifyAccounts = require("../models/shopifyAccountsModel");
 
 // products
 const getProductsUser = async (query) => {
@@ -272,10 +273,33 @@ const deleteBannerUser = async (params) => {
   }
 };
 
-const syncProductsUser = async () => {
+const syncProductsUser = async (query) => {
   try {
-    await syncShopifyProducts();
-    return successResponse(statusCode.SUCCESS.OK, "Shopify sync complete!");
+    if (query?.vendorId) {
+      const getShopifyCred = await shopifyAccounts.findOne({
+        where: {
+          id: query?.vendorId,
+        },
+      });
+      if (getShopifyCred) {
+        const SHOPIFY_API_URL = getShopifyCred?.apiURL;
+        const ACCESS_TOKEN = getShopifyCred?.accessToken;
+
+        const result = await syncShopifyProducts(SHOPIFY_API_URL, ACCESS_TOKEN);
+
+        return successResponse(result?.status, result?.message);
+      } else {
+        return rejectResponse(
+          statusCode.CLIENT_ERROR.NOT_FOUND,
+          "No shopify account linked with the vendor"
+        );
+      }
+    } else {
+      return rejectResponse(
+        statusCode.CLIENT_ERROR.NOT_FOUND,
+        "Please provide vendor ID"
+      );
+    }
   } catch (err) {
     throw rejectResponse(
       statusCode.SERVER_ERROR.INTERNAL_SERVER_ERROR,

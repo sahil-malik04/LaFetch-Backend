@@ -101,7 +101,8 @@ const deleteBanner = async (req, res) => {
 
 const syncProducts = async (req, res) => {
   try {
-    const result = await syncProductsUser();
+    const query = req.query;
+    const result = await syncProductsUser(query);
     res.status(result.status).json(result);
   } catch (err) {
     res.status(err?.status).json(err);

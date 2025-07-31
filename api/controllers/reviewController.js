@@ -12,8 +12,8 @@ const addReview = async (req, res) => {
 
 const getReviews = async (req, res) => {
   try {
-    const params = req.params;
-    const result = await getReviewsUser(params);
+    const query = req.query;
+    const result = await getReviewsUser(query);
     res.status(result.status).json(result);
   } catch (err) {
     res.status(err?.status).json(err);

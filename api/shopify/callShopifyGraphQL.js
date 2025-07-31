@@ -1,8 +1,8 @@
 const axios = require("axios");
 
-const SHOPIFY_API_URL =
-  "https://backend-testbuild-store.myshopify.com/admin/api/2025-04/graphql.json";
-const ACCESS_TOKEN = "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";
+// const SHOPIFY_API_URL =
+//   "https://backend-testbuild-store.myshopify.com/admin/api/2025-04/graphql.json";
+// const ACCESS_TOKEN = "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";
 
 const fetchProductQuery = `
     {
@@ -103,7 +103,7 @@ const fetchProductQuery = `
     }
   `;
 
-async function callShopifyGraphQL() {
+async function callShopifyGraphQL(SHOPIFY_API_URL, ACCESS_TOKEN) {
   try {
     const response = await axios.post(
       SHOPIFY_API_URL,
@@ -116,9 +116,9 @@ async function callShopifyGraphQL() {
       }
     );
 
-    return (response.data.data.products);
+    return response.data.data.products;
   } catch (error) {
-    console.error("Error calling Shopify API:", error);
+    return error;
   }
 }
 

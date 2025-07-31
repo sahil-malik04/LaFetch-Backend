@@ -1,6 +1,8 @@
 const { statusCode } = require("../utils/statusCode");
 const { successResponse, rejectResponse } = require("../utils/response");
 const shopifyAccounts = require("../models/shopifyAccountsModel");
+const vendors = require("../models/vendorsModel");
+const users = require("../models/userModel");
 
 const addShopifyAccountUser = async (payload) => {
   try {
@@ -37,7 +39,21 @@ const addShopifyAccountUser = async (payload) => {
 
 const getShopifyAccountsUser = async () => {
   try {
-    const result = await shopifyAccounts.findAll();
+    const result = await shopifyAccounts.findAll({
+      include: [
+        {
+          model: vendors,
+          attributes: ["id", "userId"],
+          include: [
+            {
+              model: users,
+              attributes: ["id", "fullName"],
+            },
+          ],
+        },
+      ],
+    });
+
     return successResponse(statusCode.SUCCESS.OK, "Success!", result);
   } catch (err) {
     throw rejectResponse(
