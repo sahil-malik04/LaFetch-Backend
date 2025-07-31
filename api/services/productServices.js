@@ -278,7 +278,7 @@ const syncProductsUser = async (query) => {
     if (query?.vendorId) {
       const getShopifyCred = await shopifyAccounts.findOne({
         where: {
-          id: query?.vendorId,
+          vendorId: query?.vendorId,
         },
       });
       if (getShopifyCred) {
