@@ -11,7 +11,7 @@ const getRolesUser = async () => {
           [Op.notIn]: [2, 3],
         },
       },
-      attributes: ["id", "name"],
+      attributes: ["id", "name", "permissions"],
     });
     return successResponse(statusCode.SUCCESS.OK, "Success!", result);
   } catch (err) {
