@@ -23,7 +23,7 @@ const products = sequelize.define("products", {
   tags: { type: DataTypes.ARRAY(DataTypes.STRING), allowNull: true },
   publishedAt: { type: DataTypes.STRING, allowNull: false },
 
-  imageUrls: { type: DataTypes.ARRAY(DataTypes.STRING), allowNull: true },
+  imageUrls: { type: DataTypes.ARRAY(DataTypes.TEXT), allowNull: true },
 
   isFeatured: { type: DataTypes.BOOLEAN, defaultValue: false },
   rating: { type: DataTypes.FLOAT, defaultValue: 0 },

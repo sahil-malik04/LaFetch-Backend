@@ -171,26 +171,22 @@ const updateProductStatusUser = async (params) => {
 
 const deleteProductUser = async (params) => {
   try {
-    const isProductVariantExist = await productVariants.findOne({
+    const deletedVariants = await productVariants.destroy({
       where: {
         productId: params?.productId,
       },
     });
-    if (isProductVariantExist) {
-      const result = await isProductVariantExist.destroy();
-      if (result) {
-        const deleteProduct = await products.destroy({
-          where: {
-            id: params?.productId,
-          },
-        });
-        if (deleteProduct) {
-          if (result)
-            return successResponse(
-              statusCode.SUCCESS.OK,
-              "Product deleted successfully!"
-            );
-        }
+    if (deletedVariants > 0) {
+      const deleteProduct = await products.destroy({
+        where: {
+          id: params?.productId,
+        },
+      });
+      if (deleteProduct) {
+        return successResponse(
+          statusCode.SUCCESS.OK,
+          "Product deleted successfully!"
+        );
       }
     } else {
       return rejectResponse(
