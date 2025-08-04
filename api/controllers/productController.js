@@ -13,6 +13,8 @@ const {
   updateSizeChartUser,
   deleteSizeChartUser,
   getSizeChartByIdUser,
+  updateProductStatusUser,
+  deleteProductUser,
 } = require("../services/productServices");
 
 const getProducts = async (req, res) => {
@@ -40,6 +42,26 @@ const updateProduct = async (req, res) => {
     const params = req.params;
     const body = req.body;
     const result = await updateProductUser(params, body);
+    res.status(result.status).json(result);
+  } catch (err) {
+    res.status(err?.status).json(err);
+  }
+};
+
+const updateProductStatus = async (req, res) => {
+  try {
+    const params = req.params;
+    const result = await updateProductStatusUser(params);
+    res.status(result.status).json(result);
+  } catch (err) {
+    res.status(err?.status).json(err);
+  }
+};
+
+const deleteProduct = async (req, res) => {
+  try {
+    const params = req.params;
+    const result = await deleteProductUser(params);
     res.status(result.status).json(result);
   } catch (err) {
     res.status(err?.status).json(err);
@@ -176,4 +198,6 @@ module.exports = {
   updateSizeChart,
   deleteSizeChart,
   getSizeChartById,
+  updateProductStatus,
+  deleteProduct,
 };

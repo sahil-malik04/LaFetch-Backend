@@ -19,7 +19,7 @@ const products = sequelize.define("products", {
   brandId: { type: DataTypes.INTEGER, allowNull: true },
   warehouseId: { type: DataTypes.INTEGER, allowNull: true },
 
-  status: { type: DataTypes.STRING, allowNull: false },
+  status: { type: DataTypes.BOOLEAN, defaultValue: false },
   tags: { type: DataTypes.ARRAY(DataTypes.STRING), allowNull: true },
   publishedAt: { type: DataTypes.STRING, allowNull: false },
 
@@ -73,7 +73,7 @@ products.belongsTo(category, { foreignKey: "superCatId" });
 products.belongsTo(warehouse, { foreignKey: "warehouseId" });
 
 // sequelize
-//   .sync({ force: true })
+//   .sync({ force: false })
 //   .then(() => {
 //     console.log("products table created successfully.");
 //   })

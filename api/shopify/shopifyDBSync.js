@@ -34,7 +34,6 @@ async function syncShopifyProducts(SHOPIFY_API_URL, ACCESS_TOKEN) {
           type: node.productType,
           title: node.title,
           description: node.description,
-          status: node.status,
           tags: node.tags || [],
           publishedAt: node.publishedAt,
           imageUrls:

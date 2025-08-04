@@ -17,11 +17,15 @@ const {
   updateSizeChart,
   deleteSizeChart,
   getSizeChartById,
+  updateProductStatus,
+  deleteProduct,
 } = require("../controllers/productController");
 
 router.get("/products", getProducts);
 router.get("/product/:productId", getProductById);
 router.put("/product/:productId", isAuthorized, updateProduct);
+router.patch("/product-status/:productId", isAuthorized, updateProductStatus);
+router.delete("/product/:productId", isAuthorized, deleteProduct);
 
 // banner routes
 router.get("/banners", getBanners);

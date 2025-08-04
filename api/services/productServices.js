@@ -17,9 +17,10 @@ const getProductsUser = async (query) => {
   try {
     const genderParam = Number(query.gender);
     const collectionType = query.collectionType;
+    const status = Number(query?.status);
 
     const whereClause = {
-      status: "ACTIVE",
+      ...(query?.status && { status: status === 1 ? true : false }),
     };
 
     if (collectionType) {
@@ -86,7 +87,9 @@ const updateProductUser = async (params, body) => {
       const data = {
         type: body?.type,
         title: body?.title,
+        shortDescription: body?.shortDescription,
         description: body?.description,
+        slug: body?.slug,
         tags: body?.tags,
 
         superCatId: body?.superCatId,
@@ -95,6 +98,12 @@ const updateProductUser = async (params, body) => {
         brandId: body?.brandId,
         warehouseId: body?.warehouseId,
 
+        imageUrls: body?.imageUrls,
+        isFeatured: body?.isFeatured,
+
+        sku: body?.sku,
+        lfSku: body?.lfSku,
+
         seoTitle: body?.seoTitle,
         seoDescription: body?.seoDescription,
 
@@ -102,15 +111,88 @@ const updateProductUser = async (params, body) => {
         fabrics: body?.fabrics,
         colorPatterns: body?.colorPatterns,
 
+        basePrice: body?.basePrice,
         hasCOD: body?.hasCOD,
         hasExchange: body?.hasExchange,
         exchangeDays: body?.exchangeDays,
         manufacturingAmount: body?.manufacturingAmount,
+        mrp: body?.mrp,
+        msp: body?.msp,
+        lfMsp: body?.lfMsp,
         sellingAmount: body?.sellingAmount,
         netAmount: body?.netAmount,
       };
       const result = await isProductExist.update(data);
       return successResponse(statusCode.SUCCESS.OK, "Success!", result);
+    } else {
+      return rejectResponse(
+        statusCode.CLIENT_ERROR.NOT_FOUND,
+        responseMessages.PRODUCT_NOT_EXIST
+      );
+    }
+  } catch (err) {
+    throw rejectResponse(
+      statusCode.SERVER_ERROR.INTERNAL_SERVER_ERROR,
+      err?.message
+    );
+  }
+};
+
+const updateProductStatusUser = async (params) => {
+  try {
+    const isProductExist = await products.findOne({
+      where: {
+        id: params?.productId,
+      },
+    });
+    if (isProductExist) {
+      const data = {
+        status: true,
+        updatedAt: new Date(),
+      };
+      const result = await isProductExist.update(data);
+      if (result)
+        return successResponse(
+          statusCode.SUCCESS.OK,
+          "Product updated successfully!"
+        );
+    } else {
+      return rejectResponse(
+        statusCode.CLIENT_ERROR.NOT_FOUND,
+        responseMessages.PRODUCT_NOT_EXIST
+      );
+    }
+  } catch (err) {
+    throw rejectResponse(
+      statusCode.SERVER_ERROR.INTERNAL_SERVER_ERROR,
+      err?.message
+    );
+  }
+};
+
+const deleteProductUser = async (params) => {
+  try {
+    const isProductVariantExist = await productVariants.findOne({
+      where: {
+        productId: params?.productId,
+      },
+    });
+    if (isProductVariantExist) {
+      const result = await isProductVariantExist.destroy();
+      if (result) {
+        const deleteProduct = await products.destroy({
+          where: {
+            id: params?.productId,
+          },
+        });
+        if (deleteProduct) {
+          if (result)
+            return successResponse(
+              statusCode.SUCCESS.OK,
+              "Product deleted successfully!"
+            );
+        }
+      }
     } else {
       return rejectResponse(
         statusCode.CLIENT_ERROR.NOT_FOUND,
@@ -480,4 +562,6 @@ module.exports = {
   updateSizeChartUser,
   deleteSizeChartUser,
   getSizeChartByIdUser,
+  updateProductStatusUser,
+  deleteProductUser,
 };
