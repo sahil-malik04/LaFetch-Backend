@@ -48,7 +48,6 @@ const getProductByIdUser = async (params) => {
     const product = await products.findOne({
       where: {
         id: params?.productId,
-        status: true,
       },
       include: [brands, category, warehouse],
     });
