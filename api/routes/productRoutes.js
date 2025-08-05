@@ -19,13 +19,25 @@ const {
   getSizeChartById,
   updateProductStatus,
   deleteProduct,
+  onboardProduct,
 } = require("../controllers/productController");
 
 router.get("/products", getProducts);
 router.get("/product/:productId", getProductById);
-router.put("/product/:productId", isAuthorized, updateProduct);
+router.put(
+  "/product/:productId",
+  isAuthorized,
+  upload.fields([{ name: "image" }]),
+  updateProduct
+);
 router.patch("/product-status/:productId", isAuthorized, updateProductStatus);
 router.delete("/product/:productId", isAuthorized, deleteProduct);
+router.post(
+  "/product-onboard",
+  isAuthorized,
+  upload.fields([{ name: "image" }]),
+  onboardProduct
+);
 
 // banner routes
 router.get("/banners", getBanners);

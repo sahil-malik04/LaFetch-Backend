@@ -75,7 +75,7 @@ const getProductByIdUser = async (params) => {
   }
 };
 
-const updateProductUser = async (params, body) => {
+const updateProductUser = async (params, body, reqFiles) => {
   try {
     const isProductExist = await products.findOne({
       where: {
@@ -89,7 +89,7 @@ const updateProductUser = async (params, body) => {
         shortDescription: body?.shortDescription,
         description: body?.description,
         slug: body?.slug,
-        tags: body?.tags,
+        tags: JSON.parse(body?.tags),
 
         superCatId: body?.superCatId,
         catId: body?.catId,
@@ -97,7 +97,6 @@ const updateProductUser = async (params, body) => {
         brandId: body?.brandId,
         warehouseId: body?.warehouseId,
 
-        imageUrls: body?.imageUrls,
         isFeatured: body?.isFeatured,
 
         sku: body?.sku,
@@ -106,9 +105,9 @@ const updateProductUser = async (params, body) => {
         seoTitle: body?.seoTitle,
         seoDescription: body?.seoDescription,
 
-        targetGenders: body?.targetGenders,
-        fabrics: body?.fabrics,
-        colorPatterns: body?.colorPatterns,
+        targetGenders: JSON.parse(body?.targetGenders),
+        fabrics: JSON.parse(body?.fabrics),
+        colorPatterns: JSON.parse(body?.colorPatterns),
 
         basePrice: body?.basePrice,
         hasCOD: body?.hasCOD,
@@ -120,7 +119,23 @@ const updateProductUser = async (params, body) => {
         lfMsp: body?.lfMsp,
         sellingAmount: body?.sellingAmount,
         netAmount: body?.netAmount,
+        updatedAt: new Date()
       };
+      // Handle multiple image uploads
+      if (reqFiles?.image && reqFiles.image.length > 0) {
+        const urls = [];
+        for (const image of reqFiles.image) {
+          const url = await uploadToS3(
+            image.buffer,
+            image.originalname,
+            image.mimetype,
+            "product-assets"
+          );
+          urls.push(url);
+        }
+
+        data.imageUrls = urls;
+      }
       const result = await isProductExist.update(data);
       return successResponse(statusCode.SUCCESS.OK, "Success!", result);
     } else {
@@ -161,6 +176,76 @@ const updateProductStatusUser = async (params) => {
         responseMessages.PRODUCT_NOT_EXIST
       );
     }
+  } catch (err) {
+    throw rejectResponse(
+      statusCode.SERVER_ERROR.INTERNAL_SERVER_ERROR,
+      err?.message
+    );
+  }
+};
+
+const onboardProductUser = async (body, reqFiles) => {
+  try {
+    const data = {
+      type: body?.type,
+      title: body?.title,
+      shortDescription: body?.shortDescription,
+      description: body?.description,
+      slug: body?.slug,
+      tags: JSON.parse(body?.tags),
+
+      superCatId: body?.superCatId,
+      catId: body?.catId,
+      subCatId: body?.subCatId,
+      brandId: body?.brandId,
+      warehouseId: body?.warehouseId,
+
+      isFeatured: body?.isFeatured,
+
+      sku: body?.sku,
+      lfSku: body?.lfSku,
+
+      seoTitle: body?.seoTitle,
+      seoDescription: body?.seoDescription,
+
+      targetGenders: JSON.parse(body?.targetGenders),
+      fabrics: JSON.parse(body?.fabrics),
+      colorPatterns: JSON.parse(body?.colorPatterns),
+
+      publishedAt: new Date().toISOString().split(".")[0] + "Z",
+      addedBy: "admin",
+      basePrice: body?.basePrice,
+      hasCOD: body?.hasCOD,
+      hasExchange: body?.hasExchange,
+      exchangeDays: body?.exchangeDays,
+      manufacturingAmount: body?.manufacturingAmount,
+      mrp: body?.mrp,
+      msp: body?.msp,
+      lfMsp: body?.lfMsp,
+      sellingAmount: body?.sellingAmount,
+      netAmount: body?.netAmount,
+    };
+    // Handle multiple image uploads
+    if (reqFiles?.image && reqFiles.image.length > 0) {
+      const urls = [];
+      for (const image of reqFiles.image) {
+        const url = await uploadToS3(
+          image.buffer,
+          image.originalname,
+          image.mimetype,
+          "product-assets"
+        );
+        urls.push(url);
+      }
+
+      data.imageUrls = urls;
+    }
+    const result = await products.create(data);
+    if (result)
+      return successResponse(
+        statusCode.SUCCESS.CREATED,
+        "Product added successfully!"
+      );
   } catch (err) {
     throw rejectResponse(
       statusCode.SERVER_ERROR.INTERNAL_SERVER_ERROR,
@@ -559,4 +644,5 @@ module.exports = {
   getSizeChartByIdUser,
   updateProductStatusUser,
   deleteProductUser,
+  onboardProductUser,
 };
