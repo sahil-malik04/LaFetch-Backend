@@ -35,7 +35,8 @@ async function syncShopifyProducts(SHOPIFY_API_URL, ACCESS_TOKEN) {
           title: node.title,
           description: node.description,
           tags: node.tags || [],
-          publishedAt: node.publishedAt,
+          publishedAt:
+            node.publishedAt || new Date().toISOString().split(".")[0] + "Z",
           imageUrls:
             node.images?.edges?.map((img) => img.node.originalSrc) || [],
 
@@ -92,7 +93,10 @@ async function syncShopifyProducts(SHOPIFY_API_URL, ACCESS_TOKEN) {
       return rejectResponse(statusCode.CLIENT_ERROR.CONFLICT, result);
     }
   } catch (error) {
-    console.error("Shopify sync error:", error.response?.data || error.message);
+    throw rejectResponse(
+      statusCode.CLIENT_ERROR.CONFLICT,
+      error.response?.data || error.message
+    );
   }
 }
 
