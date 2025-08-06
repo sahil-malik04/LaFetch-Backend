@@ -119,7 +119,7 @@ const updateProductUser = async (params, body, reqFiles) => {
         lfMsp: body?.lfMsp,
         sellingAmount: body?.sellingAmount,
         netAmount: body?.netAmount,
-        updatedAt: new Date()
+        updatedAt: new Date(),
       };
       // Handle multiple image uploads
       if (reqFiles?.image && reqFiles.image.length > 0) {
@@ -241,11 +241,35 @@ const onboardProductUser = async (body, reqFiles) => {
       data.imageUrls = urls;
     }
     const result = await products.create(data);
-    if (result)
-      return successResponse(
-        statusCode.SUCCESS.CREATED,
-        "Product added successfully!"
-      );
+    if (result) {
+      let lowestPrice = Number.POSITIVE_INFINITY;
+      const variants = JSON.parse(body?.variants);
+      for (const variantEdge of variants) {
+        const price = parseFloat(variantEdge.price);
+
+        if (price && price < lowestPrice) {
+          lowestPrice = price;
+        }
+
+        await productVariants.create({
+          productId: result.id,
+          title: variantEdge.title,
+          sku: variantEdge.sku,
+          price: price,
+          compareAtPrice: parseFloat(variantEdge.compareAtPrice),
+          inventoryQuantity: variantEdge.inventoryQuantity,
+          selectedOptions: variantEdge.selectedOptions,
+        });
+      }
+
+      if (lowestPrice !== Number.POSITIVE_INFINITY) {
+        await result.update({ basePrice: lowestPrice });
+      }
+    }
+    return successResponse(
+      statusCode.SUCCESS.CREATED,
+      "Product added successfully!"
+    );
   } catch (err) {
     throw rejectResponse(
       statusCode.SERVER_ERROR.INTERNAL_SERVER_ERROR,
