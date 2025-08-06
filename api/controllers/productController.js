@@ -17,6 +17,7 @@ const {
   deleteProductUser,
   onboardProductUser,
   updateProductVariantUser,
+  deleteProductVariantUser,
 } = require("../services/productServices");
 
 const getProducts = async (req, res) => {
@@ -107,6 +108,16 @@ const updateProductVariant = async (req, res) => {
     const params = req.params;
     const body = req.body;
     const result = await updateProductVariantUser(params, body);
+    res.status(result.status).json(result);
+  } catch (err) {
+    res.status(err?.status).json(err);
+  }
+};
+
+const deleteProductVariant = async (req, res) => {
+  try {
+    const params = req.params;
+    const result = await deleteProductVariantUser(params);
     res.status(result.status).json(result);
   } catch (err) {
     res.status(err?.status).json(err);
@@ -227,4 +238,5 @@ module.exports = {
   deleteProduct,
   onboardProduct,
   updateProductVariant,
+  deleteProductVariant
 };

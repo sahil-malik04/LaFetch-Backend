@@ -21,6 +21,7 @@ const {
   deleteProduct,
   onboardProduct,
   updateProductVariant,
+  deleteProductVariant,
 } = require("../controllers/productController");
 
 router.get("/products", getProducts);
@@ -40,6 +41,12 @@ router.post(
   onboardProduct
 );
 router.put("/product-variant/:variantId", isAuthorized, updateProductVariant);
+router.delete(
+  "/product-variant/:variantId",
+  isAuthorized,
+  deleteProductVariant
+);
+
 // banner routes
 router.get("/banners", getBanners);
 router.get("/banner/:bannerId", getBannerById);

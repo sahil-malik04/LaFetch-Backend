@@ -341,6 +341,35 @@ const updateProductVariantUser = async (params, body) => {
   }
 };
 
+const deleteProductVariantUser = async (params) => {
+  try {
+    const isVariantExist = await productVariants.findOne({
+      where: {
+        id: params?.variantId,
+      },
+    });
+    if (isVariantExist) {
+      const deleteVariant = await isVariantExist.destroy();
+      if (deleteVariant) {
+        return successResponse(
+          statusCode.SUCCESS.OK,
+          "Product variant deleted successfully!"
+        );
+      }
+    } else {
+      return rejectResponse(
+        statusCode.CLIENT_ERROR.NOT_FOUND,
+        responseMessages.PRODUCT_NOT_EXIST
+      );
+    }
+  } catch (err) {
+    throw rejectResponse(
+      statusCode.SERVER_ERROR.INTERNAL_SERVER_ERROR,
+      err?.message
+    );
+  }
+};
+
 const deleteProductUser = async (params) => {
   try {
     const deletedVariants = await productVariants.destroy({
@@ -733,4 +762,5 @@ module.exports = {
   deleteProductUser,
   onboardProductUser,
   updateProductVariantUser,
+  deleteProductVariantUser,
 };
