@@ -137,6 +137,31 @@ const updateProductUser = async (params, body, reqFiles) => {
         data.imageUrls = urls;
       }
       const result = await isProductExist.update(data);
+      const variants = JSON.parse(body?.variants);
+      if (variants.length) {
+        let lowestPrice = Number.POSITIVE_INFINITY;
+        for (const variantEdge of variants) {
+          const price = parseFloat(variantEdge.price);
+
+          if (price && price < lowestPrice) {
+            lowestPrice = price;
+          }
+
+          await productVariants.create({
+            productId: result.id,
+            title: variantEdge.title,
+            sku: variantEdge.sku,
+            price: price,
+            compareAtPrice: parseFloat(variantEdge.compareAtPrice),
+            inventoryQuantity: variantEdge.inventoryQuantity,
+            selectedOptions: variantEdge.selectedOptions,
+          });
+        }
+
+        if (lowestPrice !== Number.POSITIVE_INFINITY) {
+          await result.update({ basePrice: lowestPrice });
+        }
+      }
       return successResponse(statusCode.SUCCESS.OK, "Success!", result);
     } else {
       return rejectResponse(
@@ -293,7 +318,7 @@ const updateProductVariantUser = async (params, body) => {
         compareAtPrice: body?.compareAtPrice,
         inventoryQuantity: body?.inventoryQuantity,
         selectedOptions: body?.selectedOptions,
-        updatedAt: new Date()
+        updatedAt: new Date(),
       };
       const result = await isVariantExist.update(data);
       if (result) {
