@@ -291,7 +291,9 @@ const updateProductVariantUser = async (params, body) => {
         sku: body?.sku,
         price: body?.price,
         compareAtPrice: body?.compareAtPrice,
+        inventoryQuantity: body?.inventoryQuantity,
         selectedOptions: body?.selectedOptions,
+        updatedAt: new Date()
       };
       const result = await isVariantExist.update(data);
       if (result) {
