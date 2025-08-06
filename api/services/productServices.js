@@ -278,6 +278,42 @@ const onboardProductUser = async (body, reqFiles) => {
   }
 };
 
+const updateProductVariantUser = async (params, body) => {
+  try {
+    const isVariantExist = await productVariants.findOne({
+      where: {
+        id: params?.variantId,
+      },
+    });
+    if (isVariantExist) {
+      const data = {
+        title: body?.title,
+        sku: body?.sku,
+        price: body?.price,
+        compareAtPrice: body?.compareAtPrice,
+        selectedOptions: body?.selectedOptions,
+      };
+      const result = await isVariantExist.update(data);
+      if (result) {
+        return successResponse(
+          statusCode.SUCCESS.OK,
+          "Product variant updated successfully!"
+        );
+      }
+    } else {
+      return rejectResponse(
+        statusCode.CLIENT_ERROR.NOT_FOUND,
+        "Product variant doesn't exist!"
+      );
+    }
+  } catch (err) {
+    throw rejectResponse(
+      statusCode.SERVER_ERROR.INTERNAL_SERVER_ERROR,
+      err?.message
+    );
+  }
+};
+
 const deleteProductUser = async (params) => {
   try {
     const deletedVariants = await productVariants.destroy({
@@ -669,4 +705,5 @@ module.exports = {
   updateProductStatusUser,
   deleteProductUser,
   onboardProductUser,
+  updateProductVariantUser,
 };

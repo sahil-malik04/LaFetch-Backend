@@ -20,6 +20,7 @@ const {
   updateProductStatus,
   deleteProduct,
   onboardProduct,
+  updateProductVariant,
 } = require("../controllers/productController");
 
 router.get("/products", getProducts);
@@ -38,7 +39,7 @@ router.post(
   upload.fields([{ name: "image" }]),
   onboardProduct
 );
-
+router.put("/product-variant/:variantId", isAuthorized, updateProductVariant);
 // banner routes
 router.get("/banners", getBanners);
 router.get("/banner/:bannerId", getBannerById);
