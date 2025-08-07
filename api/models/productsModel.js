@@ -3,6 +3,7 @@ const { sequelize } = require("../db/dbConfig.js");
 const brands = require("./brandsModel.js");
 const category = require("./categoryModel.js");
 const warehouse = require("./warehouseModel.js");
+const productCollection = require("./productCollectionModel.js");
 
 const products = sequelize.define("products", {
   id: { type: DataTypes.INTEGER, autoIncrement: true, primaryKey: true },
@@ -43,16 +44,8 @@ const products = sequelize.define("products", {
   fabrics: { type: DataTypes.ARRAY(DataTypes.STRING), allowNull: true },
   colorPatterns: { type: DataTypes.ARRAY(DataTypes.STRING), allowNull: true },
   basePrice: { type: DataTypes.FLOAT, allowNull: true },
-  collectionType: {
-    type: DataTypes.ENUM(
-      "lafetch-exclusive",
-      "premium",
-      "luxurious",
-      "standard"
-    ),
-    allowNull: true,
-    defaultValue: "standard",
-  },
+  collectionID: { type: DataTypes.INTEGER, allowNull: true },
+
   hasCOD: { type: DataTypes.BOOLEAN, allowNull: true },
   hasExchange: { type: DataTypes.BOOLEAN, allowNull: true },
   exchangeDays: { type: DataTypes.INTEGER, allowNull: true },
@@ -71,6 +64,7 @@ const products = sequelize.define("products", {
 products.belongsTo(brands, { foreignKey: "brandId" });
 products.belongsTo(category, { foreignKey: "superCatId" });
 products.belongsTo(warehouse, { foreignKey: "warehouseId" });
+products.belongsTo(productCollection, { foreignKey: "collectionID" });
 
 // sequelize
 //   .sync({ force: false })

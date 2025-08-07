@@ -11,21 +11,18 @@ const { syncShopifyProducts } = require("../shopify/shopifyDBSync");
 const { uploadToS3 } = require("../utils/s3Uploader");
 const productSizeCharts = require("../models/productSizeChartsModel");
 const shopifyAccounts = require("../models/shopifyAccountsModel");
+const productCollection = require("../models/productCollectionModel");
 
 // products
 const getProductsUser = async (query) => {
   try {
     const genderParam = Number(query.gender);
-    const collectionType = query.collectionType;
     const status = Number(query?.status);
 
     const whereClause = {
       ...(query?.status && { status: status === 1 ? true : false }),
     };
 
-    if (collectionType) {
-      whereClause.collectionType = collectionType;
-    }
     if (genderParam) {
       whereClause.superCatId = genderParam;
     }
@@ -239,6 +236,7 @@ const onboardProductUser = async (body, reqFiles) => {
 
       publishedAt: new Date().toISOString().split(".")[0] + "Z",
       addedBy: "admin",
+      collectionID: body?.collectionID,
       basePrice: body?.basePrice,
       hasCOD: body?.hasCOD,
       hasExchange: body?.hasExchange,
@@ -636,7 +634,6 @@ const addSizeChartUser = async (payload, reqFiles) => {
         return successResponse(statusCode.SUCCESS.OK, "Success!", result);
       }
     }
-    return successResponse(statusCode.SUCCESS.OK, "Success!", result);
   } catch (err) {
     throw rejectResponse(
       statusCode.SERVER_ERROR.INTERNAL_SERVER_ERROR,
@@ -694,7 +691,6 @@ const updateSizeChartUser = async (params, payload, reqFiles) => {
         return successResponse(statusCode.SUCCESS.OK, "Success!", result);
       }
     }
-    return successResponse(statusCode.SUCCESS.OK, "Success!", result);
   } catch (err) {
     throw rejectResponse(
       statusCode.SERVER_ERROR.INTERNAL_SERVER_ERROR,
@@ -743,6 +739,119 @@ const getSizeChartByIdUser = async (params) => {
   }
 };
 
+const getProductCollectionsUser = async () => {
+  try {
+    const result = await productCollection.findAll();
+    return successResponse(statusCode.SUCCESS.OK, "Success!", result);
+  } catch (err) {
+    throw rejectResponse(
+      statusCode.SERVER_ERROR.INTERNAL_SERVER_ERROR,
+      err?.message
+    );
+  }
+};
+
+const addProductCollectionUser = async (payload, reqFiles) => {
+  try {
+    const isCollectionExist = await productCollection.findOne({
+      where: {
+        name: payload?.name,
+      },
+    });
+    if (isCollectionExist) {
+      return rejectResponse(
+        statusCode.CLIENT_ERROR.CONFLICT,
+        "Product collection already exist with same name"
+      );
+    } else {
+      const data = {
+        name: payload?.name,
+        desc: payload?.desc,
+      };
+      const result = await productCollection.create(data);
+      if (result) {
+        return successResponse(statusCode.SUCCESS.OK, "Success!", result);
+      }
+    }
+  } catch (err) {
+    throw rejectResponse(
+      statusCode.SERVER_ERROR.INTERNAL_SERVER_ERROR,
+      err?.message
+    );
+  }
+};
+
+const updateProductCollectionUser = async (params, payload) => {
+  try {
+    const isCollectionExist = await productCollection.findOne({
+      where: {
+        id: params?.collectionId,
+      },
+    });
+    if (!isCollectionExist) {
+      return rejectResponse(
+        statusCode.CLIENT_ERROR.NOT_FOUND,
+        "Product collection doesn't exist"
+      );
+    } else {
+      if (payload?.name && payload?.name !== isCollectionExist.title) {
+        const isNameTaken = await productCollection.findOne({
+          where: { name: payload.name },
+        });
+        if (isNameTaken) {
+          return rejectResponse(
+            statusCode.CLIENT_ERROR.CONFLICT,
+            "Collection name already in use!"
+          );
+        }
+      }
+      const data = {
+        name: payload?.name,
+        desc: payload?.desc,
+        updatedAt: new Date(),
+      };
+
+      const result = await isCollectionExist.update(data);
+      if (result) {
+        return successResponse(statusCode.SUCCESS.OK, "Success!", result);
+      }
+    }
+  } catch (err) {
+    throw rejectResponse(
+      statusCode.SERVER_ERROR.INTERNAL_SERVER_ERROR,
+      err?.message
+    );
+  }
+};
+
+const deleteProductCollectionUser = async (params) => {
+  try {
+    const isCollectionExist = await productCollection.findOne({
+      where: {
+        id: params?.collectionId,
+      },
+    });
+    if (isCollectionExist) {
+      const result = await isCollectionExist.destroy();
+      if (result)
+        return successResponse(
+          statusCode.SUCCESS.OK,
+          "Collection deleted successfully!"
+        );
+    } else {
+      return rejectResponse(
+        statusCode.CLIENT_ERROR.NOT_FOUND,
+        "Product collection doesn't exist!"
+      );
+    }
+  } catch (err) {
+    throw rejectResponse(
+      statusCode.SERVER_ERROR.INTERNAL_SERVER_ERROR,
+      err?.message
+    );
+  }
+};
+
 module.exports = {
   getProductsUser,
   getProductByIdUser,
@@ -763,4 +872,8 @@ module.exports = {
   onboardProductUser,
   updateProductVariantUser,
   deleteProductVariantUser,
+  getProductCollectionsUser,
+  addProductCollectionUser,
+  updateProductCollectionUser,
+  deleteProductCollectionUser,
 };

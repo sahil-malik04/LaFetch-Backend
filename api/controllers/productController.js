@@ -18,6 +18,10 @@ const {
   onboardProductUser,
   updateProductVariantUser,
   deleteProductVariantUser,
+  getProductCollectionsUser,
+  addProductCollectionUser,
+  updateProductCollectionUser,
+  deleteProductCollectionUser,
 } = require("../services/productServices");
 
 const getProducts = async (req, res) => {
@@ -219,6 +223,46 @@ const getSizeChartById = async (req, res) => {
   }
 };
 
+const getProductCollections = async (req, res) => {
+  try {
+    const result = await getProductCollectionsUser();
+    res.status(result.status).json(result);
+  } catch (err) {
+    res.status(err?.status).json(err);
+  }
+};
+
+const addProductCollection = async (req, res) => {
+  try {
+    const body = req.body;
+    const result = await addProductCollectionUser(body);
+    res.status(result.status).json(result);
+  } catch (err) {
+    res.status(err?.status).json(err);
+  }
+};
+
+const updateProductCollection = async (req, res) => {
+  try {
+    const params = req.params;
+    const body = req.body;
+    const result = await updateProductCollectionUser(params, body);
+    res.status(result.status).json(result);
+  } catch (err) {
+    res.status(err?.status).json(err);
+  }
+};
+
+const deleteProductCollection = async (req, res) => {
+  try {
+    const params = req.params;
+    const result = await deleteProductCollectionUser(params);
+    res.status(result.status).json(result);
+  } catch (err) {
+    res.status(err?.status).json(err);
+  }
+};
+
 module.exports = {
   getProducts,
   getProductById,
@@ -238,5 +282,9 @@ module.exports = {
   deleteProduct,
   onboardProduct,
   updateProductVariant,
-  deleteProductVariant
+  deleteProductVariant,
+  getProductCollections,
+  addProductCollection,
+  updateProductCollection,
+  deleteProductCollection,
 };

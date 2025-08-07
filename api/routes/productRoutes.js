@@ -22,6 +22,10 @@ const {
   onboardProduct,
   updateProductVariant,
   deleteProductVariant,
+  getProductCollections,
+  addProductCollection,
+  updateProductCollection,
+  deleteProductCollection,
 } = require("../controllers/productController");
 
 router.get("/products", getProducts);
@@ -87,5 +91,23 @@ router.delete(
   deleteSizeChart
 );
 router.get("/product-size-chart/:sizeChartId", isAuthorized, getSizeChartById);
+
+// product collection
+router.get("/product-collections", isAuthorized, getProductCollections);
+router.post(
+  "/product-collection",
+  isAuthorized,
+  addProductCollection
+);
+router.put(
+  "/product-collection/:collectionId",
+  isAuthorized,
+  updateProductCollection
+);
+router.delete(
+  "/product-collection/:collectionId",
+  isAuthorized,
+  deleteProductCollection
+);
 
 module.exports = router;
