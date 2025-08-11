@@ -12,6 +12,7 @@ const { uploadToS3 } = require("../utils/s3Uploader");
 const productSizeCharts = require("../models/productSizeChartsModel");
 const shopifyAccounts = require("../models/shopifyAccountsModel");
 const productCollection = require("../models/productCollectionModel");
+const { Op } = require("sequelize");
 
 // products
 const getProductsUser = async (query) => {
@@ -796,7 +797,10 @@ const updateProductCollectionUser = async (params, payload) => {
     } else {
       if (payload?.name && payload?.name !== isCollectionExist.title) {
         const isNameTaken = await productCollection.findOne({
-          where: { name: payload.name },
+          where: {
+            name: payload.name,
+            id: { [Op.ne]: params?.collectionId },
+          },
         });
         if (isNameTaken) {
           return rejectResponse(
