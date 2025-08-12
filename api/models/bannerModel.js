@@ -4,7 +4,7 @@ const brands = require("./brandsModel.js");
 const category = require("./categoryModel.js");
 const associateWishlistModels = require("./wishlistAssociations.js");
 const associateVendorModels = require("./vendorAssociations.js");
-// const associateBrandModels = require("./brandAssociation.js");
+const associateBrandModels = require("./brandAssociation.js");
 const associateProductCollection = require("./productCollectionAssocation.js");
 
 const banners = sequelize.define("banners", {
@@ -41,7 +41,7 @@ banners.belongsTo(category, { foreignKey: "categoryId" });
 
 associateWishlistModels()
 associateVendorModels()
-// associateBrandModels()
+associateBrandModels()
 associateProductCollection()
 
 // sequelize
