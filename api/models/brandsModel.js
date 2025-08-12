@@ -10,6 +10,7 @@ const brands = sequelize.define("brands", {
   name: {
     type: DataTypes.STRING,
     allowNull: false,
+    unique: true,
   },
   description: {
     type: DataTypes.STRING,
@@ -25,6 +26,58 @@ const brands = sequelize.define("brands", {
   },
   commission: {
     type: DataTypes.FLOAT,
+    allowNull: true,
+  },
+  PAN: {
+    type: DataTypes.STRING,
+    allowNull: true,
+  },
+  GST: {
+    type: DataTypes.STRING,
+    allowNull: true,
+  },
+  incorporationCertificate: {
+    type: DataTypes.STRING,
+    allowNull: true,
+  },
+  udhyamAadhar: {
+    type: DataTypes.STRING,
+    allowNull: true,
+  },
+  trademarkCertificate: {
+    type: DataTypes.STRING,
+    allowNull: true,
+  },
+  authorizedSignatoryIDProof: {
+    type: DataTypes.STRING,
+    allowNull: true,
+  },
+  qualityAssuranceCertificate: {
+    type: DataTypes.STRING,
+    allowNull: true,
+  },
+  businessName: {
+    type: DataTypes.STRING,
+    allowNull: true,
+  },
+  tradeName: {
+    type: DataTypes.STRING,
+    allowNull: true,
+  },
+  brandEmail: {
+    type: DataTypes.STRING,
+    allowNull: true,
+  },
+  codAvailable: {
+    type: DataTypes.BOOLEAN,
+    allowNull: true,
+  },
+  websiteLink: {
+    type: DataTypes.STRING,
+    allowNull: true,
+  },
+  deliveryType: {
+    type: DataTypes.ENUM("regular", "lfQuick"),
     allowNull: true,
   },
   isFeatured: {

@@ -117,6 +117,7 @@ const updateProductUser = async (params, body, reqFiles) => {
         lfMsp: body?.lfMsp,
         sellingAmount: body?.sellingAmount,
         netAmount: body?.netAmount,
+        collectionID: body?.collectionID,
         updatedAt: new Date(),
       };
       // Handle multiple image uploads

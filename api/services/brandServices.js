@@ -2,6 +2,10 @@ const { successResponse, rejectResponse } = require("../utils/response");
 const { statusCode } = require("../utils/statusCode");
 const brands = require("../models/brandsModel");
 const products = require("../models/productsModel");
+const { uploadToS3 } = require("../utils/s3Uploader");
+const vendors = require("../models/vendorsModel");
+const vendorBrands = require("../models/vendorBrandsModel");
+const { fn, col, where } = require("sequelize");
 
 const getBrandsUser = async (query) => {
   try {
@@ -85,8 +89,97 @@ const makeBrandFeaturedUser = async (params, query) => {
   }
 };
 
+const brandOnboardUser = async (body, reqFiles) => {
+  try {
+    const isVendorExist = await vendors.findOne({
+      where: {
+        id: body?.vendorId,
+        isVerified: true,
+      },
+    });
+    if (!isVendorExist) {
+      return rejectResponse(
+        statusCode.CLIENT_ERROR.NOT_FOUND,
+        "Vendor doesn't exist!"
+      );
+    } else {
+      const isBrandExist = await brands.findOne({
+        where: where(fn("LOWER", col("name")), body?.name?.toLowerCase()),
+      });
+      if (isBrandExist) {
+        return rejectResponse(
+          statusCode.CLIENT_ERROR.CONFLICT,
+          "Brand already exist!"
+        );
+      } else {
+        const data = {
+          name: body?.name,
+          description: body?.name,
+          businessName: body?.businessName,
+          tradeName: body?.tradeName,
+          brandEmail: body?.brandEmail,
+          codAvailable: body?.codAvailable,
+          websiteLink: body?.websiteLink,
+          isFeatured: body?.isFeatured,
+          deliveryType: body?.deliveryType,
+        };
+
+        const uploadedFiles = {};
+
+        for (const [fieldName, files] of Object.entries(reqFiles)) {
+          const file = files[0];
+          const url = await uploadToS3(
+            file.buffer,
+            file.originalname,
+            file.mimetype,
+            "brand-assets"
+          );
+          uploadedFiles[fieldName] = url;
+        }
+        data.logo = uploadedFiles?.logo;
+        data.video = uploadedFiles?.video;
+        data.PAN = uploadedFiles?.PAN;
+        data.GST = uploadedFiles?.GST;
+        data.incorporationCertificate = uploadedFiles?.incorporationCertificate;
+        data.udhyamAadhar = uploadedFiles?.udhyamAadhar;
+        data.trademarkCertificate = uploadedFiles?.trademarkCertificate;
+        data.authorizedSignatoryIDProof =
+          uploadedFiles?.authorizedSignatoryIDProof;
+        data.qualityAssuranceCertificate =
+          uploadedFiles?.qualityAssuranceCertificate;
+
+        const result = await brands.create(data);
+        if (result) {
+          const data = {
+            vendorId: body?.vendorId,
+            brandId: result?.id,
+          };
+          const createVendorBrand = await vendorBrands.create(data);
+          if (createVendorBrand) {
+            return successResponse(
+              statusCode.SUCCESS.CREATED,
+              "Brand onboarded successfully!!"
+            );
+          }
+        } else {
+          return rejectResponse(
+            statusCode.CLIENT_ERROR.NOT_FOUND,
+            "There's some issue in onboarding the brand!"
+          );
+        }
+      }
+    }
+  } catch (err) {
+    throw rejectResponse(
+      statusCode.SERVER_ERROR.INTERNAL_SERVER_ERROR,
+      err?.message
+    );
+  }
+};
+
 module.exports = {
   getBrandsUser,
   viewBrandUser,
   makeBrandFeaturedUser,
+  brandOnboardUser,
 };

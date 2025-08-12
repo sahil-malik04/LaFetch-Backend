@@ -2,6 +2,7 @@ const {
   getBrandsUser,
   viewBrandUser,
   makeBrandFeaturedUser,
+  brandOnboardUser,
 } = require("../services/brandServices");
 
 const getBrands = async (req, res) => {
@@ -35,8 +36,20 @@ const makeBrandFeatured = async (req, res) => {
   }
 };
 
+const brandOnboard = async (req, res) => {
+  try {
+    const body = req.body;
+    const reqFiles = req.files;
+    const result = await brandOnboardUser(body, reqFiles);
+    res.status(result.status).json(result);
+  } catch (err) {
+    res.status(err?.status).json(err);
+  }
+};
+
 module.exports = {
   getBrands,
   viewBrand,
   makeBrandFeatured,
+  brandOnboard,
 };
