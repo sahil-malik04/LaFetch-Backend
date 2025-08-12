@@ -26,6 +26,7 @@ const {
   addProductCollection,
   updateProductCollection,
   deleteProductCollection,
+  getCollectionWithProducts,
 } = require("../controllers/productController");
 
 router.get("/products", getProducts);
@@ -94,11 +95,7 @@ router.get("/product-size-chart/:sizeChartId", isAuthorized, getSizeChartById);
 
 // product collection
 router.get("/product-collections", isAuthorized, getProductCollections);
-router.post(
-  "/product-collection",
-  isAuthorized,
-  addProductCollection
-);
+router.post("/product-collection", isAuthorized, addProductCollection);
 router.put(
   "/product-collection/:collectionId",
   isAuthorized,
@@ -108,6 +105,11 @@ router.delete(
   "/product-collection/:collectionId",
   isAuthorized,
   deleteProductCollection
+);
+router.get(
+  "/collection-with-products",
+  isAuthorized,
+  getCollectionWithProducts
 );
 
 module.exports = router;

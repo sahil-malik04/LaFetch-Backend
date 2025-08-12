@@ -856,6 +856,30 @@ const deleteProductCollectionUser = async (params) => {
   }
 };
 
+const getCollectionWithProductsUser = async () => {
+  try {
+    const getAllCollections = await productCollection.findAll({
+      include: [
+        {
+          model: products,
+          as: "products",
+          required: false,
+        },
+      ],
+    });
+    return successResponse(
+      statusCode.SUCCESS.OK,
+      "Success!",
+      getAllCollections
+    );
+  } catch (err) {
+    throw rejectResponse(
+      statusCode.SERVER_ERROR.INTERNAL_SERVER_ERROR,
+      err?.message
+    );
+  }
+};
+
 module.exports = {
   getProductsUser,
   getProductByIdUser,
@@ -880,4 +904,5 @@ module.exports = {
   addProductCollectionUser,
   updateProductCollectionUser,
   deleteProductCollectionUser,
+  getCollectionWithProductsUser,
 };

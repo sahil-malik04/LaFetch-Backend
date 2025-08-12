@@ -22,6 +22,7 @@ const {
   addProductCollectionUser,
   updateProductCollectionUser,
   deleteProductCollectionUser,
+  getCollectionWithProductsUser,
 } = require("../services/productServices");
 
 const getProducts = async (req, res) => {
@@ -263,6 +264,15 @@ const deleteProductCollection = async (req, res) => {
   }
 };
 
+const getCollectionWithProducts = async (req, res) => {
+  try {
+    const result = await getCollectionWithProductsUser();
+    res.status(result.status).json(result);
+  } catch (err) {
+    res.status(err?.status).json(err);
+  }
+};
+
 module.exports = {
   getProducts,
   getProductById,
@@ -287,4 +297,5 @@ module.exports = {
   addProductCollection,
   updateProductCollection,
   deleteProductCollection,
+  getCollectionWithProducts
 };
