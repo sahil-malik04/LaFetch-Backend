@@ -195,6 +195,7 @@ const brandOnboardUser = async (body, reqFiles) => {
                     state: wh.state,
                     postalCode: wh.postalCode,
                     capacity: wh.capacity,
+                    contactNo: wh.contactNo
                   }));
 
                   // Bulk create

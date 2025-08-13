@@ -31,6 +31,10 @@ const warehouse = sequelize.define("warehouse", {
     type: DataTypes.INTEGER,
     allowNull: true,
   },
+  contactNo: {
+    type: DataTypes.STRING,
+    allowNull: true,
+  },
   isActive: {
     type: DataTypes.BOOLEAN,
     defaultValue: true,
