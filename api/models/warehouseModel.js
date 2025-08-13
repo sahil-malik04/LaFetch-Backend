@@ -28,7 +28,7 @@ const warehouse = sequelize.define("warehouse", {
     allowNull: false,
   },
   capacity: {
-    type: DataTypes.INTEGER,
+    type: DataTypes.STRING,
     allowNull: true,
   },
   contactNo: {
