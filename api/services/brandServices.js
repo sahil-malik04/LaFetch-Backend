@@ -6,6 +6,9 @@ const { uploadToS3 } = require("../utils/s3Uploader");
 const vendors = require("../models/vendorsModel");
 const vendorBrands = require("../models/vendorBrandsModel");
 const { fn, col, where } = require("sequelize");
+const warehouse = require("../models/warehouseModel");
+const brandWarehouses = require("../models/brandWarehouses");
+const { sequelize } = require("../db/dbConfig");
 
 const getBrandsUser = async (query) => {
   try {
@@ -122,6 +125,7 @@ const brandOnboardUser = async (body, reqFiles) => {
           websiteLink: body?.websiteLink,
           isFeatured: body?.isFeatured,
           deliveryType: body?.deliveryType,
+          commission: body?.commission,
         };
 
         const uploadedFiles = {};
@@ -156,10 +160,84 @@ const brandOnboardUser = async (body, reqFiles) => {
           };
           const createVendorBrand = await vendorBrands.create(data);
           if (createVendorBrand) {
-            return successResponse(
-              statusCode.SUCCESS.CREATED,
-              "Brand onboarded successfully!!"
-            );
+            let createdResult;
+
+            if (body?.warehouseID) {
+              createdResult = await brandWarehouses.create({
+                brandId: result?.id,
+                warehouseId: body?.warehouseID,
+              });
+            } else if (body?.warehouses) {
+              let warehousesArray = [];
+
+              // Parse only once
+              try {
+                warehousesArray = JSON.parse(body.warehouses);
+              } catch (err) {
+                return rejectResponse(
+                  statusCode.CLIENT_ERROR.BAD_REQUEST,
+                  "Invalid warehouses JSON format"
+                );
+              }
+
+              if (
+                Array.isArray(warehousesArray) &&
+                warehousesArray.length > 0
+              ) {
+                // transaction
+                const transaction = await sequelize.transaction();
+                try {
+  
+                  const warehousesData = warehousesArray.map((wh) => ({
+                    name: wh.warehouseName,
+                    address: wh.address,
+                    city: wh.city,
+                    state: wh.state,
+                    postalCode: wh.postalCode,
+                    capacity: wh.capacity,
+                  }));
+
+                  // Bulk create
+                  const createdWarehouses = await warehouse.bulkCreate(
+                    warehousesData,
+                    {
+                      returning: true,
+                      transaction,
+                    }
+                  );
+
+                  // Prepare brand-warehouse links
+                  const brandWarehouseLinks = createdWarehouses.map((w) => ({
+                    brandId: result?.id,
+                    warehouseId: w.id,
+                  }));
+
+                  // Bulk create links
+                  createdResult = await brandWarehouses.bulkCreate(
+                    brandWarehouseLinks,
+                    {
+                      transaction,
+                    }
+                  );
+
+                  // Commit transaction
+                  await transaction.commit();
+                } catch (err) {
+                  await transaction.rollback();
+                  return rejectResponse(
+                    statusCode.SERVER_ERROR.INTERNAL,
+                    "Failed to create warehouses"
+                  );
+                }
+              }
+            }
+
+            if (createdResult) {
+              return successResponse(
+                statusCode.SUCCESS.CREATED,
+                "Brand onboarded successfully!!"
+              );
+            }
           }
         } else {
           return rejectResponse(
