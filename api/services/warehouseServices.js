@@ -58,7 +58,7 @@ const updateWarehouseUser = async (params, payload) => {
     });
     if (isWarehouseExist) {
       const data = {
-        name: payload?.name,
+        name: payload?.warehouseName,
         address: payload?.address,
         city: payload?.city,
         state: payload?.state,
