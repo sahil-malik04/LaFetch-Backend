@@ -41,6 +41,10 @@ const user_addresses = sequelize.define("user_addresses", {
     type: DataTypes.DECIMAL(11, 8),
     allowNull: true,
   },
+  type: {
+    type: DataTypes.STRING,
+    allowNull: true,
+  },
 });
 
 user_addresses.belongsTo(users, { foreignKey: "userId" });

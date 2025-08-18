@@ -15,20 +15,11 @@ const addToCartUser = async (payload) => {
       },
     });
 
-    if (existingCartItem) {
-      existingCartItem.quantity += payload?.quantity;
-      await existingCartItem.save();
-      return successResponse(
-        statusCode.SUCCESS.OK,
-        "Cart updated",
-        existingCartItem
-      );
-    } else {
+    if (!existingCartItem) {
       const data = {
         userId: payload?.userId,
         productId: payload?.productId,
         variantId: payload?.variantId,
-        quantity: payload?.quantity,
         status: payload?.status,
       };
       const result = await cart.create(data);

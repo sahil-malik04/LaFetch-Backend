@@ -39,6 +39,7 @@ const addAddressUser = async (payload) => {
       isDefaultAddress: payload?.isDefaultAddress || false,
       latitude: payload?.latitude,
       longitude: payload?.longitude,
+      type: payload?.type,
     };
 
     if (data.isDefaultAddress) {
@@ -100,6 +101,7 @@ const updateAddressUser = async (payload) => {
         line2: payload?.line2,
         cityId: payload?.cityId,
         postalCode: payload?.postalCode,
+        type: payload?.type,
         isDefaultAddress: payload?.isDefaultAddress || false,
       };
 

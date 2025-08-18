@@ -10,8 +10,7 @@ const cart = sequelize.define("cart", {
   userId: { type: DataTypes.INTEGER, allowNull: false },
   productId: { type: DataTypes.INTEGER, allowNull: false },
   variantId: { type: DataTypes.INTEGER, allowNull: true },
-
-  quantity: { type: DataTypes.INTEGER, allowNull: false, defaultValue: 1 },
+  
   status: {
     type: DataTypes.ENUM("active", "ordered", "removed"),
     defaultValue: "active",
