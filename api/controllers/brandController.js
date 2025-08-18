@@ -3,6 +3,8 @@ const {
   viewBrandUser,
   makeBrandFeaturedUser,
   brandOnboardUser,
+  editBrandUser,
+  deleteBrandUser,
 } = require("../services/brandServices");
 
 const getBrands = async (req, res) => {
@@ -47,9 +49,33 @@ const brandOnboard = async (req, res) => {
   }
 };
 
+const editBrand = async (req, res) => {
+  try {
+    const params = req.params;
+    const body = req.body;
+    const reqFiles = req.files;
+    const result = await editBrandUser(params, body, reqFiles);
+    res.status(result.status).json(result);
+  } catch (err) {
+    res.status(err?.status).json(err);
+  }
+};
+
+const deleteBrand = async (req, res) => {
+  try {
+    const params = req.params;
+    const result = await deleteBrandUser(params);
+    res.status(result.status).json(result);
+  } catch (err) {
+    res.status(err?.status).json(err);
+  }
+};
+
 module.exports = {
   getBrands,
   viewBrand,
   makeBrandFeatured,
   brandOnboard,
+  editBrand,
+  deleteBrand,
 };

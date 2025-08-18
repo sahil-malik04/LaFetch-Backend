@@ -6,6 +6,8 @@ const {
   viewBrand,
   makeBrandFeatured,
   brandOnboard,
+  editBrand,
+  deleteBrand,
 } = require("../controllers/brandController");
 
 router.get("/brands", getBrands);
@@ -26,5 +28,21 @@ router.post(
   ]),
   brandOnboard
 );
+router.put(
+  "/brand/:brandId",
+  upload.fields([
+    { name: "logo" },
+    { name: "video" },
+    { name: "PAN" },
+    { name: "GST" },
+    { name: "incorporationCertificate" },
+    { name: "udhyamAadhar" },
+    { name: "trademarkCertificate" },
+    { name: "authorizedSignatoryIDProof" },
+    { name: "qualityAssuranceCertificate" },
+  ]),
+  editBrand
+);
+router.delete("/brand/:brandId", deleteBrand);
 
 module.exports = router;

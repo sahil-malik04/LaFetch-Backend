@@ -21,7 +21,7 @@ const addWarehouseUser = async (payload) => {
         city: payload?.city,
         state: payload?.state,
         postalCode: payload?.postalCode,
-        capacity: payload?.postalCode,
+        capacity: payload?.capacity,
         contactNo: payload?.contactNo,
       };
       const result = await warehouse.create(data);
@@ -63,7 +63,8 @@ const updateWarehouseUser = async (params, payload) => {
         city: payload?.city,
         state: payload?.state,
         postalCode: payload?.postalCode,
-        capacity: payload?.postalCode,
+        capacity: payload?.capacity,
+        contactNo: payload?.contactNo,
         updatedAt: new Date(),
       };
       const result = await isWarehouseExist.update(data);

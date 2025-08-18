@@ -187,7 +187,6 @@ const brandOnboardUser = async (body, reqFiles) => {
                 // transaction
                 const transaction = await sequelize.transaction();
                 try {
-  
                   const warehousesData = warehousesArray.map((wh) => ({
                     name: wh.warehouseName,
                     address: wh.address,
@@ -195,7 +194,7 @@ const brandOnboardUser = async (body, reqFiles) => {
                     state: wh.state,
                     postalCode: wh.postalCode,
                     capacity: wh.capacity,
-                    contactNo: wh.contactNo
+                    contactNo: wh.contactNo,
                   }));
 
                   // Bulk create
@@ -256,9 +255,127 @@ const brandOnboardUser = async (body, reqFiles) => {
   }
 };
 
+const editBrandUser = async (params, body, reqFiles) => {
+  try {
+    const isBrandExist = await brands.findOne({
+      where: {
+        id: params?.brandId,
+      },
+    });
+    if (!isBrandExist) {
+      return rejectResponse(
+        statusCode.CLIENT_ERROR.NOT_FOUND,
+        "Brand doesn't exist!"
+      );
+    } else {
+      const data = {
+        name: body?.name,
+        description: body?.name,
+        businessName: body?.businessName,
+        tradeName: body?.tradeName,
+        brandEmail: body?.brandEmail,
+        codAvailable: body?.codAvailable,
+        websiteLink: body?.websiteLink,
+        isFeatured: body?.isFeatured,
+        deliveryType: body?.deliveryType,
+        commission: body?.commission,
+      };
+
+      const uploadedFiles = {};
+
+      for (const [fieldName, files] of Object.entries(reqFiles)) {
+        const file = files[0];
+        const url = await uploadToS3(
+          file.buffer,
+          file.originalname,
+          file.mimetype,
+          "brand-assets"
+        );
+        uploadedFiles[fieldName] = url;
+      }
+      data.logo = uploadedFiles?.logo;
+      data.video = uploadedFiles?.video;
+      data.PAN = uploadedFiles?.PAN;
+      data.GST = uploadedFiles?.GST;
+      data.incorporationCertificate = uploadedFiles?.incorporationCertificate;
+      data.udhyamAadhar = uploadedFiles?.udhyamAadhar;
+      data.trademarkCertificate = uploadedFiles?.trademarkCertificate;
+      data.authorizedSignatoryIDProof =
+        uploadedFiles?.authorizedSignatoryIDProof;
+      data.qualityAssuranceCertificate =
+        uploadedFiles?.qualityAssuranceCertificate;
+
+      const result = await isBrandExist.update(data);
+      if (result) {
+        return successResponse(
+          statusCode.SUCCESS.OK,
+          "Brand updated successfully!!"
+        );
+      } else {
+        return rejectResponse(
+          statusCode.CLIENT_ERROR.NOT_FOUND,
+          "There's some issue in onboarding the brand!"
+        );
+      }
+    }
+  } catch (err) {
+    throw rejectResponse(
+      statusCode.SERVER_ERROR.INTERNAL_SERVER_ERROR,
+      err?.message
+    );
+  }
+};
+
+const deleteBrandUser = async (params) => {
+  try {
+    const isBrandExist = await brands.findOne({
+      where: {
+        id: params?.brandId,
+      },
+    });
+    if (!isBrandExist) {
+      return rejectResponse(
+        statusCode.CLIENT_ERROR.NOT_FOUND,
+        "Brand doesn't exist!"
+      );
+    } else {
+      // delete all warehouses associate to brand
+      await brandWarehouses.destroy({
+        where: { brandId: params?.brandId },
+      });
+
+      // delete all vendors associate to brand
+      await vendorBrands.destroy({
+        where: { brandId: params?.brandId },
+      });
+
+      // delete brand
+      const deleteBrand = await isBrandExist.destroy();
+      if (deleteBrand) {
+        return successResponse(
+          statusCode.SUCCESS.OK,
+          "Brand deleted successfully!!"
+        );
+      } else {
+        return rejectResponse(
+          statusCode.CLIENT_ERROR.NOT_FOUND,
+          "There's some issue in deleting the brand!"
+        );
+      }
+    }
+  } catch (err) {
+    throw rejectResponse(
+      statusCode.SERVER_ERROR.INTERNAL_SERVER_ERROR,
+      err?.message
+    );
+  }
+};
+
 module.exports = {
   getBrandsUser,
   viewBrandUser,
   makeBrandFeaturedUser,
   brandOnboardUser,
+  editBrandUser,
+  deleteBrandUser,
 };
