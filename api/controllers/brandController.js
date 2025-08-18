@@ -5,6 +5,7 @@ const {
   brandOnboardUser,
   editBrandUser,
   deleteBrandUser,
+  getBrandLinkedWarehousesUser,
 } = require("../services/brandServices");
 
 const getBrands = async (req, res) => {
@@ -71,6 +72,16 @@ const deleteBrand = async (req, res) => {
   }
 };
 
+const getBrandLinkedWarehouses = async (req, res) => {
+  try {
+    const params = req.params;
+    const result = await getBrandLinkedWarehousesUser(params);
+    res.status(result.status).json(result);
+  } catch (err) {
+    res.status(err?.status).json(err);
+  }
+};
+
 module.exports = {
   getBrands,
   viewBrand,
@@ -78,4 +89,5 @@ module.exports = {
   brandOnboard,
   editBrand,
   deleteBrand,
+  getBrandLinkedWarehouses
 };

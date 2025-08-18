@@ -8,6 +8,7 @@ const {
   brandOnboard,
   editBrand,
   deleteBrand,
+  getBrandLinkedWarehouses,
 } = require("../controllers/brandController");
 
 router.get("/brands", getBrands);
@@ -44,5 +45,6 @@ router.put(
   editBrand
 );
 router.delete("/brand/:brandId", deleteBrand);
+router.get("/brand-linked-warehouses/:brandId", getBrandLinkedWarehouses);
 
 module.exports = router;

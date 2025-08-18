@@ -9,6 +9,7 @@ const { fn, col, where } = require("sequelize");
 const warehouse = require("../models/warehouseModel");
 const brandWarehouses = require("../models/brandWarehouses");
 const { sequelize } = require("../db/dbConfig");
+const users = require("../models/userModel");
 
 const getBrandsUser = async (query) => {
   try {
@@ -371,6 +372,33 @@ const deleteBrandUser = async (params) => {
   }
 };
 
+const getBrandLinkedWarehousesUser = async (params) => {
+  try {
+    const result = await brands.findOne({
+      where: { id: params?.brandId },
+      include: [
+        {
+          model: warehouse,
+          through: { attributes: [] }, // hides brandWarehouses join table
+        },
+        {
+          model: vendors,
+          through: { attributes: [] }, // hides vendorBrands join table
+          include: [{ model: users, attributes: ["id", "fullName", "email"] }],
+          attributes: ["userId"],
+        },
+      ],
+    });
+
+    return successResponse(statusCode.SUCCESS.OK, "Success!", result);
+  } catch (err) {
+    throw rejectResponse(
+      statusCode.SERVER_ERROR.INTERNAL_SERVER_ERROR,
+      err?.message
+    );
+  }
+};
+
 module.exports = {
   getBrandsUser,
   viewBrandUser,
@@ -378,4 +406,5 @@ module.exports = {
   brandOnboardUser,
   editBrandUser,
   deleteBrandUser,
+  getBrandLinkedWarehousesUser,
 };
