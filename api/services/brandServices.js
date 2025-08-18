@@ -163,11 +163,13 @@ const brandOnboardUser = async (body, reqFiles) => {
           if (createVendorBrand) {
             let createdResult;
 
-            if (body?.warehouseID) {
-              createdResult = await brandWarehouses.create({
+            const warehouseIDs = JSON.parse(body?.warehouseIDs);
+            if (warehouseIDs.length > 0) {
+              const records = warehouseIDs.map((whId) => ({
                 brandId: result?.id,
-                warehouseId: body?.warehouseID,
-              });
+                warehouseId: whId,
+              }));
+              createdResult = await brandWarehouses.bulkCreate(records);
             } else if (body?.warehouses) {
               let warehousesArray = [];
 
@@ -281,6 +283,49 @@ const editBrandUser = async (params, body, reqFiles) => {
         deliveryType: body?.deliveryType,
         commission: body?.commission,
       };
+
+      // Parse warehouse IDs array
+      const newWarehouseIds = JSON.parse(body?.warehouseIDs || "[]");
+
+      if (newWarehouseIds.length > 0) {
+        // Fetch existing warehouse links
+        const existingLinks = await brandWarehouses.findAll({
+          where: { brandId: params?.brandId },
+        });
+
+        const existingWarehouseIds = existingLinks.map(
+          (link) => link.warehouseId
+        );
+
+        // Find warehouses to add
+        const toAdd = newWarehouseIds.filter(
+          (id) => !existingWarehouseIds.includes(id)
+        );
+
+        // Find warehouses to remove
+        const toRemove = existingWarehouseIds.filter(
+          (id) => !newWarehouseIds.includes(id)
+        );
+
+        // Add new associations
+        if (toAdd.length > 0) {
+          const records = toAdd.map((whId) => ({
+            brandId: params?.brandId,
+            warehouseId: whId,
+          }));
+          await brandWarehouses.bulkCreate(records);
+        }
+
+        // Remove outdated associations
+        if (toRemove.length > 0) {
+          await brandWarehouses.destroy({
+            where: {
+              brandId: params?.brandId,
+              warehouseId: toRemove,
+            },
+          });
+        }
+      }
 
       const uploadedFiles = {};
 
