@@ -39,7 +39,7 @@ const addToCartUser = async (payload) => {
 
 const getCartItemsUser = async (params) => {
   try {
-    const result = await cart.findOne({
+    const result = await cart.findAll({
       where: {
         userId: params?.userId,
       },
