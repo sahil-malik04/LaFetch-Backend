@@ -175,7 +175,25 @@ const addToWishlistUser = async (payload) => {
       userId: payload?.userId,
       productId: payload?.productId,
       boardId: payload?.boardId,
+      productVariantId: payload?.productVariantId,
     };
+
+    // Check if already exists
+    const isExist = await wishlist.findOne({
+      where: {
+        userId: data.userId,
+        productId: data.productId,
+        boardId: data.boardId,
+        productVariantId: data.productVariantId,
+      },
+    });
+
+    if (isExist) {
+      return rejectResponse(
+        statusCode.CLIENT_ERROR.CONFLICT,
+        "Product already exist in wishlist!"
+      );
+    }
 
     const result = await wishlist.create(data);
 

@@ -125,7 +125,7 @@ const brandOnboardUser = async (body, reqFiles) => {
           codAvailable: body?.codAvailable,
           websiteLink: body?.websiteLink,
           isFeatured: body?.isFeatured,
-          deliveryType: body?.deliveryType,
+          deliveryType: JSON.parse(body?.deliveryType),
           commission: body?.commission,
         };
 
@@ -280,7 +280,7 @@ const editBrandUser = async (params, body, reqFiles) => {
         codAvailable: body?.codAvailable,
         websiteLink: body?.websiteLink,
         isFeatured: body?.isFeatured,
-        deliveryType: body?.deliveryType,
+        deliveryType: JSON.parse(body?.deliveryType),
         commission: body?.commission,
       };
 

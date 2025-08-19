@@ -76,10 +76,8 @@ const brands = sequelize.define("brands", {
     type: DataTypes.STRING,
     allowNull: true,
   },
-  deliveryType: {
-    type: DataTypes.ENUM("regular", "lfQuick"),
-    allowNull: true,
-  },
+  deliveryType: { type: DataTypes.ARRAY(DataTypes.STRING), allowNull: true },
+
   isFeatured: {
     type: DataTypes.BOOLEAN,
     defaultValue: false,

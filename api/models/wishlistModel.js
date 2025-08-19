@@ -6,6 +6,7 @@ const wishlist = sequelize.define("wishlist", {
   userId: { type: DataTypes.INTEGER, allowNull: false },
   boardId: { type: DataTypes.INTEGER, allowNull: false },
   productId: { type: DataTypes.INTEGER, allowNull: false },
+  productVariantId: { type: DataTypes.INTEGER, allowNull: false },
 });
 
 // sequelize
