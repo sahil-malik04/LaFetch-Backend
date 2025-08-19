@@ -175,7 +175,6 @@ const addToWishlistUser = async (payload) => {
       userId: payload?.userId,
       productId: payload?.productId,
       boardId: payload?.boardId,
-      productVariantId: payload?.productVariantId,
     };
 
     // Check if already exists
@@ -184,7 +183,6 @@ const addToWishlistUser = async (payload) => {
         userId: data.userId,
         productId: data.productId,
         boardId: data.boardId,
-        productVariantId: data.productVariantId,
       },
     });
 
