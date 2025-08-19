@@ -31,7 +31,8 @@ const updateVendor = async (req, res) => {
 
 const getVendors = async (req, res) => {
   try {
-    const result = await getVendorsUser();
+    const query = req.query;
+    const result = await getVendorsUser(query);
     res.status(result.status).json(result);
   } catch (err) {
     res.status(err?.status).json(err);

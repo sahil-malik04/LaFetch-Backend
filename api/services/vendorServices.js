@@ -130,16 +130,21 @@ const updateVendorUser = async (params, payload, reqFiles) => {
   }
 };
 
-const getVendorsUser = async () => {
+const getVendorsUser = async (query) => {
   try {
+    const whereClause = {
+      ...(query?.isVerified && {
+        isVerified: query?.isVerified === "1" ? true : false,
+      }),
+    };
     const findVendor = await vendors.findAll({
+      where: whereClause,
       include: [
         {
           model: users,
           attributes: ["id", "fullName", "email", "phone", "isActive"],
         },
       ],
-
       attributes: [
         "id",
         "businessEmail",
