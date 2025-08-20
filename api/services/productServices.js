@@ -881,6 +881,38 @@ const getCollectionWithProductsUser = async () => {
   }
 };
 
+const productSearchUser = async (query) => {
+  try {
+    const search = query?.key;
+    if (!search || search.trim() === "") {
+      return rejectResponse(
+        statusCode.CLIENT_ERROR.BAD_REQUEST,
+        "Search term is required!"
+      );
+    }
+    const result = await products.findAll({
+      where: {
+        [Op.or]: [
+          { title: { [Op.iLike]: `%${search}%` } }, // case-insensitive
+          { description: { [Op.iLike]: `%${search}%` } },
+          { sku: { [Op.iLike]: `%${search}%` } },
+        ],
+      },
+      order: [["createdAt", "DESC"]],
+    });
+    return successResponse(
+      statusCode.SUCCESS.OK,
+      "Products fetched successfully!",
+      result
+    );
+  } catch (err) {
+    throw rejectResponse(
+      statusCode.SERVER_ERROR.INTERNAL_SERVER_ERROR,
+      err?.message
+    );
+  }
+};
+
 module.exports = {
   getProductsUser,
   getProductByIdUser,
@@ -906,4 +938,5 @@ module.exports = {
   updateProductCollectionUser,
   deleteProductCollectionUser,
   getCollectionWithProductsUser,
+  productSearchUser,
 };

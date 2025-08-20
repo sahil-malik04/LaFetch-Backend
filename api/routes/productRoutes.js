@@ -27,6 +27,7 @@ const {
   updateProductCollection,
   deleteProductCollection,
   getCollectionWithProducts,
+  productSearch,
 } = require("../controllers/productController");
 
 router.get("/products", getProducts);
@@ -111,5 +112,8 @@ router.get(
   isAuthorized,
   getCollectionWithProducts
 );
+
+// search-product
+router.post("/product-search", isAuthorized, productSearch);
 
 module.exports = router;
