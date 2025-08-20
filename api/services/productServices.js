@@ -944,6 +944,7 @@ const productSuggestionUser = async (query) => {
             true
           ),
         ],
+        status: true,
       },
       limit: 10,
     });
