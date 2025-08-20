@@ -25,7 +25,7 @@ const getInternalUsersService = async () => {
         "isInvited",
       ],
     });
-    return successResponse(statusCode.SUCCESS.CREATED, "Success!", result);
+    return successResponse(statusCode.SUCCESS.OK, "Success!", result);
   } catch (err) {
     throw rejectResponse(
       statusCode.SERVER_ERROR.INTERNAL_SERVER_ERROR,

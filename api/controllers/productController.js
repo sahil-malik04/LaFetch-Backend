@@ -24,6 +24,7 @@ const {
   deleteProductCollectionUser,
   getCollectionWithProductsUser,
   productSearchUser,
+  productSuggestionUser,
 } = require("../services/productServices");
 
 const getProducts = async (req, res) => {
@@ -284,6 +285,16 @@ const productSearch = async (req, res) => {
   }
 };
 
+const productSuggestion = async (req, res) => {
+  try {
+    const query = req.query;
+    const result = await productSuggestionUser(query);
+    res.status(result.status).json(result);
+  } catch (err) {
+    res.status(err?.status).json(err);
+  }
+};
+
 module.exports = {
   getProducts,
   getProductById,
@@ -310,4 +321,5 @@ module.exports = {
   deleteProductCollection,
   getCollectionWithProducts,
   productSearch,
+  productSuggestion
 };

@@ -13,6 +13,7 @@ const productSizeCharts = require("../models/productSizeChartsModel");
 const shopifyAccounts = require("../models/shopifyAccountsModel");
 const productCollection = require("../models/productCollectionModel");
 const { Op } = require("sequelize");
+const { sequelize } = require("../db/dbConfig");
 
 // products
 const getProductsUser = async (query) => {
@@ -894,9 +895,11 @@ const productSearchUser = async (query) => {
       where: {
         [Op.or]: [
           { title: { [Op.iLike]: `%${search}%` } }, // case-insensitive
-          { description: { [Op.iLike]: `%${search}%` } },
-          { sku: { [Op.iLike]: `%${search}%` } },
+          // { description: { [Op.iLike]: `%${search}%` } },
+          // { sku: { [Op.iLike]: `%${search}%` } },
+          { tags: { [Op.contains]: [search] } },
         ],
+        status: true,
       },
       order: [["createdAt", "DESC"]],
     });
@@ -909,6 +912,73 @@ const productSearchUser = async (query) => {
     throw rejectResponse(
       statusCode.SERVER_ERROR.INTERNAL_SERVER_ERROR,
       err?.message
+    );
+  }
+};
+
+const productSuggestionUser = async (query) => {
+  try {
+    const search = query?.key;
+
+    if (!search || search.trim() === "") {
+      return rejectResponse(
+        res,
+        statusCode.CLIENT_ERROR.BAD_REQUEST,
+        "Search term is required!"
+      );
+    }
+
+    const result = await products.findAll({
+      attributes: [
+        //  title + tags
+        "title",
+        "tags",
+      ],
+      where: {
+        [Op.or]: [
+          { title: { [Op.iLike]: `%${search}%` } },
+          sequelize.where(
+            sequelize.literal(
+              `EXISTS (SELECT 1 FROM unnest("products"."tags") AS tag WHERE tag ILIKE '%${search}%')`
+            ),
+            true
+          ),
+        ],
+      },
+      limit: 10,
+    });
+
+    // Extract keywords from results
+    let suggestions = [];
+
+    result.forEach((item) => {
+      if (
+        item.title &&
+        item.title.toLowerCase().includes(search.toLowerCase())
+      ) {
+        suggestions.push(item.title);
+      }
+      if (item.tags && item.tags.length > 0) {
+        item.tags.forEach((tag) => {
+          if (tag.toLowerCase().includes(search.toLowerCase())) {
+            suggestions.push(tag);
+          }
+        });
+      }
+    });
+
+    // Deduplicate
+    suggestions = [...new Set(suggestions)];
+
+    return successResponse(
+      statusCode.SUCCESS.OK,
+      "Suggestions fetched successfully!",
+      suggestions
+    );
+  } catch (error) {
+    return rejectResponse(
+      statusCode.SERVER_ERROR.INTERNAL_SERVER_ERROR,
+      "Something went wrong!"
     );
   }
 };
@@ -939,4 +1009,5 @@ module.exports = {
   deleteProductCollectionUser,
   getCollectionWithProductsUser,
   productSearchUser,
+  productSuggestionUser,
 };

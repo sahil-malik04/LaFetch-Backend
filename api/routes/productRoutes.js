@@ -28,6 +28,7 @@ const {
   deleteProductCollection,
   getCollectionWithProducts,
   productSearch,
+  productSuggestion,
 } = require("../controllers/productController");
 
 router.get("/products", getProducts);
@@ -115,5 +116,6 @@ router.get(
 
 // search-product
 router.post("/product-search", isAuthorized, productSearch);
+router.post("/product-suggestion", isAuthorized, productSuggestion);
 
 module.exports = router;
