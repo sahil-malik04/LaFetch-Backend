@@ -4,11 +4,11 @@ const {
   updateCouponUser,
   deleteCouponUser,
   getCouponByIdUser,
-  getPromotionsUser,
-  addPromotionUser,
-  updatePromotionUser,
-  deletePromotionUser,
-  updatePromotionStatusUser,
+  // getPromotionsUser,
+  // addPromotionUser,
+  // updatePromotionUser,
+  // deletePromotionUser,
+  // updatePromotionStatusUser,
 } = require("../services/marketingMngServices");
 
 const addCoupon = async (req, res) => {
@@ -61,57 +61,57 @@ const getCouponById = async (req, res) => {
   }
 };
 
-const getPromotions = async (req, res) => {
-  try {
-    const query = req.query;
-    const result = await getPromotionsUser(query);
-    res.status(result.status).json(result);
-  } catch (err) {
-    res.status(err?.status).json(err);
-  }
-};
+// const getPromotions = async (req, res) => {
+//   try {
+//     const query = req.query;
+//     const result = await getPromotionsUser(query);
+//     res.status(result.status).json(result);
+//   } catch (err) {
+//     res.status(err?.status).json(err);
+//   }
+// };
 
-const addPromotion = async (req, res) => {
-  try {
-    const body = req.body;
-    const result = await addPromotionUser(body);
-    res.status(result.status).json(result);
-  } catch (err) {
-    res.status(err?.status).json(err);
-  }
-};
+// const addPromotion = async (req, res) => {
+//   try {
+//     const body = req.body;
+//     const result = await addPromotionUser(body);
+//     res.status(result.status).json(result);
+//   } catch (err) {
+//     res.status(err?.status).json(err);
+//   }
+// };
 
-const updatePromotion = async (req, res) => {
-  try {
-    const params = req.params;
-    const body = req.body;
-    const result = await updatePromotionUser(params, body);
-    res.status(result.status).json(result);
-  } catch (err) {
-    res.status(err?.status).json(err);
-  }
-};
+// const updatePromotion = async (req, res) => {
+//   try {
+//     const params = req.params;
+//     const body = req.body;
+//     const result = await updatePromotionUser(params, body);
+//     res.status(result.status).json(result);
+//   } catch (err) {
+//     res.status(err?.status).json(err);
+//   }
+// };
 
-const deletePromotion = async (req, res) => {
-  try {
-    const params = req.params;
-    const result = await deletePromotionUser(params);
-    res.status(result.status).json(result);
-  } catch (err) {
-    res.status(err?.status).json(err);
-  }
-};
+// const deletePromotion = async (req, res) => {
+//   try {
+//     const params = req.params;
+//     const result = await deletePromotionUser(params);
+//     res.status(result.status).json(result);
+//   } catch (err) {
+//     res.status(err?.status).json(err);
+//   }
+// };
 
-const updatePromotionStatus = async (req, res) => {
-  try {
-    const params = req.params;
-    const query = req.query;
-    const result = await updatePromotionStatusUser(params, query);
-    res.status(result.status).json(result);
-  } catch (err) {
-    res.status(err?.status).json(err);
-  }
-};
+// const updatePromotionStatus = async (req, res) => {
+//   try {
+//     const params = req.params;
+//     const query = req.query;
+//     const result = await updatePromotionStatusUser(params, query);
+//     res.status(result.status).json(result);
+//   } catch (err) {
+//     res.status(err?.status).json(err);
+//   }
+// };
 
 module.exports = {
   addCoupon,
@@ -119,9 +119,9 @@ module.exports = {
   updateCoupon,
   deleteCoupon,
   getCouponById,
-  getPromotions,
-  addPromotion,
-  updatePromotion,
-  deletePromotion,
-  updatePromotionStatus
+  // getPromotions,
+  // addPromotion,
+  // updatePromotion,
+  // deletePromotion,
+  // updatePromotionStatus
 };

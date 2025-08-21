@@ -7,11 +7,11 @@ const {
   updateCoupon,
   deleteCoupon,
   getCouponById,
-  getPromotions,
-  addPromotion,
-  updatePromotion,
-  deletePromotion,
-  updatePromotionStatus,
+  // getPromotions,
+  // addPromotion,
+  // updatePromotion,
+  // deletePromotion,
+  // updatePromotionStatus,
 } = require("../controllers/marketingMngController");
 
 // coupons
