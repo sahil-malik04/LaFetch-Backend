@@ -53,11 +53,7 @@ const addCouponUser = async (payload) => {
 
 const getCouponUser = async () => {
   try {
-    const isCouponExist = await coupons.findAll({
-      where: {
-        isActive: true,
-      },
-    });
+    const isCouponExist = await coupons.findAll();
     return successResponse(
       statusCode.SUCCESS.CREATED,
       "Success!",
