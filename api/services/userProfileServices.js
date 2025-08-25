@@ -30,30 +30,46 @@ const getUserProfileService = async (payload) => {
 
 const addAddressUser = async (payload) => {
   try {
-    const data = {
-      userId: payload?.userId,
-      line1: payload?.line1,
-      line2: payload?.line2,
-      cityId: payload?.cityId,
-      postalCode: payload?.postalCode,
-      isDefaultAddress: payload?.isDefaultAddress || false,
-      latitude: payload?.latitude,
-      longitude: payload?.longitude,
-      type: payload?.type,
-    };
+    const isUserExist = await users.findOne({
+      where: {
+        id: payload?.userId,
+      },
+    });
+    if (isUserExist) {
+      const data = {
+        userId: payload?.userId,
+        contactName: payload?.contactName,
+        contactPhone: payload?.contactPhone,
+        line1: payload?.line1,
+        line2: payload?.line2,
+        country: payload?.country,
+        state: payload?.state,
+        city: payload?.city,
+        postalCode: payload?.postalCode,
+        isDefaultAddress: payload?.isDefaultAddress || false,
+        latitude: payload?.latitude,
+        longitude: payload?.longitude,
+        type: payload?.type,
+      };
 
-    if (data.isDefaultAddress) {
-      await user_addresses.update(
-        { isDefaultAddress: false },
-        { where: { userId: data.userId } }
-      );
-    }
-    const createAddress = await user_addresses.create(data);
+      if (data.isDefaultAddress) {
+        await user_addresses.update(
+          { isDefaultAddress: false },
+          { where: { userId: data.userId } }
+        );
+      }
+      const createAddress = await user_addresses.create(data);
 
-    if (createAddress) {
-      return successResponse(
-        statusCode.SUCCESS.CREATED,
-        "Address added successfully!"
+      if (createAddress) {
+        return successResponse(
+          statusCode.SUCCESS.CREATED,
+          "Address added successfully!"
+        );
+      }
+    } else {
+      return rejectResponse(
+        statusCode.CLIENT_ERROR.NOT_FOUND,
+        responseMessages.USER_NOT_EXIST
       );
     }
   } catch (err) {
@@ -97,9 +113,13 @@ const updateAddressUser = async (payload) => {
 
     if (isAddressExist) {
       const data = {
+        contactName: payload?.contactName,
+        contactPhone: payload?.contactPhone,
         line1: payload?.line1,
         line2: payload?.line2,
-        cityId: payload?.cityId,
+        country: payload?.country,
+        state: payload?.state,
+        city: payload?.city,
         postalCode: payload?.postalCode,
         type: payload?.type,
         isDefaultAddress: payload?.isDefaultAddress || false,
@@ -115,7 +135,7 @@ const updateAddressUser = async (payload) => {
 
       if (updateAddress) {
         return successResponse(
-          statusCode.SUCCESS.CREATED,
+          statusCode.SUCCESS.OK,
           "Address updated successfully!"
         );
       }

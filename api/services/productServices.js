@@ -19,6 +19,7 @@ const { sequelize } = require("../db/dbConfig");
 const getProductsUser = async (query) => {
   try {
     const genderParam = Number(query.gender);
+    const catId = Number(query.catId);
     const status = Number(query?.status);
 
     const whereClause = {
@@ -27,6 +28,9 @@ const getProductsUser = async (query) => {
 
     if (genderParam) {
       whereClause.superCatId = genderParam;
+    }
+    if (catId) {
+      whereClause.catId = catId;
     }
 
     const result = await products.findAll({

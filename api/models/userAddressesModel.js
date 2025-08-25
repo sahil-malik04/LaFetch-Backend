@@ -12,10 +12,18 @@ const user_addresses = sequelize.define("user_addresses", {
     type: DataTypes.INTEGER,
     allowNull: false,
   },
-  cityId: {
-    type: DataTypes.INTEGER,
-    allowNull: false,
+  contactName: {
+    type: DataTypes.STRING,
+    allowNull: true,
   },
+  contactPhone: {
+    type: DataTypes.STRING,
+    allowNull: true,
+  },
+  country: { type: DataTypes.STRING, allowNull: true },
+  state: { type: DataTypes.STRING, allowNull: true },
+  city: { type: DataTypes.STRING, allowNull: true },
+
   line1: {
     type: DataTypes.STRING,
     allowNull: false,
