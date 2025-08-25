@@ -103,6 +103,10 @@ const coupons = sequelize.define("coupons", {
     type: DataTypes.ENUM("published", "expired", "draft"),
     defaultValue: "draft",
   },
+  addedBy: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+  },
 });
 
 // sequelize

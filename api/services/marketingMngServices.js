@@ -38,6 +38,7 @@ const addCouponUser = async (payload) => {
         endDate: payload?.endDate,
         enableScheduling: payload?.enableScheduling,
         status: payload?.status,
+        addedBy: body?.addedBy,
       };
       const result = await coupons.create(data);
       if (result)

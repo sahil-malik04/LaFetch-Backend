@@ -31,6 +31,10 @@ const productSizeCharts = sequelize.define("product_size_charts", {
     type: DataTypes.BOOLEAN,
     defaultValue: true,
   },
+  addedBy: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+  },
 });
 
 productSizeCharts.belongsTo(brands, { foreignKey: "brandId" });

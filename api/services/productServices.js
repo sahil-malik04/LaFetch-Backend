@@ -242,7 +242,8 @@ const onboardProductUser = async (body, reqFiles) => {
       colorPatterns: JSON.parse(body?.colorPatterns),
 
       publishedAt: new Date().toISOString().split(".")[0] + "Z",
-      addedBy: "admin",
+      addedFrom: "admin",
+      addedBy: body?.addedBy,
       collectionID: body?.collectionID,
       basePrice: body?.basePrice,
       hasCOD: body?.hasCOD,
@@ -447,7 +448,7 @@ const getBannerByIdUser = async (params) => {
 
 const addBannerUser = async (payload, reqFiles) => {
   try {
-    const { title, categoryId, brandId } = payload;
+    const { title, categoryId, brandId, addedBy } = payload;
     if (categoryId > 3 || categoryId < 1) {
       return rejectResponse(
         statusCode.CLIENT_ERROR.CONFLICT,
@@ -458,6 +459,7 @@ const addBannerUser = async (payload, reqFiles) => {
         title,
         categoryId,
         brandId,
+        addedBy,
       };
       if (Object.keys(reqFiles).length) {
         const image = reqFiles?.image[0];
@@ -623,6 +625,7 @@ const addSizeChartUser = async (payload, reqFiles) => {
         catId: payload?.catId,
         subCatId: payload?.subCatId,
         sizeChartData: payload?.sizeChartData,
+        addedBy: body?.addedBy,
       };
       if (Object.keys(reqFiles).length) {
         const image = reqFiles?.sizeGuideImage[0];

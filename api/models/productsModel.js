@@ -54,16 +54,19 @@ const products = sequelize.define("products", {
   lfMsp: { type: DataTypes.FLOAT, allowNull: true },
   sellingAmount: { type: DataTypes.FLOAT, allowNull: true },
   netAmount: { type: DataTypes.FLOAT, allowNull: true },
-  addedBy: {
+  addedFrom: {
     type: DataTypes.ENUM("admin", "vendor", "shopify"),
     allowNull: true,
+  },
+  addedBy: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
   },
 });
 
 products.belongsTo(brands, { foreignKey: "brandId" });
 products.belongsTo(category, { foreignKey: "superCatId" });
 products.belongsTo(warehouse, { foreignKey: "warehouseId" });
-
 
 // sequelize
 //   .sync({ force: false })

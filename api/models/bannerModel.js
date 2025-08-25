@@ -34,15 +34,19 @@ const banners = sequelize.define("banners", {
     defaultValue: true,
     allowNull: false,
   },
+  addedBy: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+  },
 });
 
 banners.belongsTo(brands, { foreignKey: "brandId" });
 banners.belongsTo(category, { foreignKey: "categoryId" });
 
-associateWishlistModels()
-associateVendorModels()
-associateBrandModels()
-associateProductCollection()
+associateWishlistModels();
+associateVendorModels();
+associateBrandModels();
+associateProductCollection();
 
 // sequelize
 //   .sync({ force: true })

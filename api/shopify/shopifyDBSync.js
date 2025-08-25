@@ -51,7 +51,7 @@ async function syncShopifyProducts(SHOPIFY_API_URL, ACCESS_TOKEN) {
           targetGenders: genderLabels,
           fabrics: fabricOptions,
           colorPatterns: colorOptions,
-          addedBy: "shopify",
+          addedFrom: "shopify",
           hasCOD: true,
           hasExchange: true,
           exchangeDays: 2,

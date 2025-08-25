@@ -127,6 +127,7 @@ const brandOnboardUser = async (body, reqFiles) => {
           isFeatured: body?.isFeatured,
           deliveryType: JSON.parse(body?.deliveryType),
           commission: body?.commission,
+          addedBy: body?.addedBy
         };
 
         const uploadedFiles = {};
