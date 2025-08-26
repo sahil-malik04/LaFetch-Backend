@@ -21,6 +21,7 @@ const getProductsUser = async (query) => {
     const genderParam = Number(query.gender);
     const catId = Number(query.catId);
     const status = Number(query?.status);
+    const id = Number(query?.of);
 
     const whereClause = {
       ...(query?.status && { status: status === 1 ? true : false }),
@@ -31,6 +32,9 @@ const getProductsUser = async (query) => {
     }
     if (catId) {
       whereClause.catId = catId;
+    }
+    if (id) {
+      whereClause.addedBy = id;
     }
 
     const result = await products.findAll({
@@ -412,11 +416,15 @@ const deleteProductUser = async (params) => {
 // banner
 const getBannersUser = async (query) => {
   try {
+    const id = Number(query?.of);
     const categoryId = Number(query.gender);
     const whereClause = {};
 
     if (!isNaN(categoryId)) {
       whereClause.categoryId = categoryId;
+    }
+    if (id) {
+      whereClause.addedBy = id;
     }
     const result = await banners.findAll({
       where: whereClause,
@@ -593,9 +601,15 @@ const syncProductsUser = async (query) => {
   }
 };
 
-const getSizeChartsUser = async () => {
+const getSizeChartsUser = async (query) => {
   try {
-    const result = await productSizeCharts.findAll();
+    const id = Number(query?.of);
+    const whereClause = {
+      ...(id && { addedBy: id }),
+    };
+    const result = await productSizeCharts.findAll({
+      where: whereClause,
+    });
     return successResponse(statusCode.SUCCESS.OK, "Success!", result);
   } catch (err) {
     throw rejectResponse(

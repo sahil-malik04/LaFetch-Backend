@@ -38,9 +38,15 @@ const addWarehouseUser = async (payload) => {
   }
 };
 
-const getWarehousesUser = async () => {
+const getWarehousesUser = async (query) => {
   try {
-    const result = await warehouse.findAll();
+    const id = Number(query?.of);
+    const whereClause = {
+      ...(id && { addedBy: id }),
+    };
+    const result = await warehouse.findAll({
+      where: whereClause,
+    });
     return successResponse(statusCode.SUCCESS.OK, "Success!", result);
   } catch (err) {
     throw rejectResponse(

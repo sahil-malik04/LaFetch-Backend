@@ -176,7 +176,8 @@ const syncProducts = async (req, res) => {
 
 const getSizeCharts = async (req, res) => {
   try {
-    const result = await getSizeChartsUser();
+    const query = req.query;
+    const result = await getSizeChartsUser(query);
     res.status(result.status).json(result);
   } catch (err) {
     res.status(err?.status).json(err);

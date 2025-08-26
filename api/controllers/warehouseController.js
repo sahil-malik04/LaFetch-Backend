@@ -17,7 +17,8 @@ const addWarehouse = async (req, res) => {
 
 const getWarehouses = async (req, res) => {
   try {
-    const result = await getWarehousesUser();
+    const query = req.query;
+    const result = await getWarehousesUser(query);
     res.status(result.status).json(result);
   } catch (err) {
     res.status(err?.status).json(err);

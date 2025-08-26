@@ -13,6 +13,10 @@ const getCategoriesUser = async (query) => {
     if (!isNaN(gender)) {
       whereClause.parentId = gender;
     }
+    const id = Number(query?.of);
+    if (id) {
+      whereClause.addedBy = id;
+    }
 
     if (catType) {
       whereClause.type = catType;

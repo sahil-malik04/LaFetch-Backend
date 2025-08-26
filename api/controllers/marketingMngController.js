@@ -23,7 +23,8 @@ const addCoupon = async (req, res) => {
 
 const getCoupon = async (req, res) => {
   try {
-    const result = await getCouponUser();
+    const query = req.query;
+    const result = await getCouponUser(query);
     res.status(result.status).json(result);
   } catch (err) {
     res.status(err?.status).json(err);

@@ -2,12 +2,17 @@ const { statusCode } = require("../utils/statusCode");
 const { successResponse, rejectResponse } = require("../utils/response");
 const returnPolicies = require("../models/returnPolicyModel");
 
-const getReturnPoliciesUser = async () => {
+const getReturnPoliciesUser = async (query) => {
   try {
+    const id = Number(query?.of);
+    const whereClause = { isActive: true };
+
+    if (id) {
+      whereClause.addedBy = id;
+    }
+
     const isPolicyExist = await returnPolicies.findAll({
-      where: {
-        isActive: true,
-      },
+      where: whereClause,
     });
     return successResponse(statusCode.SUCCESS.OK, "Success!", isPolicyExist);
   } catch (err) {

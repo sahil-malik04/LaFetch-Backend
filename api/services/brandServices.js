@@ -20,6 +20,10 @@ const getBrandsUser = async (query) => {
     } else if (query?.isFeatured === "false") {
       whereClause.isFeatured = false;
     }
+    const id = Number(query?.of);
+    if (id) {
+      whereClause.addedBy = id;
+    }
 
     const result = await brands.findAll({
       where: whereClause,
