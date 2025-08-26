@@ -333,6 +333,7 @@ const signInUser = async (payload) => {
               },
             });
             if (findVendor) {
+              data.vendorID = findVendor?.id;
               data.isVerified = findVendor?.isVerified;
               data.isDocumentsSubmitted = findVendor?.isDocumentsSubmitted;
             }
