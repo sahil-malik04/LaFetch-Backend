@@ -14,6 +14,7 @@ const onboardVendorUser = async (payload) => {
     const isVendorExist = await users.findOne({
       where: {
         email,
+        roleId: 2,
       },
     });
     if (isVendorExist) {
