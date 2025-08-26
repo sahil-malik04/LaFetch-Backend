@@ -625,7 +625,7 @@ const addSizeChartUser = async (payload, reqFiles) => {
         catId: payload?.catId,
         subCatId: payload?.subCatId,
         sizeChartData: payload?.sizeChartData,
-        addedBy: body?.addedBy,
+        addedBy: payload?.addedBy,
       };
       if (Object.keys(reqFiles).length) {
         const image = reqFiles?.sizeGuideImage[0];

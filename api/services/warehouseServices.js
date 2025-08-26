@@ -23,7 +23,7 @@ const addWarehouseUser = async (payload) => {
         postalCode: payload?.postalCode,
         capacity: payload?.capacity,
         contactNo: payload?.contactNo,
-        addedBy: body?.addedBy,
+        addedBy: payload?.addedBy,
       };
       const result = await warehouse.create(data);
       if (result) {

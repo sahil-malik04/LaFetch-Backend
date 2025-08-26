@@ -55,7 +55,7 @@ const addCategoryUser = async (payload, reqFiles) => {
       slug: payload?.slug,
       parentId: payload?.parentId,
       type: payload?.type,
-      addedBy: body?.addedBy,
+      addedBy: payload?.addedBy,
     };
     const uploadedFiles = {};
 
