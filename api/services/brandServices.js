@@ -127,7 +127,7 @@ const brandOnboardUser = async (body, reqFiles) => {
           isFeatured: body?.isFeatured,
           deliveryType: JSON.parse(body?.deliveryType),
           commission: body?.commission,
-          addedBy: body?.addedBy
+          addedBy: body?.addedBy,
         };
 
         const uploadedFiles = {};
@@ -201,6 +201,7 @@ const brandOnboardUser = async (body, reqFiles) => {
                     postalCode: wh.postalCode,
                     capacity: wh.capacity,
                     contactNo: wh.contactNo,
+                    addedBy: wh.addedBy,
                   }));
 
                   // Bulk create
