@@ -7,8 +7,7 @@ const {
 
 const getReturnPolicies = async (req, res) => {
   try {
-    const query = req.query;
-    const result = await getReturnPoliciesUser(query);
+    const result = await getReturnPoliciesUser();
     res.status(result.status).json(result);
   } catch (err) {
     res.status(err?.status).json(err);
