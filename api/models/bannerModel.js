@@ -34,10 +34,6 @@ const banners = sequelize.define("banners", {
     defaultValue: true,
     allowNull: false,
   },
-  addedBy: {
-    type: DataTypes.INTEGER,
-    allowNull: false,
-  },
 });
 
 banners.belongsTo(brands, { foreignKey: "brandId" });

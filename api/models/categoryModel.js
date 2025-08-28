@@ -33,10 +33,6 @@ const category = sequelize.define("category", {
     type: DataTypes.STRING,
     allowNull: true,
   },
-  addedBy: {
-    type: DataTypes.INTEGER,
-    allowNull: false,
-  },
 });
 
 // sequelize

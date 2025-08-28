@@ -416,15 +416,11 @@ const deleteProductUser = async (params) => {
 // banner
 const getBannersUser = async (query) => {
   try {
-    const id = Number(query?.of);
     const categoryId = Number(query.gender);
     const whereClause = {};
 
     if (!isNaN(categoryId)) {
       whereClause.categoryId = categoryId;
-    }
-    if (id) {
-      whereClause.addedBy = id;
     }
     const result = await banners.findAll({
       where: whereClause,
@@ -456,7 +452,7 @@ const getBannerByIdUser = async (params) => {
 
 const addBannerUser = async (payload, reqFiles) => {
   try {
-    const { title, categoryId, brandId, addedBy } = payload;
+    const { title, categoryId, brandId } = payload;
     if (categoryId > 3 || categoryId < 1) {
       return rejectResponse(
         statusCode.CLIENT_ERROR.CONFLICT,
@@ -467,7 +463,6 @@ const addBannerUser = async (payload, reqFiles) => {
         title,
         categoryId,
         brandId,
-        addedBy,
       };
       if (Object.keys(reqFiles).length) {
         const image = reqFiles?.image[0];
