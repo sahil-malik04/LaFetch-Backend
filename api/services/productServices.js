@@ -14,6 +14,7 @@ const shopifyAccounts = require("../models/shopifyAccountsModel");
 const productCollection = require("../models/productCollectionModel");
 const { Op } = require("sequelize");
 const { sequelize } = require("../db/dbConfig");
+const users = require("../models/userModel");
 
 // products
 const getProductsUser = async (query) => {
@@ -39,6 +40,13 @@ const getProductsUser = async (query) => {
 
     const result = await products.findAll({
       where: whereClause,
+      include: [
+        {
+          model: users,
+          attributes: ["id","fullName"], 
+          required: false,
+        },
+      ],
     });
 
     return successResponse(statusCode.SUCCESS.OK, "Success!", result);
@@ -424,6 +432,16 @@ const getBannersUser = async (query) => {
     }
     const result = await banners.findAll({
       where: whereClause,
+      include: [
+        {
+          model: brands,
+          attributes: ["id", "name"],
+        },
+        {
+          model: category,
+          attributes: ["id", "name"],
+        },
+      ],
     });
     return successResponse(statusCode.SUCCESS.OK, "Success!", result);
   } catch (err) {
@@ -573,7 +591,7 @@ const syncProductsUser = async (query) => {
         const SHOPIFY_API_URL = getShopifyCred?.apiURL;
         const ACCESS_TOKEN = getShopifyCred?.accessToken;
 
-        const result = await syncShopifyProducts(SHOPIFY_API_URL, ACCESS_TOKEN);
+        const result = await syncShopifyProducts(SHOPIFY_API_URL, ACCESS_TOKEN, query?.vendorId);
 
         return successResponse(result?.status, result?.message);
       } else {
@@ -604,6 +622,27 @@ const getSizeChartsUser = async (query) => {
     };
     const result = await productSizeCharts.findAll({
       where: whereClause,
+      include: [
+        {
+          model: brands,
+          attributes: ["id", "name"],
+        },
+        {
+          model: category,
+          as: "superCategory",
+          attributes: ["id", "name"],
+        },
+        {
+          model: category,
+          as: "category",
+          attributes: ["id", "name"],
+        },
+        {
+          model: category,
+          as: "subCategory",
+          attributes: ["id", "name"],
+        },
+      ],
     });
     return successResponse(statusCode.SUCCESS.OK, "Success!", result);
   } catch (err) {

@@ -53,7 +53,6 @@ const addWishlistBoardUser = async (payload) => {
     const data = {
       userId: payload?.userId,
       name: payload?.name,
-      addedBy: payload?.addedBy,
     };
 
     const result = await wishlistBoards.create(data);

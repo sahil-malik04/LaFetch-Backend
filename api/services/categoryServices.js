@@ -20,6 +20,13 @@ const getCategoriesUser = async (query) => {
 
     const result = await category.findAll({
       where: whereClause,
+      include: [
+        {
+          model: category,
+          as: "parentCategory",
+          attributes: ["id", "name"],
+        },
+      ],
     });
 
     return successResponse(statusCode.SUCCESS.OK, "Success!", result);

@@ -1,5 +1,7 @@
 const { DataTypes } = require("sequelize");
 const { sequelize } = require("../db/dbConfig.js");
+const vendors = require("./vendorsModel.js");
+const brands = require("./brandsModel.js");
 
 const returnPolicies = sequelize.define("return_policies", {
   id: { type: DataTypes.INTEGER, autoIncrement: true, primaryKey: true },
@@ -12,6 +14,8 @@ const returnPolicies = sequelize.define("return_policies", {
     defaultValue: true,
   },
 });
+returnPolicies.belongsTo(vendors, { foreignKey: "vendorId" });
+returnPolicies.belongsTo(brands, { foreignKey: "brandId" });
 
 // sequelize
 //   .sync({ force: false })

@@ -1,6 +1,7 @@
 const { DataTypes } = require("sequelize");
 const { sequelize } = require("../db/dbConfig.js");
 const brands = require("./brandsModel.js");
+const category = require("./categoryModel.js");
 
 const productSizeCharts = sequelize.define("product_size_charts", {
   id: {
@@ -38,6 +39,20 @@ const productSizeCharts = sequelize.define("product_size_charts", {
 });
 
 productSizeCharts.belongsTo(brands, { foreignKey: "brandId" });
+productSizeCharts.belongsTo(category, {
+  foreignKey: "superCatId",
+  as: "superCategory",
+});
+
+productSizeCharts.belongsTo(category, {
+  foreignKey: "catId",
+  as: "category",
+});
+
+productSizeCharts.belongsTo(category, {
+  foreignKey: "subCatId",
+  as: "subCategory",
+});
 
 // sequelize
 //   .sync({ force: false })

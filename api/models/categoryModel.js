@@ -35,6 +35,11 @@ const category = sequelize.define("category", {
   },
 });
 
+category.belongsTo(category, {
+  as: "parentCategory",
+  foreignKey: "parentId",
+});
+
 // sequelize
 //   .sync({ force: true })
 //   .then(() => {

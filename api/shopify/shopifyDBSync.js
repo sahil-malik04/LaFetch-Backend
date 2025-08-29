@@ -4,7 +4,7 @@ const productVariants = require("../models/productVariantModel");
 const { statusCode } = require("../utils/statusCode");
 const { rejectResponse, successResponse } = require("../utils/response");
 
-async function syncShopifyProducts(SHOPIFY_API_URL, ACCESS_TOKEN) {
+async function syncShopifyProducts(SHOPIFY_API_URL, ACCESS_TOKEN, VENDOR_ID) {
   try {
     const result = await callShopifyGraphQL(SHOPIFY_API_URL, ACCESS_TOKEN);
     if (result?.edges) {
@@ -52,6 +52,7 @@ async function syncShopifyProducts(SHOPIFY_API_URL, ACCESS_TOKEN) {
           fabrics: fabricOptions,
           colorPatterns: colorOptions,
           addedFrom: "shopify",
+          addedBy: VENDOR_ID,
           hasCOD: true,
           hasExchange: true,
           exchangeDays: 2,

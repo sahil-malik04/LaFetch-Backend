@@ -3,6 +3,7 @@ const { sequelize } = require("../db/dbConfig.js");
 const brands = require("./brandsModel.js");
 const category = require("./categoryModel.js");
 const warehouse = require("./warehouseModel.js");
+const users = require("./userModel.js");
 
 const products = sequelize.define("products", {
   id: { type: DataTypes.INTEGER, autoIncrement: true, primaryKey: true },
@@ -67,6 +68,7 @@ const products = sequelize.define("products", {
 products.belongsTo(brands, { foreignKey: "brandId" });
 products.belongsTo(category, { foreignKey: "superCatId" });
 products.belongsTo(warehouse, { foreignKey: "warehouseId" });
+products.belongsTo(users, { foreignKey: "addedBy" });
 
 // sequelize
 //   .sync({ force: false })
