@@ -109,11 +109,11 @@ const deleteBlogUser = async (payload) => {
   }
 };
 
-const updateBlogUser = async (payload, file) => {
+const updateBlogUser = async (payload, reqFiles, params) => {
   try {
     const isBlogExist = await blogs.findOne({
       where: {
-        id: payload?.blogId,
+        id: params?.blogId,
       },
     });
     if (isBlogExist) {
@@ -134,6 +134,18 @@ const updateBlogUser = async (payload, file) => {
         content: payload?.content,
         updatedAt: new Date(),
       };
+      if (Object.keys(reqFiles).length) {
+        const image = reqFiles?.image[0];
+        if (image) {
+          const url = await uploadToS3(
+            image.buffer,
+            image.originalname,
+            image.mimetype,
+            "blog-assets"
+          );
+          data.image_url = url;
+        }
+      }
       const updateBlog = await isBlogExist.update(data);
       if (updateBlog) {
         return successResponse(

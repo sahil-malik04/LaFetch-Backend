@@ -23,7 +23,7 @@ router.post(
 );
 router.patch("/delete-blog/:blogId", isAuthorized, deleteBlog);
 router.put(
-  "/update-blog",
+  "/update-blog/:blogId",
   isAuthorized,
   upload.fields([{ name: "image" }]),
   updateBlog

@@ -45,7 +45,8 @@ const updateBlog = async (req, res) => {
   try {
     const payload = req.body;
     const reqFiles = req.files;
-    const result = await updateBlogUser(payload, reqFiles);
+    const params = req.params;
+    const result = await updateBlogUser(payload, reqFiles, params);
     res.status(result.status).json(result);
   } catch (err) {
     res.status(err?.status).json(err);
