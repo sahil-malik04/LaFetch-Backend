@@ -6,6 +6,7 @@ const associateWishlistModels = require("./wishlistAssociations.js");
 const associateVendorModels = require("./vendorAssociations.js");
 const associateBrandModels = require("./brandAssociation.js");
 const associateProductCollection = require("./productCollectionAssocation.js");
+const associateOrderModels = require("./orderAssociation.js");
 
 const banners = sequelize.define("banners", {
   id: {
@@ -43,6 +44,7 @@ associateWishlistModels();
 associateVendorModels();
 associateBrandModels();
 associateProductCollection();
+associateOrderModels()
 
 // sequelize
 //   .sync({ force: true })
