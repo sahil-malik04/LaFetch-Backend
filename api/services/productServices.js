@@ -458,9 +458,8 @@ const getBannerByIdUser = async (params) => {
     const result = await banners.findOne({
       where: {
         id: params?.bannerId,
-       
       },
-       include: [{ model: products }],
+      include: [{ model: products }],
     });
     return successResponse(statusCode.SUCCESS.OK, "Success!", result);
   } catch (err) {
@@ -526,7 +525,7 @@ const updateBannerUser = async (params, payload, reqFiles) => {
       },
     });
     if (isBannerExist) {
-      const { title, categoryId, brandId } = payload;
+      const { title, categoryId, brandId, productIds } = payload;
       if (categoryId > 3 || categoryId < 1) {
         return rejectResponse(
           statusCode.CLIENT_ERROR.CONFLICT,
@@ -552,6 +551,20 @@ const updateBannerUser = async (params, payload, reqFiles) => {
         }
 
         const result = await isBannerExist.update(data);
+
+        await banner_products.destroy({
+          where: { bannerId: params.bannerId },
+        });
+        const parseIDs = JSON.parse(productIds);
+        if (parseIDs && parseIDs.length > 0) {
+          const bannerProductData = parseIDs.map((pid, index) => ({
+            bannerId: params.bannerId,
+            productId: pid,
+            sortOrder: index + 1,
+          }));
+
+          await banner_products.bulkCreate(bannerProductData);
+        }
         return successResponse(statusCode.SUCCESS.OK, "Success!", result);
       }
     } else {
