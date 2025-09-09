@@ -235,7 +235,7 @@ const removeFromWishlistUser = async (payload) => {
   }
 };
 
-const getAllWishlistUser = async (payload) => {
+const getAllWishlistUser = async () => {
   try {
     const usersWithBoards = await users.findAll({
       include: [

@@ -5,6 +5,7 @@ const {
   returnHistoryUser,
   requestExchangeUser,
   exchangeHistoryUser,
+  requestCancelUser,
 } = require("../services/orderMngServices");
 
 const placeOrder = async (req, res) => {
@@ -67,11 +68,22 @@ const exchangeHistory = async (req, res) => {
   }
 };
 
+const requestCancel = async (req, res) => {
+  try {
+    const body = req.body;
+    const result = await requestCancelUser(body);
+    res.status(result.status).json(result);
+  } catch (err) {
+    res.status(err?.status).json(err);
+  }
+};
+
 module.exports = {
   placeOrder,
   orderHistory,
   requestReturn,
   returnHistory,
   requestExchange,
-  exchangeHistory
+  exchangeHistory,
+  requestCancel,
 };

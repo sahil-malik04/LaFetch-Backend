@@ -182,7 +182,6 @@ const requestReturnUser = async (body) => {
       newReturn
     );
   } catch (err) {
-    console.error("Error in requestReturnUser:", err);
     return rejectResponse(
       statusCode.SERVER_ERROR.INTERNAL_SERVER_ERROR,
       err?.message
@@ -222,7 +221,6 @@ const returnHistoryUser = async (params) => {
       returnRequests
     );
   } catch (err) {
-    console.error("Error in getUserReturnRequests:", err);
     return rejectResponse(
       statusCode.SERVER_ERROR.INTERNAL_SERVER_ERROR,
       err?.message
@@ -282,7 +280,6 @@ const requestExchangeUser = async (body) => {
       newExchange
     );
   } catch (err) {
-    console.error("Error in requestExchangeUser:", err);
     return rejectResponse(
       statusCode.SERVER_ERROR.INTERNAL_SERVER_ERROR,
       err?.message
@@ -319,7 +316,55 @@ const exchangeHistoryUser = async (params) => {
       history
     );
   } catch (err) {
-    console.error("Error in exchangeHistoryUser:", err);
+    return rejectResponse(
+      statusCode.SERVER_ERROR.INTERNAL_SERVER_ERROR,
+      err?.message
+    );
+  }
+};
+
+const requestCancelUser = async (body) => {
+  try {
+    const { orderItemId, userId, reason } = body;
+
+    const orderItem = await order_items.findOne({
+      where: { id: orderItemId },
+      include: [
+        {
+          model: orders,
+          required: true,
+          where: { userId },
+        },
+      ],
+    });
+
+    if (!orderItem) {
+      return rejectResponse(
+        statusCode.CLIENT_ERROR.NOT_FOUND,
+        "Order item not found or doesn't belong to this user!"
+      );
+    }
+    if (
+      orderItem.order.status === "placed" ||
+      orderItem.order.status === "confirmed"
+    ) {
+      await orderItem.order.update({
+        status: "cancelled",
+        cancelledAt: new Date(),
+        internalNote: reason || null,
+      });
+      return successResponse(
+        statusCode.SUCCESS.OK,
+        "Order cancelled successfully!",
+        orderItem.order
+      );
+    } else {
+      return rejectResponse(
+        statusCode.CLIENT_ERROR.BAD_REQUEST,
+        "Cancel can only be requested for placed or confirmed orders!"
+      );
+    }
+  } catch (err) {
     return rejectResponse(
       statusCode.SERVER_ERROR.INTERNAL_SERVER_ERROR,
       err?.message
@@ -334,4 +379,5 @@ module.exports = {
   returnHistoryUser,
   requestExchangeUser,
   exchangeHistoryUser,
+  requestCancelUser,
 };

@@ -15,6 +15,7 @@ const productCollection = require("../models/productCollectionModel");
 const { Op } = require("sequelize");
 const { sequelize } = require("../db/dbConfig");
 const users = require("../models/userModel");
+const banner_products = require("../models/bannerProducts");
 
 // products
 const getProductsUser = async (query) => {
@@ -43,7 +44,7 @@ const getProductsUser = async (query) => {
       include: [
         {
           model: users,
-          attributes: ["id","fullName"], 
+          attributes: ["id", "fullName"],
           required: false,
         },
       ],
@@ -457,7 +458,9 @@ const getBannerByIdUser = async (params) => {
     const result = await banners.findOne({
       where: {
         id: params?.bannerId,
+       
       },
+       include: [{ model: products }],
     });
     return successResponse(statusCode.SUCCESS.OK, "Success!", result);
   } catch (err) {
@@ -470,7 +473,7 @@ const getBannerByIdUser = async (params) => {
 
 const addBannerUser = async (payload, reqFiles) => {
   try {
-    const { title, categoryId, brandId } = payload;
+    const { title, categoryId, brandId, productIds } = payload;
     if (categoryId > 3 || categoryId < 1) {
       return rejectResponse(
         statusCode.CLIENT_ERROR.CONFLICT,
@@ -495,6 +498,16 @@ const addBannerUser = async (payload, reqFiles) => {
         }
       }
       const result = await banners.create(data);
+      const parseIDs = JSON.parse(productIds);
+      if (parseIDs && parseIDs.length > 0) {
+        const bannerProductData = parseIDs.map((pid, index) => ({
+          bannerId: result.id,
+          productId: pid,
+          sortOrder: index + 1,
+        }));
+
+        await banner_products.bulkCreate(bannerProductData);
+      }
       return successResponse(statusCode.SUCCESS.CREATED, "Success!", result);
     }
   } catch (err) {
@@ -591,7 +604,11 @@ const syncProductsUser = async (query) => {
         const SHOPIFY_API_URL = getShopifyCred?.apiURL;
         const ACCESS_TOKEN = getShopifyCred?.accessToken;
 
-        const result = await syncShopifyProducts(SHOPIFY_API_URL, ACCESS_TOKEN, query?.vendorId);
+        const result = await syncShopifyProducts(
+          SHOPIFY_API_URL,
+          ACCESS_TOKEN,
+          query?.vendorId
+        );
 
         return successResponse(result?.status, result?.message);
       } else {

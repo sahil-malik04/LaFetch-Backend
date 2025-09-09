@@ -1,6 +1,5 @@
 const { statusCode } = require("../utils/statusCode");
 const { successResponse, rejectResponse } = require("../utils/response");
-const { responseMessages } = require("../utils/dataUtils");
 const reviews = require("../models/reviewsModel");
 
 const addReviewUser = async (payload) => {

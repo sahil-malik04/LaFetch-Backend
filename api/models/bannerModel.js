@@ -44,7 +44,7 @@ associateWishlistModels();
 associateVendorModels();
 associateBrandModels();
 associateProductCollection();
-associateOrderModels()
+associateOrderModels();
 
 // sequelize
 //   .sync({ force: true })
