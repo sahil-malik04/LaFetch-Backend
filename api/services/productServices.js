@@ -456,11 +456,23 @@ const getBannersUser = async (query) => {
 const getBannerByIdUser = async (params) => {
   try {
     const result = await banners.findOne({
-      where: {
-        id: params?.bannerId,
-      },
-      include: [{ model: products }],
+      where: { id: params?.bannerId },
+      include: [
+        {
+          model: category,
+          attributes: ["id", "name"],
+        },
+        {
+          model: brands,
+          attributes: ["id", "name"],
+        },
+        {
+          model: products,
+          through: { attributes: [] },
+        },
+      ],
     });
+
     return successResponse(statusCode.SUCCESS.OK, "Success!", result);
   } catch (err) {
     throw rejectResponse(
