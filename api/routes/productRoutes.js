@@ -110,7 +110,6 @@ router.delete(
 );
 router.get(
   "/collection-with-products",
-  isAuthorized,
   getCollectionWithProducts
 );
 
