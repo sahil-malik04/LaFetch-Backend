@@ -96,7 +96,7 @@ router.delete(
 router.get("/product-size-chart/:sizeChartId", isAuthorized, getSizeChartById);
 
 // product collection
-router.get("/product-collections", isAuthorized, getProductCollections);
+router.get("/product-collections", getProductCollections);
 router.post("/product-collection", isAuthorized, addProductCollection);
 router.put(
   "/product-collection/:collectionId",
