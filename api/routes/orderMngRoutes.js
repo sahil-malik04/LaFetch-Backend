@@ -9,6 +9,7 @@ const {
   requestExchange,
   exchangeHistory,
   requestCancel,
+  orderHistoryAdmin,
 } = require("../controllers/orderMngController");
 
 router.post("/place-order", isAuthorized, placeOrder);
@@ -24,5 +25,7 @@ router.get("/exchange-history/:userId", isAuthorized, exchangeHistory);
 
 // cancel order
 router.post("/request-cancel", isAuthorized, requestCancel);
+
+router.get("/order-history", isAuthorized, orderHistoryAdmin);
 
 module.exports = router;

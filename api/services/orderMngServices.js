@@ -372,6 +372,81 @@ const requestCancelUser = async (body) => {
   }
 };
 
+const orderHistoryAdminUser = async (query) => {
+  try {
+    let result;
+    if (query?.order === "return") {
+      // All return orders
+      result = await returnOrders.findAll({
+        include: [
+          {
+            model: orders,
+            required: true,
+            attributes: ["id", "userId", "status", "orderedAt", "deliveredAt"],
+          },
+          {
+            model: order_items,
+            required: true,
+            attributes: ["id", "productId", "variantId", "quantity", "total"],
+            include: [
+              {
+                model: products,
+              },
+            ],
+          },
+        ],
+        order: [["requestedAt", "DESC"]],
+      });
+    } else if (query?.order === "exchange") {
+      // All exchange orders
+      result = await exchangeOrders.findAll({
+        include: [
+          {
+            model: order_items,
+            include: [
+              {
+                model: orders,
+                attributes: ["id", "userId", "status", "orderedAt", "deliveredAt"],
+              },
+              {
+                model: products,
+              },
+            ],
+          },
+        ],
+        order: [["requestedAt", "DESC"]],
+      });
+    } else {
+      // All placed orders
+      result = await orders.findAll({
+        include: [
+          {
+            model: order_items,
+            include: [
+              {
+                model: products,
+              },
+            ],
+          },
+        ],
+        order: [["orderedAt", "DESC"]],
+      });
+    }
+
+    return successResponse(
+      statusCode.SUCCESS.OK,
+      "Order history fetched successfully!",
+      result
+    );
+  } catch (err) {
+    throw rejectResponse(
+      statusCode.SERVER_ERROR.INTERNAL_SERVER_ERROR,
+      err?.message
+    );
+  }
+};
+
+
 module.exports = {
   placeOrderUser,
   orderHistoryUser,
@@ -380,4 +455,5 @@ module.exports = {
   requestExchangeUser,
   exchangeHistoryUser,
   requestCancelUser,
+  orderHistoryAdminUser,
 };
