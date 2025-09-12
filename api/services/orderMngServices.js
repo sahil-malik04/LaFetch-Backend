@@ -426,7 +426,7 @@ const orderHistoryAdminUser = async (query) => {
       // All placed orders
       result = await orders.findAll({
         where: {
-          status: query?.status,
+          status: query?.order,
         },
         include: [
           {
