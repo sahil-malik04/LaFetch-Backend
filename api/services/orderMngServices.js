@@ -446,6 +446,52 @@ const orderHistoryAdminUser = async (query) => {
   }
 };
 
+const viewOrderHistoryUser = async (params) => {
+  try {
+    const { orderItemId } = params;
+
+    if (!orderItemId) {
+      return rejectResponse(
+        statusCode.CLIENT_ERROR.BAD_REQUEST,
+        "Order item ID is required"
+      );
+    }
+
+    const orderItem = await order_items.findOne({
+      where: { id: orderItemId },
+      include: [
+        {
+          model: orders,
+          required: true,
+        },
+        {
+          model: products,
+          required: true,
+        },
+      ],
+    });
+
+    if (!orderItem) {
+      return rejectResponse(
+        statusCode.CLIENT_ERROR.NOT_FOUND,
+        "Order item not found"
+      );
+    }
+
+    return successResponse(
+      statusCode.SUCCESS.OK,
+      "Order details fetched successfully!",
+      orderItem
+    );
+  } catch (err) {
+    throw rejectResponse(
+      statusCode.SERVER_ERROR.INTERNAL_SERVER_ERROR,
+      err?.message
+    );
+  }
+};
+
+
 
 module.exports = {
   placeOrderUser,
@@ -456,4 +502,5 @@ module.exports = {
   exchangeHistoryUser,
   requestCancelUser,
   orderHistoryAdminUser,
+  viewOrderHistoryUser
 };

@@ -7,6 +7,7 @@ const {
   exchangeHistoryUser,
   requestCancelUser,
   orderHistoryAdminUser,
+  viewOrderHistoryUser,
 } = require("../services/orderMngServices");
 
 const placeOrder = async (req, res) => {
@@ -82,8 +83,17 @@ const requestCancel = async (req, res) => {
 const orderHistoryAdmin = async (req, res) => {
   try {
     const query = req.query;
-    console.log(query, "ASdadadsads")
     const result = await orderHistoryAdminUser(query);
+    res.status(result.status).json(result);
+  } catch (err) {
+    res.status(err?.status).json(err);
+  }
+};
+
+const viewOrderHistory = async (req, res) => {
+  try {
+    const params = req.params;
+    const result = await viewOrderHistoryUser(params);
     res.status(result.status).json(result);
   } catch (err) {
     res.status(err?.status).json(err);
@@ -98,5 +108,6 @@ module.exports = {
   requestExchange,
   exchangeHistory,
   requestCancel,
-  orderHistoryAdmin
+  orderHistoryAdmin,
+  viewOrderHistory
 };
