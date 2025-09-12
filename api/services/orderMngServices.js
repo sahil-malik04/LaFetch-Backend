@@ -406,7 +406,13 @@ const orderHistoryAdminUser = async (query) => {
             include: [
               {
                 model: orders,
-                attributes: ["id", "userId", "status", "orderedAt", "deliveredAt"],
+                attributes: [
+                  "id",
+                  "userId",
+                  "status",
+                  "orderedAt",
+                  "deliveredAt",
+                ],
               },
               {
                 model: products,
@@ -419,6 +425,9 @@ const orderHistoryAdminUser = async (query) => {
     } else {
       // All placed orders
       result = await orders.findAll({
+        where: {
+          status: query?.status,
+        },
         include: [
           {
             model: order_items,
@@ -491,8 +500,6 @@ const viewOrderHistoryUser = async (params) => {
   }
 };
 
-
-
 module.exports = {
   placeOrderUser,
   orderHistoryUser,
@@ -502,5 +509,5 @@ module.exports = {
   exchangeHistoryUser,
   requestCancelUser,
   orderHistoryAdminUser,
-  viewOrderHistoryUser
+  viewOrderHistoryUser,
 };

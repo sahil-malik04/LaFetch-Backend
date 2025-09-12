@@ -337,7 +337,7 @@ const signInUser = async (payload) => {
               data.isVerified = findVendor?.isVerified;
               data.isDocumentsSubmitted = findVendor?.isDocumentsSubmitted;
             }
-            const generateTokenResult = generateToken(data, "");
+            const generateTokenResult = generateToken(data);
             if (generateTokenResult) {
               data.token = generateTokenResult;
             }
