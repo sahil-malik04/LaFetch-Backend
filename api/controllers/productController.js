@@ -269,8 +269,8 @@ const deleteProductCollection = async (req, res) => {
 
 const getCollectionWithProducts = async (req, res) => {
   try {
-    const params = req.params;
-    const result = await getCollectionWithProductsUser(params);
+    const query = req.query;
+    const result = await getCollectionWithProductsUser(query);
     res.status(result.status).json(result);
   } catch (err) {
     res.status(err?.status).json(err);
