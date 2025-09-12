@@ -269,7 +269,8 @@ const deleteProductCollection = async (req, res) => {
 
 const getCollectionWithProducts = async (req, res) => {
   try {
-    const result = await getCollectionWithProductsUser();
+    const params = req.params;
+    const result = await getCollectionWithProductsUser(params);
     res.status(result.status).json(result);
   } catch (err) {
     res.status(err?.status).json(err);
@@ -322,5 +323,5 @@ module.exports = {
   deleteProductCollection,
   getCollectionWithProducts,
   productSearch,
-  productSuggestion
+  productSuggestion,
 };

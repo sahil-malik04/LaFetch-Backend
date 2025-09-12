@@ -955,16 +955,24 @@ const deleteProductCollectionUser = async (params) => {
   }
 };
 
-const getCollectionWithProductsUser = async () => {
+const getCollectionWithProductsUser = async (query) => {
   try {
+    const genderParam = Number(query.gender);
+
+    const includeProducts = {
+      model: products,
+      as: "products",
+      required: false,
+    };
+
+    if (genderParam) {
+      includeProducts.where = {
+        superCatId: genderParam,
+      };
+    }
+
     const getAllCollections = await productCollection.findAll({
-      include: [
-        {
-          model: products,
-          as: "products",
-          required: false,
-        },
-      ],
+      include: [includeProducts],
     });
     return successResponse(
       statusCode.SUCCESS.OK,
