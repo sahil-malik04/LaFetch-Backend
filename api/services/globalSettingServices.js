@@ -107,6 +107,7 @@ const updateFeesGlobalUser = async (payload) => {
       const data = {
         scope: payload?.scope,
         brandId: payload?.brandId,
+        convenienceFeeType: payload?.convenienceFeeType,
         convenienceFeeValue: payload?.convenienceFeeValue,
         gstPercent: payload?.gstPercent,
         deliveryBaseFee: payload?.deliveryBaseFee,
