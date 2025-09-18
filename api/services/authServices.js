@@ -1,3 +1,4 @@
+const roles = require("../models/roleModel");
 const users = require("../models/userModel");
 const vendors = require("../models/vendorsModel");
 const {
@@ -308,8 +309,8 @@ const signInUser = async (payload) => {
       where: {
         email,
       },
+      include: [roles],
     });
-
     if (isEmailExist) {
       const decryptUserPassword = decryptText(password);
       const decryptDBPassword = decryptText(isEmailExist?.password);
@@ -325,7 +326,7 @@ const signInUser = async (payload) => {
               fullName: isEmailExist?.fullName,
               email: isEmailExist?.email,
               roleId: isEmailExist?.roleId,
-              permissions: isEmailExist?.permissions,
+              role: isEmailExist?.role,
             };
             const findVendor = await vendors.findOne({
               where: {
