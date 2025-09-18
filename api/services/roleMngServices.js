@@ -26,6 +26,7 @@ const updateRoleUser = async (params, payload) => {
     });
     if (isRoleExist) {
       const data = {
+        name: payload?.name,
         permissions: payload?.permissions,
         updatedAt: new Date(),
       };
