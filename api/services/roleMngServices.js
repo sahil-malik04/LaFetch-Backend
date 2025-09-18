@@ -1,16 +1,11 @@
 const { statusCode } = require("../utils/statusCode");
 const { successResponse, rejectResponse } = require("../utils/response");
 const roles = require("../models/roleModel");
-const { Op, fn, col, where } = require("sequelize");
+const { fn, col, where } = require("sequelize");
 
 const getRolesUser = async () => {
   try {
     const result = await roles.findAll({
-      where: {
-        id: {
-          [Op.notIn]: [2, 3],
-        },
-      },
       attributes: ["id", "name", "permissions"],
     });
     return successResponse(statusCode.SUCCESS.OK, "Success!", result);
