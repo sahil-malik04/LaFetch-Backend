@@ -23,7 +23,6 @@ const getProductsUser = async (query) => {
     const genderParam = Number(query.gender);
     const catId = Number(query.catId);
     const status = Number(query?.status);
-    const id = Number(query?.of);
 
     const whereClause = {
       ...(query?.status && { status: status === 1 ? true : false }),
@@ -34,9 +33,6 @@ const getProductsUser = async (query) => {
     }
     if (catId) {
       whereClause.catId = catId;
-    }
-    if (id) {
-      whereClause.addedBy = id;
     }
 
     const result = await products.findAll({
@@ -256,7 +252,6 @@ const onboardProductUser = async (body, reqFiles) => {
 
       publishedAt: new Date().toISOString().split(".")[0] + "Z",
       addedFrom: "admin",
-      addedBy: body?.addedBy,
       collectionID: body?.collectionID,
       basePrice: body?.basePrice,
       hasCOD: body?.hasCOD,
@@ -629,11 +624,7 @@ const syncProductsUser = async (query) => {
         const SHOPIFY_API_URL = getShopifyCred?.apiURL;
         const ACCESS_TOKEN = getShopifyCred?.accessToken;
 
-        const result = await syncShopifyProducts(
-          SHOPIFY_API_URL,
-          ACCESS_TOKEN,
-          query?.vendorId
-        );
+        const result = await syncShopifyProducts(SHOPIFY_API_URL, ACCESS_TOKEN);
 
         return successResponse(result?.status, result?.message);
       } else {
@@ -658,12 +649,7 @@ const syncProductsUser = async (query) => {
 
 const getSizeChartsUser = async (query) => {
   try {
-    const id = Number(query?.of);
-    const whereClause = {
-      ...(id && { addedBy: id }),
-    };
     const result = await productSizeCharts.findAll({
-      where: whereClause,
       include: [
         {
           model: brands,
@@ -715,7 +701,6 @@ const addSizeChartUser = async (payload, reqFiles) => {
         catId: payload?.catId,
         subCatId: payload?.subCatId,
         sizeChartData: payload?.sizeChartData,
-        addedBy: payload?.addedBy,
       };
       if (Object.keys(reqFiles).length) {
         const image = reqFiles?.sizeGuideImage[0];

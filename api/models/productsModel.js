@@ -59,16 +59,11 @@ const products = sequelize.define("products", {
     type: DataTypes.ENUM("admin", "vendor", "shopify"),
     allowNull: true,
   },
-  addedBy: {
-    type: DataTypes.INTEGER,
-    allowNull: false,
-  },
 });
 
 products.belongsTo(brands, { foreignKey: "brandId" });
 products.belongsTo(category, { foreignKey: "superCatId" });
 products.belongsTo(warehouse, { foreignKey: "warehouseId" });
-products.belongsTo(users, { foreignKey: "addedBy" });
 
 // sequelize
 //   .sync({ force: false })

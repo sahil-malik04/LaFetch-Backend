@@ -87,10 +87,6 @@ const brands = sequelize.define("brands", {
     defaultValue: true,
     allowNull: false,
   },
-  addedBy: {
-    type: DataTypes.INTEGER,
-    allowNull: false,
-  },
 });
 
 // sequelize

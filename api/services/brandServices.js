@@ -20,10 +20,6 @@ const getBrandsUser = async (query) => {
     } else if (query?.isFeatured === "false") {
       whereClause.isFeatured = false;
     }
-    const id = Number(query?.of);
-    if (id) {
-      whereClause.addedBy = id;
-    }
 
     const result = await brands.findAll({
       where: whereClause,
@@ -131,7 +127,6 @@ const brandOnboardUser = async (body, reqFiles) => {
           isFeatured: body?.isFeatured,
           deliveryType: JSON.parse(body?.deliveryType),
           commission: body?.commission,
-          addedBy: body?.addedBy,
         };
 
         const uploadedFiles = {};
@@ -205,7 +200,6 @@ const brandOnboardUser = async (body, reqFiles) => {
                     postalCode: wh.postalCode,
                     capacity: wh.capacity,
                     contactNo: wh.contactNo,
-                    addedBy: wh.addedBy,
                   }));
 
                   // Bulk create

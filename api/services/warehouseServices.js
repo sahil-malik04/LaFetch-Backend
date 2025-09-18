@@ -23,7 +23,6 @@ const addWarehouseUser = async (payload) => {
         postalCode: payload?.postalCode,
         capacity: payload?.capacity,
         contactNo: payload?.contactNo,
-        addedBy: payload?.addedBy,
       };
       const result = await warehouse.create(data);
       if (result) {
@@ -40,13 +39,7 @@ const addWarehouseUser = async (payload) => {
 
 const getWarehousesUser = async (query) => {
   try {
-    const id = Number(query?.of);
-    const whereClause = {
-      ...(id && { addedBy: id }),
-    };
-    const result = await warehouse.findAll({
-      where: whereClause,
-    });
+    const result = await warehouse.findAll();
     return successResponse(statusCode.SUCCESS.OK, "Success!", result);
   } catch (err) {
     throw rejectResponse(

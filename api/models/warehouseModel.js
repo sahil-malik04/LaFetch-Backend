@@ -39,10 +39,6 @@ const warehouse = sequelize.define("warehouse", {
     type: DataTypes.BOOLEAN,
     defaultValue: true,
   },
-  addedBy: {
-    type: DataTypes.INTEGER,
-    allowNull: false,
-  },
 });
 
 // sequelize
