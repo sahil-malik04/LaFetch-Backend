@@ -37,13 +37,6 @@ const getProductsUser = async (query) => {
 
     const result = await products.findAll({
       where: whereClause,
-      include: [
-        {
-          model: users,
-          attributes: ["id", "fullName"],
-          required: false,
-        },
-      ],
     });
 
     return successResponse(statusCode.SUCCESS.OK, "Success!", result);
