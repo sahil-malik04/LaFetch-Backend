@@ -184,7 +184,7 @@ const getPromotionsUser = async (query) => {
   try {
     const result = await promotions.findAll({
       where: {
-        isActive: query?.isActive === "true",
+        ...(query.isActive ? { isActive: query.isActive } : {}),
       },
     });
     return successResponse(statusCode.SUCCESS.OK, result);
