@@ -1,8 +1,9 @@
 const { statusCode } = require("../utils/statusCode");
 const { successResponse, rejectResponse } = require("../utils/response");
 const coupons = require("../models/couponsModel");
-// const promotions = require("../models/promotionsModel");
+const promotions = require("../models/promotionsModel");
 const { fn, col, where } = require("sequelize");
+const { uploadToS3 } = require("../utils/s3Uploader");
 
 const addCouponUser = async (payload) => {
   try {
@@ -179,147 +180,179 @@ const getCouponByIdUser = async (params) => {
   }
 };
 
-// const getPromotionsUser = async (query) => {
-//   try {
-//     const result = await promotions.findAll({
-//       where: {
-//         isActive: query?.isActive === "true",
-//       },
-//     });
-//     return successResponse(statusCode.SUCCESS.OK, result);
-//   } catch (err) {
-//     throw rejectResponse(
-//       statusCode.SERVER_ERROR.INTERNAL_SERVER_ERROR,
-//       err?.message
-//     );
-//   }
-// };
+const getPromotionsUser = async (query) => {
+  try {
+    const result = await promotions.findAll({
+      where: {
+        isActive: query?.isActive === "true",
+      },
+    });
+    return successResponse(statusCode.SUCCESS.OK, result);
+  } catch (err) {
+    throw rejectResponse(
+      statusCode.SERVER_ERROR.INTERNAL_SERVER_ERROR,
+      err?.message
+    );
+  }
+};
 
-// const addPromotionUser = async (payload) => {
-//   try {
-//     const data = {
-//       title: payload?.title,
-//       description: payload?.description,
-//       imageUrl: payload?.imageUrl,
-//       screen: payload?.screen,
-//       params: payload?.params,
-//       scheduled_at: payload?.scheduled_at,
-//       status: payload?.status,
-//     };
-//     const result = await promotions.create(data);
-//     return successResponse(
-//       statusCode.SUCCESS.CREATED,
-//       "Promotion added!",
-//       result
-//     );
-//   } catch (err) {
-//     throw rejectResponse(
-//       statusCode.SERVER_ERROR.INTERNAL_SERVER_ERROR,
-//       err?.message
-//     );
-//   }
-// };
+const addPromotionUser = async (payload, reqFiles) => {
+  try {
+    const data = {
+      name: payload?.name,
+      discountType: payload?.discountType,
+      discountValue: payload?.discountValue,
+      appliesTo: payload?.appliesTo,
+      applicateOn: payload?.applicateOn,
+      startDate: payload?.startDate,
+      endDate: payload?.endDate,
+      badgeText: payload?.badgeText,
+      status: payload?.status,
+    };
+    const uploadedFiles = {};
 
-// const updatePromotionUser = async (params, payload) => {
-//   try {
-//     const isPromotionExist = await promotions.findOne({
-//       where: {
-//         id: params?.promotionId,
-//       },
-//     });
-//     if (!isPromotionExist) {
-//       return rejectResponse(
-//         statusCode.CLIENT_ERROR.CONFLICT,
-//         "Promotion doesn't exist!"
-//       );
-//     } else {
-//       const data = {
-//         title: payload?.title,
-//         description: payload?.description,
-//         imageUrl: payload?.imageUrl,
-//         screen: payload?.screen,
-//         params: payload?.params,
-//         scheduled_at: payload?.scheduled_at,
-//         status: payload?.status,
-//         updatedAt: new Date(),
-//       };
-//       const result = await isPromotionExist.update(data);
-//       if (result) {
-//         return successResponse(
-//           statusCode.SUCCESS.OK,
-//           "Promotion updated successfully!"
-//         );
-//       }
-//     }
-//   } catch (err) {
-//     throw rejectResponse(
-//       statusCode.SERVER_ERROR.INTERNAL_SERVER_ERROR,
-//       err?.message
-//     );
-//   }
-// };
+    for (const [fieldName, files] of Object.entries(reqFiles)) {
+      const file = files[0];
+      const url = await uploadToS3(
+        file.buffer,
+        file.originalname,
+        file.mimetype,
+        "promotion-assets"
+      );
+      uploadedFiles[fieldName] = url;
+    }
+    data.banner_image_url = uploadedFiles?.image;
 
-// const deletePromotionUser = async (params) => {
-//   try {
-//     const isPromotionExist = await promotions.findOne({
-//       where: {
-//         id: params?.promotionId,
-//       },
-//     });
-//     if (isPromotionExist) {
-//       const result = await isPromotionExist.destroy();
-//       if (result) {
-//         return successResponse(
-//           statusCode.SUCCESS.OK,
-//           "Promotion deleted successfully!"
-//         );
-//       }
-//     } else {
-//       return rejectResponse(
-//         statusCode.CLIENT_ERROR.CONFLICT,
-//         "Promotion doesn't exist!"
-//       );
-//     }
-//   } catch (err) {
-//     throw rejectResponse(
-//       statusCode.SERVER_ERROR.INTERNAL_SERVER_ERROR,
-//       err?.message
-//     );
-//   }
-// };
+    const result = await promotions.create(data);
+    return successResponse(
+      statusCode.SUCCESS.CREATED,
+      "Promotion added!",
+      result
+    );
+  } catch (err) {
+    throw rejectResponse(
+      statusCode.SERVER_ERROR.INTERNAL_SERVER_ERROR,
+      err?.message
+    );
+  }
+};
 
-// const updatePromotionStatusUser = async (params, query) => {
-//   try {
-//     const isPromotionExist = await promotions.findOne({
-//       where: {
-//         id: params?.promotionId,
-//       },
-//     });
-//     if (!isPromotionExist) {
-//       return rejectResponse(
-//         statusCode.CLIENT_ERROR.CONFLICT,
-//         "Promotion doesn't exist!"
-//       );
-//     } else {
-//       const data = {
-//         status: query?.status,
-//         updatedAt: new Date(),
-//       };
-//       const result = await isPromotionExist.update(data);
-//       if (result) {
-//         return successResponse(
-//           statusCode.SUCCESS.OK,
-//           "Promotion updated successfully!"
-//         );
-//       }
-//     }
-//   } catch (err) {
-//     throw rejectResponse(
-//       statusCode.SERVER_ERROR.INTERNAL_SERVER_ERROR,
-//       err?.message
-//     );
-//   }
-// };
+const updatePromotionUser = async (params, payload, reqFiles) => {
+  try {
+    const isPromotionExist = await promotions.findOne({
+      where: {
+        id: params?.promotionId,
+      },
+    });
+    if (!isPromotionExist) {
+      return rejectResponse(
+        statusCode.CLIENT_ERROR.CONFLICT,
+        "Promotion doesn't exist!"
+      );
+    } else {
+      const data = {
+        name: payload?.name,
+        discountType: payload?.discountType,
+        discountValue: payload?.discountValue,
+        appliesTo: payload?.appliesTo,
+        applicateOn: payload?.applicateOn,
+        startDate: payload?.startDate,
+        endDate: payload?.endDate,
+        badgeText: payload?.badgeText,
+        status: payload?.status,
+        updatedAt: new Date(),
+      };
+      const uploadedFiles = {};
+
+      for (const [fieldName, files] of Object.entries(reqFiles)) {
+        const file = files[0];
+        const url = await uploadToS3(
+          file.buffer,
+          file.originalname,
+          file.mimetype,
+          "promotion-assets"
+        );
+        uploadedFiles[fieldName] = url;
+      }
+      data.banner_image_url = uploadedFiles?.image;
+
+      const result = await isPromotionExist.update(data);
+      if (result) {
+        return successResponse(
+          statusCode.SUCCESS.OK,
+          "Promotion updated successfully!"
+        );
+      }
+    }
+  } catch (err) {
+    throw rejectResponse(
+      statusCode.SERVER_ERROR.INTERNAL_SERVER_ERROR,
+      err?.message
+    );
+  }
+};
+
+const deletePromotionUser = async (params) => {
+  try {
+    const isPromotionExist = await promotions.findOne({
+      where: {
+        id: params?.promotionId,
+      },
+    });
+    if (isPromotionExist) {
+      const result = await isPromotionExist.destroy();
+      if (result) {
+        return successResponse(
+          statusCode.SUCCESS.OK,
+          "Promotion deleted successfully!"
+        );
+      }
+    } else {
+      return rejectResponse(
+        statusCode.CLIENT_ERROR.CONFLICT,
+        "Promotion doesn't exist!"
+      );
+    }
+  } catch (err) {
+    throw rejectResponse(
+      statusCode.SERVER_ERROR.INTERNAL_SERVER_ERROR,
+      err?.message
+    );
+  }
+};
+
+const updatePromotionStatusUser = async (params, query) => {
+  try {
+    const isPromotionExist = await promotions.findOne({
+      where: {
+        id: params?.promotionId,
+      },
+    });
+    if (!isPromotionExist) {
+      return rejectResponse(
+        statusCode.CLIENT_ERROR.CONFLICT,
+        "Promotion doesn't exist!"
+      );
+    } else {
+      const data = {
+        status: query?.status,
+        updatedAt: new Date(),
+      };
+      const result = await isPromotionExist.update(data);
+      if (result) {
+        return successResponse(
+          statusCode.SUCCESS.OK,
+          "Promotion updated successfully!"
+        );
+      }
+    }
+  } catch (err) {
+    throw rejectResponse(
+      statusCode.SERVER_ERROR.INTERNAL_SERVER_ERROR,
+      err?.message
+    );
+  }
+};
 
 module.exports = {
   addCouponUser,
@@ -327,9 +360,9 @@ module.exports = {
   updateCouponUser,
   deleteCouponUser,
   getCouponByIdUser,
-  // getPromotionsUser,
-  // addPromotionUser,
-  // updatePromotionUser,
-  // deletePromotionUser,
-  // updatePromotionStatusUser,
+  getPromotionsUser,
+  addPromotionUser,
+  updatePromotionUser,
+  deletePromotionUser,
+  updatePromotionStatusUser,
 };

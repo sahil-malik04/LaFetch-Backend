@@ -7,12 +7,13 @@ const {
   updateCoupon,
   deleteCoupon,
   getCouponById,
-  // getPromotions,
-  // addPromotion,
-  // updatePromotion,
-  // deletePromotion,
-  // updatePromotionStatus,
+  getPromotions,
+  addPromotion,
+  updatePromotion,
+  deletePromotion,
+  updatePromotionStatus,
 } = require("../controllers/marketingMngController");
+const upload = require("../middleware/upload");
 
 // coupons
 router.post("/coupon", isAuthorized, addCoupon);
@@ -22,14 +23,24 @@ router.delete("/coupon/:couponId", isAuthorized, deleteCoupon);
 router.get("/coupon/:couponId", isAuthorized, getCouponById);
 
 // promotions
-// router.get("/promotions", isAuthorized, getPromotions);
-// router.post("/promotion", isAuthorized, addPromotion);
-// router.put("/promotion/:promotionId", isAuthorized, updatePromotion);
-// router.delete("/promotion/:promotionId", isAuthorized, deletePromotion);
-// router.patch(
-//   "/promotion-status/:promotionId",
-//   isAuthorized,
-//   updatePromotionStatus
-// );
+router.get("/promotions", isAuthorized, getPromotions);
+router.post(
+  "/promotion",
+  isAuthorized,
+  upload.fields([{ name: "image" }]),
+  addPromotion
+);
+router.put(
+  "/promotion/:promotionId",
+  isAuthorized,
+  upload.fields([{ name: "image" }]),
+  updatePromotion
+);
+router.delete("/promotion/:promotionId", isAuthorized, deletePromotion);
+router.patch(
+  "/promotion-status/:promotionId",
+  isAuthorized,
+  updatePromotionStatus
+);
 
 module.exports = router;
