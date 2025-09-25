@@ -24,9 +24,17 @@ const ROLES = Object.freeze({
   VENDOR: 2,
 });
 
+// Allowed domains
+const allowedOrigins = [
+  "http://localhost:3000/",
+  "http://localhost:3001/",
+  "http://15.207.223.79:3000/",
+];
+
 module.exports = {
   otpStartRange,
   otpEndRange,
   responseMessages,
   ROLES,
+  allowedOrigins,
 };

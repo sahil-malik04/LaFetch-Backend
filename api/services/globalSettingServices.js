@@ -3,6 +3,7 @@ const { successResponse, rejectResponse } = require("../utils/response");
 const globalSettings = require("../models/globalSettingsModel");
 const brandSettings = require("../models/brandSettingsModel");
 const fees = require("../models/feesModel");
+const brands = require("../models/brandsModel");
 
 const adminSettingsUser = async () => {
   try {
@@ -53,6 +54,16 @@ const addBrandSettingsUser = async (params, payload) => {
       },
       { returning: true }
     );
+
+    const isBrandExist = await brands.findOne({
+      where: { id: params?.brandId },
+    });
+
+    const data = {
+      isActive: payload?.brandEnabled === true,
+      updatedAt: new Date(),
+    };
+    await isBrandExist.update(data);
 
     return successResponse(
       statusCode.SUCCESS.OK,
