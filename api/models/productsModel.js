@@ -2,8 +2,6 @@ const { DataTypes } = require("sequelize");
 const { sequelize } = require("../db/dbConfig.js");
 const brands = require("./brandsModel.js");
 const category = require("./categoryModel.js");
-const warehouse = require("./warehouseModel.js");
-const users = require("./userModel.js");
 
 const products = sequelize.define("products", {
   id: { type: DataTypes.INTEGER, autoIncrement: true, primaryKey: true },
@@ -18,7 +16,6 @@ const products = sequelize.define("products", {
   catId: { type: DataTypes.INTEGER, allowNull: true },
   subCatId: { type: DataTypes.INTEGER, allowNull: true },
   brandId: { type: DataTypes.INTEGER, allowNull: true },
-  warehouseId: { type: DataTypes.INTEGER, allowNull: true },
 
   status: { type: DataTypes.BOOLEAN, defaultValue: false },
   tags: { type: DataTypes.ARRAY(DataTypes.STRING), allowNull: true },
@@ -63,7 +60,6 @@ const products = sequelize.define("products", {
 
 products.belongsTo(brands, { foreignKey: "brandId" });
 products.belongsTo(category, { foreignKey: "superCatId" });
-products.belongsTo(warehouse, { foreignKey: "warehouseId" });
 
 // sequelize
 //   .sync({ force: false })

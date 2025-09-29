@@ -3,6 +3,7 @@ const products = require("../models/productsModel");
 const productVariants = require("../models/productVariantModel");
 const { statusCode } = require("../utils/statusCode");
 const { rejectResponse, successResponse } = require("../utils/response");
+const inventories = require("../models/inventoriesModel");
 
 async function syncShopifyProducts(SHOPIFY_API_URL, ACCESS_TOKEN) {
   try {
@@ -12,55 +13,52 @@ async function syncShopifyProducts(SHOPIFY_API_URL, ACCESS_TOKEN) {
 
       for (const edge of productsDataResult) {
         const node = edge.node;
-
-        const existingProduct = await products.findOne({
+        let productRecord = await products.findOne({
           where: { shopifyProductId: node.id },
         });
-        if (existingProduct) {
-          continue;
+
+        if (!productRecord) {
+          const genderLabels =
+            node.metafield?.references?.edges?.map(
+              (e) => e.node.fields.find((f) => f.key === "label")?.value
+            ) || [];
+
+          const colorOptions =
+            node.options.find((opt) => opt.name === "Color")?.values || [];
+          const fabricOptions =
+            node.options.find((opt) => opt.name === "Fabric")?.values || [];
+
+          const productPayload = {
+            type: node.productType,
+            title: node.title,
+            description: node.description,
+            tags: node.tags || [],
+            publishedAt:
+              node.publishedAt || new Date().toISOString().split(".")[0] + "Z",
+            imageUrls:
+              node.images?.edges?.map((img) => img.node.originalSrc) || [],
+
+            shopifyProductId: node.id,
+            shopifyHandle: node.handle,
+            shopifyCreatedAt: node.createdAt,
+            shopifyUpdatedAt: node.updatedAt,
+
+            seoTitle: node.seo?.title || null,
+            seoDescription: node.seo?.description || null,
+
+            targetGenders: genderLabels,
+            fabrics: fabricOptions,
+            colorPatterns: colorOptions,
+            addedFrom: "shopify",
+            hasCOD: true,
+            hasExchange: true,
+            exchangeDays: 2,
+            manufacturingAmount: 10.6,
+            sellingAmount: 12.5,
+            netAmount: 9.0,
+          };
+          productRecord = await products.create(productPayload);
         }
-
-        const genderLabels =
-          node.metafield?.references?.edges?.map(
-            (e) => e.node.fields.find((f) => f.key === "label")?.value
-          ) || [];
-
-        const colorOptions =
-          node.options.find((opt) => opt.name === "Color")?.values || [];
-        const fabricOptions =
-          node.options.find((opt) => opt.name === "Fabric")?.values || [];
-
-        const productPayload = {
-          type: node.productType,
-          title: node.title,
-          description: node.description,
-          tags: node.tags || [],
-          publishedAt:
-            node.publishedAt || new Date().toISOString().split(".")[0] + "Z",
-          imageUrls:
-            node.images?.edges?.map((img) => img.node.originalSrc) || [],
-
-          shopifyProductId: node.id,
-          shopifyHandle: node.handle,
-          shopifyCreatedAt: node.createdAt,
-          shopifyUpdatedAt: node.updatedAt,
-
-          seoTitle: node.seo?.title || null,
-          seoDescription: node.seo?.description || null,
-
-          targetGenders: genderLabels,
-          fabrics: fabricOptions,
-          colorPatterns: colorOptions,
-          addedFrom: "shopify",
-          hasCOD: true,
-          hasExchange: true,
-          exchangeDays: 2,
-          manufacturingAmount: 10.6,
-          sellingAmount: 12.5,
-          netAmount: 9.0,
-        };
-
-        const createdProduct = await products.create(productPayload);
 
         let lowestPrice = Number.POSITIVE_INFINITY;
 
@@ -72,20 +70,50 @@ async function syncShopifyProducts(SHOPIFY_API_URL, ACCESS_TOKEN) {
             lowestPrice = price;
           }
 
-          await productVariants.create({
-            productId: createdProduct.id,
-            shopifyVariantId: variant.id,
+          let existingVariant = await productVariants.findOne({
+            where: { shopifyVariantId: variant.id },
+          });
+
+          let variantData = {
             title: variant.title,
             sku: variant.sku,
             price: price,
             compareAtPrice: parseFloat(variant.compareAtPrice),
-            inventoryQuantity: variant.inventoryQuantity,
             selectedOptions: variant.selectedOptions,
+          };
+
+          if (!existingVariant) {
+            existingVariant = await productVariants.create({
+              ...variantData,
+              productId: productRecord.id,
+              shopifyVariantId: variant.id,
+            });
+          } else {
+            await existingVariant.update(variantData);
+          }
+
+          // Upsert inventory
+          let existingInventory = await inventories.findOne({
+            where: { variantId: existingVariant.id },
           });
+
+          let inventoryData = {
+            availableStock: variant.inventoryQuantity,
+            lastSyncedAt: new Date(),
+          };
+
+          if (!existingInventory) {
+            await inventories.create({
+              variantId: existingVariant.id,
+              ...inventoryData,
+            });
+          } else {
+            await existingInventory.update(inventoryData);
+          }
         }
 
         if (lowestPrice !== Number.POSITIVE_INFINITY) {
-          await createdProduct.update({ basePrice: lowestPrice });
+          await productRecord.update({ basePrice: lowestPrice });
         }
       }
       return successResponse(statusCode.SUCCESS.OK, "Product Sync success!");

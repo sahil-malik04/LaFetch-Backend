@@ -3,7 +3,6 @@ const { statusCode } = require("../utils/statusCode");
 const products = require("../models/productsModel");
 const brands = require("../models/brandsModel");
 const category = require("../models/categoryModel");
-const warehouse = require("../models/warehouseModel");
 const { responseMessages } = require("../utils/dataUtils");
 const banners = require("../models/bannerModel");
 const productVariants = require("../models/productVariantModel");
@@ -14,8 +13,8 @@ const shopifyAccounts = require("../models/shopifyAccountsModel");
 const productCollection = require("../models/productCollectionModel");
 const { Op } = require("sequelize");
 const { sequelize } = require("../db/dbConfig");
-const users = require("../models/userModel");
 const banner_products = require("../models/bannerProducts");
+const inventories = require("../models/inventoriesModel");
 
 // products
 const getProductsUser = async (query) => {
@@ -54,7 +53,7 @@ const getProductByIdUser = async (params) => {
       where: {
         id: params?.productId,
       },
-      include: [brands, category, warehouse],
+      include: [brands, category],
     });
     if (product) {
       const variants = await productVariants.findAll({
@@ -100,7 +99,6 @@ const updateProductUser = async (params, body, reqFiles) => {
         catId: body?.catId,
         subCatId: body?.subCatId,
         brandId: body?.brandId,
-        warehouseId: body?.warehouseId,
 
         isFeatured: body?.isFeatured,
 
@@ -153,15 +151,24 @@ const updateProductUser = async (params, body, reqFiles) => {
             lowestPrice = price;
           }
 
-          await productVariants.create({
+          const variantData = {
             productId: result.id,
             title: variantEdge.title,
             sku: variantEdge.sku,
             price: price,
             compareAtPrice: parseFloat(variantEdge.compareAtPrice),
-            inventoryQuantity: variantEdge.inventoryQuantity,
             selectedOptions: variantEdge.selectedOptions,
-          });
+          };
+          const isVariantAdded = await productVariants.create(variantData);
+
+          let inventoryData = {
+            variantId: isVariantAdded.id,
+            availableStock: variantEdge.inventoryQuantity,
+            warehouseId: variantEdge.warehouseId,
+            lastSyncedAt: new Date(),
+          };
+
+          await inventories.create(inventoryData);
         }
 
         if (lowestPrice !== Number.POSITIVE_INFINITY) {
@@ -229,7 +236,6 @@ const onboardProductUser = async (body, reqFiles) => {
       catId: body?.catId,
       subCatId: body?.subCatId,
       brandId: body?.brandId,
-      warehouseId: body?.warehouseId,
 
       isFeatured: body?.isFeatured,
 
@@ -283,15 +289,25 @@ const onboardProductUser = async (body, reqFiles) => {
           lowestPrice = price;
         }
 
-        await productVariants.create({
-          productId: result.id,
-          title: variantEdge.title,
+        const variantData = {
+          title: variantEdge.title.toUpperCase(),
           sku: variantEdge.sku,
           price: price,
           compareAtPrice: parseFloat(variantEdge.compareAtPrice),
-          inventoryQuantity: variantEdge.inventoryQuantity,
           selectedOptions: variantEdge.selectedOptions,
-        });
+          productId: result.id,
+        };
+
+        const isVariantAdded = await productVariants.create(variantData);
+
+        let inventoryData = {
+          variantId: isVariantAdded.id,
+          availableStock: variantEdge.inventoryQuantity,
+          warehouseId: variantEdge.warehouseId,
+          lastSyncedAt: new Date(),
+        };
+
+        await inventories.create(inventoryData);
       }
 
       if (lowestPrice !== Number.POSITIVE_INFINITY) {
@@ -323,12 +339,27 @@ const updateProductVariantUser = async (params, body) => {
         sku: body?.sku,
         price: body?.price,
         compareAtPrice: body?.compareAtPrice,
-        inventoryQuantity: body?.inventoryQuantity,
         selectedOptions: body?.selectedOptions,
         updatedAt: new Date(),
       };
       const result = await isVariantExist.update(data);
       if (result) {
+        const findInventory = await inventories.findOne({
+          where: {
+            variantId: params?.variantId,
+          },
+        });
+        if (findInventory) {
+          let inventoryData = {
+            variantId: params?.variantId,
+            availableStock: body.inventoryQuantity,
+            reservedStock: body.reservedStock,
+            warehouseId: body.warehouseId,
+            lastSyncedAt: new Date(),
+          };
+          await inventories.update(inventoryData);
+        }
+
         return successResponse(
           statusCode.SUCCESS.OK,
           "Product variant updated successfully!"
@@ -358,10 +389,18 @@ const deleteProductVariantUser = async (params) => {
     if (isVariantExist) {
       const deleteVariant = await isVariantExist.destroy();
       if (deleteVariant) {
-        return successResponse(
-          statusCode.SUCCESS.OK,
-          "Product variant deleted successfully!"
-        );
+        const checkInventory = await inventories.findOne({
+          where: {
+            variantId: params?.variantId,
+          },
+        });
+        const deleteInventory = await checkInventory.destroy();
+        if (deleteInventory) {
+          return successResponse(
+            statusCode.SUCCESS.OK,
+            "Product variant and inventory deleted successfully!"
+          );
+        }
       }
     } else {
       return rejectResponse(
@@ -1067,6 +1106,54 @@ const productSuggestionUser = async (query) => {
   }
 };
 
+const getBrandProductsUser = async (payload) => {
+  try {
+    const result = await products.findAll({
+      where: {
+        brandId: payload?.brandId,
+      },
+      attributes: ["id", "title"],
+    });
+    return successResponse(
+      statusCode.SUCCESS.OK,
+      "Data fetched successfully!",
+      result
+    );
+  } catch (error) {
+    return rejectResponse(
+      statusCode.SERVER_ERROR.INTERNAL_SERVER_ERROR,
+      "Something went wrong!"
+    );
+  }
+};
+
+const viewProductVariantsUser = async (payload) => {
+  try {
+    const result = await productVariants.findAll({
+      where: {
+        productId: payload?.productId,
+      },
+      attributes: ["id", "title", "sku", "price"],
+      include: [
+        {
+          model: inventories,
+          attributes: ["id", "availableStock", "reservedStock"],
+        },
+      ],
+    });
+    return successResponse(
+      statusCode.SUCCESS.OK,
+      "Product variants fetched successfully!",
+      result
+    );
+  } catch (error) {
+    return rejectResponse(
+      statusCode.SERVER_ERROR.INTERNAL_SERVER_ERROR,
+      "Something went wrong!"
+    );
+  }
+};
+
 module.exports = {
   getProductsUser,
   getProductByIdUser,
@@ -1094,4 +1181,6 @@ module.exports = {
   getCollectionWithProductsUser,
   productSearchUser,
   productSuggestionUser,
+  getBrandProductsUser,
+  viewProductVariantsUser,
 };

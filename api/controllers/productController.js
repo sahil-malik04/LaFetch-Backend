@@ -25,6 +25,8 @@ const {
   getCollectionWithProductsUser,
   productSearchUser,
   productSuggestionUser,
+  getBrandProductsUser,
+  viewProductVariantsUser,
 } = require("../services/productServices");
 
 const getProducts = async (req, res) => {
@@ -297,6 +299,26 @@ const productSuggestion = async (req, res) => {
   }
 };
 
+const getBrandProducts = async (req, res) => {
+  try {
+    const payload = req.params;
+    const result = await getBrandProductsUser(payload);
+    res.status(result.status).json(result);
+  } catch (err) {
+    res.status(err?.status).json(err);
+  }
+};
+
+const viewProductVariants = async (req, res) => {
+  try {
+    const payload = req.params;
+    const result = await viewProductVariantsUser(payload);
+    res.status(result.status).json(result);
+  } catch (err) {
+    res.status(err?.status).json(err);
+  }
+};
+
 module.exports = {
   getProducts,
   getProductById,
@@ -324,4 +346,6 @@ module.exports = {
   getCollectionWithProducts,
   productSearch,
   productSuggestion,
+  getBrandProducts,
+  viewProductVariants,
 };
