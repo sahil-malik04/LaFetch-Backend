@@ -43,7 +43,7 @@ async function syncShopifyProducts(SHOPIFY_API_URL, ACCESS_TOKEN) {
             shopifyCreatedAt: node.createdAt,
             shopifyUpdatedAt: node.updatedAt,
 
-            mrp: parseFloat(variant.compareAtPrice),
+            mrp: 499,
 
             seoTitle: node.seo?.title || null,
             seoDescription: node.seo?.description || null,
