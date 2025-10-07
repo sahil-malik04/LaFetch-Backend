@@ -43,6 +43,8 @@ async function syncShopifyProducts(SHOPIFY_API_URL, ACCESS_TOKEN) {
             shopifyCreatedAt: node.createdAt,
             shopifyUpdatedAt: node.updatedAt,
 
+            mrp: parseFloat(variant.compareAtPrice),
+
             seoTitle: node.seo?.title || null,
             seoDescription: node.seo?.description || null,
 
@@ -78,7 +80,6 @@ async function syncShopifyProducts(SHOPIFY_API_URL, ACCESS_TOKEN) {
             title: variant.title,
             sku: variant.sku,
             price: price,
-            compareAtPrice: parseFloat(variant.compareAtPrice),
             selectedOptions: variant.selectedOptions,
           };
 

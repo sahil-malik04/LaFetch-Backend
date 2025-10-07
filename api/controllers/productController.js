@@ -178,8 +178,8 @@ const syncProducts = async (req, res) => {
 
 const getSizeCharts = async (req, res) => {
   try {
-    const query = req.query;
-    const result = await getSizeChartsUser(query);
+    const vendorID = req.user.vendorID;
+    const result = await getSizeChartsUser(vendorID);
     res.status(result.status).json(result);
   } catch (err) {
     res.status(err?.status).json(err);
@@ -231,7 +231,8 @@ const getSizeChartById = async (req, res) => {
 
 const getProductCollections = async (req, res) => {
   try {
-    const result = await getProductCollectionsUser();
+    const query = req.query;
+    const result = await getProductCollectionsUser(query);
     res.status(result.status).json(result);
   } catch (err) {
     res.status(err?.status).json(err);
@@ -241,7 +242,8 @@ const getProductCollections = async (req, res) => {
 const addProductCollection = async (req, res) => {
   try {
     const body = req.body;
-    const result = await addProductCollectionUser(body);
+    const vendorID = req.user.vendorID;
+    const result = await addProductCollectionUser(body, vendorID);
     res.status(result.status).json(result);
   } catch (err) {
     res.status(err?.status).json(err);

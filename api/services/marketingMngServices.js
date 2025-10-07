@@ -5,7 +5,7 @@ const promotions = require("../models/promotionsModel");
 const { fn, col, where } = require("sequelize");
 const { uploadToS3 } = require("../utils/s3Uploader");
 
-const addCouponUser = async (payload) => {
+const addCouponUser = async (payload, vendorID) => {
   try {
     const isCouponExist = await coupons.findOne({
       where: where(fn("LOWER", col("code")), payload?.code?.toLowerCase()),
@@ -39,7 +39,7 @@ const addCouponUser = async (payload) => {
         endDate: payload?.endDate,
         enableScheduling: payload?.enableScheduling,
         status: payload?.status,
-        addedBy: payload?.addedBy,
+        vendorId: vendorID,
       };
       const result = await coupons.create(data);
       if (result)
@@ -53,12 +53,13 @@ const addCouponUser = async (payload) => {
   }
 };
 
-const getCouponUser = async (query) => {
+const getCouponUser = async (vendorID) => {
   try {
-    const id = Number(query?.of);
-    const whereClause = {
-      ...(id && { addedBy: id }),
-    };
+    const whereClause = {};
+
+    if (vendorID) {
+      whereClause.vendorId = vendorID;
+    }
     const isCouponExist = await coupons.findAll({
       where: whereClause,
     });
@@ -180,12 +181,19 @@ const getCouponByIdUser = async (params) => {
   }
 };
 
-const getPromotionsUser = async (query) => {
+const getPromotionsUser = async (query, vendorID) => {
   try {
+    const whereClause = {
+      ...(query.isActive ? { isActive: query.isActive } : {}),
+    };
+
+    if (vendorID) {
+      whereClause.vendorId = vendorID;
+    }
+
     const result = await promotions.findAll({
-      where: {
-        ...(query.isActive ? { isActive: query.isActive } : {}),
-      },
+      where: whereClause,
+      order: [["id", "DESC"]],
     });
     return successResponse(statusCode.SUCCESS.OK, result);
   } catch (err) {
@@ -196,7 +204,7 @@ const getPromotionsUser = async (query) => {
   }
 };
 
-const addPromotionUser = async (payload, reqFiles) => {
+const addPromotionUser = async (payload, reqFiles, vendorID) => {
   try {
     const data = {
       name: payload?.name,
@@ -208,6 +216,7 @@ const addPromotionUser = async (payload, reqFiles) => {
       endDate: payload?.endDate,
       badgeText: payload?.badgeText,
       status: payload?.status,
+      vendorId: vendorID,
     };
     const uploadedFiles = {};
 

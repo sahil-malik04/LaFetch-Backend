@@ -1,5 +1,6 @@
 const { DataTypes } = require("sequelize");
 const { sequelize } = require("../db/dbConfig.js");
+const vendors = require("./vendorsModel.js");
 
 const coupons = sequelize.define("coupons", {
   id: {
@@ -103,11 +104,13 @@ const coupons = sequelize.define("coupons", {
     type: DataTypes.ENUM("published", "expired", "draft"),
     defaultValue: "draft",
   },
-  addedBy: {
+  vendorId: {
     type: DataTypes.INTEGER,
-    allowNull: false,
+    allowNull: true,
   },
 });
+
+coupons.belongsTo(vendors, { foreignKey: "vendorId" });
 
 // sequelize
 //   .sync({ force: false })

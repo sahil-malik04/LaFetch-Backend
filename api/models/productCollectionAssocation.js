@@ -1,5 +1,6 @@
 const productCollection = require("./productCollectionModel");
 const products = require("./productsModel");
+const vendors = require("./vendorsModel");
 
 const associateProductCollection = () => {
   // One collection can have many products
@@ -12,6 +13,11 @@ const associateProductCollection = () => {
   products.belongsTo(productCollection, {
     foreignKey: "collectionID",
     as: "collection",
+  });
+
+  productCollection.belongsTo(vendors, {
+    foreignKey: "vendorId",
+    as: "vendor",
   });
 };
 

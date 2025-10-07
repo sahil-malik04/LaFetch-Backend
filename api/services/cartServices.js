@@ -28,6 +28,11 @@ const addToCartUser = async (payload) => {
         "Item added to cart",
         result
       );
+    } else {
+      return rejectResponse(
+        statusCode.CLIENT_ERROR.CONFLICT,
+        "This product is already in your cart."
+      );
     }
   } catch (err) {
     throw rejectResponse(

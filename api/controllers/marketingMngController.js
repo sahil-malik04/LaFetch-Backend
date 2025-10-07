@@ -14,7 +14,8 @@ const {
 const addCoupon = async (req, res) => {
   try {
     const body = req.body;
-    const result = await addCouponUser(body);
+    const vendorID = req.user.vendorID;
+    const result = await addCouponUser(body, vendorID);
     res.status(result.status).json(result);
   } catch (err) {
     res.status(err?.status).json(err);
@@ -23,8 +24,8 @@ const addCoupon = async (req, res) => {
 
 const getCoupon = async (req, res) => {
   try {
-    const query = req.query;
-    const result = await getCouponUser(query);
+    const vendorID = req.user.vendorID;
+    const result = await getCouponUser(vendorID);
     res.status(result.status).json(result);
   } catch (err) {
     res.status(err?.status).json(err);
@@ -65,7 +66,8 @@ const getCouponById = async (req, res) => {
 const getPromotions = async (req, res) => {
   try {
     const query = req.query;
-    const result = await getPromotionsUser(query);
+    const vendorID = req.user.vendorID;
+    const result = await getPromotionsUser(query, vendorID);
     res.status(result.status).json(result);
   } catch (err) {
     res.status(err?.status).json(err);
@@ -76,7 +78,8 @@ const addPromotion = async (req, res) => {
   try {
     const body = req.body;
     const reqFiles = req.files;
-    const result = await addPromotionUser(body, reqFiles);
+    const vendorID = req.user.vendorID;
+    const result = await addPromotionUser(body, reqFiles, vendorID);
     res.status(result.status).json(result);
   } catch (err) {
     res.status(err?.status).json(err);

@@ -21,8 +21,20 @@ const getBrandsUser = async (query) => {
       whereClause.isFeatured = false;
     }
 
+    const includeClause = [];
+
+    if (query?.of) {
+      includeClause.push({
+        model: vendors,
+        where: { id: query.of },
+        attributes: [],
+        through: { attributes: [] },
+      });
+    }
+
     const result = await brands.findAll({
       where: whereClause,
+      include: includeClause,
     });
 
     return successResponse(statusCode.SUCCESS.OK, "Success!", result);

@@ -1,5 +1,6 @@
 const { DataTypes } = require("sequelize");
 const { sequelize } = require("../db/dbConfig.js");
+const vendors = require("./vendorsModel.js");
 
 const promotions = sequelize.define("promotions", {
   id: {
@@ -61,7 +62,13 @@ const promotions = sequelize.define("promotions", {
     type: DataTypes.BOOLEAN,
     defaultValue: true,
   },
+  vendorId: {
+    type: DataTypes.INTEGER,
+    allowNull: true,
+  },
 });
+
+promotions.belongsTo(vendors, { foreignKey: "vendorId" });
 
 // sequelize
 //   .sync({ force: false })

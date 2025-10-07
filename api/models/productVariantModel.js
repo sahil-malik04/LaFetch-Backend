@@ -8,7 +8,6 @@ const productVariants = sequelize.define("product_variants", {
   title: { type: DataTypes.STRING },
   sku: { type: DataTypes.STRING },
   price: { type: DataTypes.FLOAT },
-  compareAtPrice: { type: DataTypes.FLOAT },
   selectedOptions: { type: DataTypes.JSONB }, // [{ name: "Color", value: "Red" }]
 });
 

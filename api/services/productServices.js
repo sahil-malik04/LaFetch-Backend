@@ -15,6 +15,7 @@ const { Op } = require("sequelize");
 const { sequelize } = require("../db/dbConfig");
 const banner_products = require("../models/bannerProducts");
 const inventories = require("../models/inventoriesModel");
+const vendors = require("../models/vendorsModel");
 
 // products
 const getProductsUser = async (query) => {
@@ -34,8 +35,29 @@ const getProductsUser = async (query) => {
       whereClause.catId = catId;
     }
 
+    const includeClause = [];
+
+    if (query?.of) {
+      includeClause.push({
+        model: brands,
+        required: true,
+        include: [
+          {
+            model: vendors,
+            where: { id: query?.of },
+            attributes: [],
+            through: { attributes: [] },
+            required: true,
+          },
+        ],
+        attributes: [],
+      });
+    }
+
     const result = await products.findAll({
       where: whereClause,
+      include: includeClause,
+      order: [["id", "DESC"]],
     });
 
     return successResponse(statusCode.SUCCESS.OK, "Success!", result);
@@ -156,7 +178,6 @@ const updateProductUser = async (params, body, reqFiles) => {
             title: variantEdge.title,
             sku: variantEdge.sku,
             price: price,
-            compareAtPrice: parseFloat(variantEdge.compareAtPrice),
             selectedOptions: variantEdge.selectedOptions,
           };
           const isVariantAdded = await productVariants.create(variantData);
@@ -293,7 +314,6 @@ const onboardProductUser = async (body, reqFiles) => {
           title: variantEdge.title.toUpperCase(),
           sku: variantEdge.sku,
           price: price,
-          compareAtPrice: parseFloat(variantEdge.compareAtPrice),
           selectedOptions: variantEdge.selectedOptions,
           productId: result.id,
         };
@@ -338,7 +358,6 @@ const updateProductVariantUser = async (params, body) => {
         title: body?.title,
         sku: body?.sku,
         price: body?.price,
-        compareAtPrice: body?.compareAtPrice,
         selectedOptions: body?.selectedOptions,
         updatedAt: new Date(),
       };
@@ -679,31 +698,52 @@ const syncProductsUser = async (query) => {
   }
 };
 
-const getSizeChartsUser = async (query) => {
+const getSizeChartsUser = async (vendorID) => {
   try {
+    const includeClause = [
+      {
+        model: brands,
+        attributes: ["id", "name"],
+      },
+      {
+        model: category,
+        as: "superCategory",
+        attributes: ["id", "name"],
+      },
+      {
+        model: category,
+        as: "category",
+        attributes: ["id", "name"],
+      },
+      {
+        model: category,
+        as: "subCategory",
+        attributes: ["id", "name"],
+      },
+    ];
+
+    if (vendorID) {
+      includeClause.push({
+        model: brands,
+        required: true,
+        attributes: ["id", "name"],
+        include: [
+          {
+            model: vendors,
+            where: { id: vendorID },
+            attributes: [],
+            through: { attributes: [] },
+            required: true,
+          },
+        ],
+      });
+    }
+
     const result = await productSizeCharts.findAll({
-      include: [
-        {
-          model: brands,
-          attributes: ["id", "name"],
-        },
-        {
-          model: category,
-          as: "superCategory",
-          attributes: ["id", "name"],
-        },
-        {
-          model: category,
-          as: "category",
-          attributes: ["id", "name"],
-        },
-        {
-          model: category,
-          as: "subCategory",
-          attributes: ["id", "name"],
-        },
-      ],
+      include: includeClause,
+      order: [["id", "DESC"]],
     });
+
     return successResponse(statusCode.SUCCESS.OK, "Success!", result);
   } catch (err) {
     throw rejectResponse(
@@ -856,9 +896,16 @@ const getSizeChartByIdUser = async (params) => {
   }
 };
 
-const getProductCollectionsUser = async () => {
+const getProductCollectionsUser = async (query) => {
   try {
-    const result = await productCollection.findAll();
+    const whereClause = {};
+
+    if (query?.of) {
+      whereClause.vendorId = query?.of;
+    }
+    const result = await productCollection.findAll({
+      where: whereClause,
+    });
     return successResponse(statusCode.SUCCESS.OK, "Success!", result);
   } catch (err) {
     throw rejectResponse(
@@ -868,7 +915,7 @@ const getProductCollectionsUser = async () => {
   }
 };
 
-const addProductCollectionUser = async (payload, reqFiles) => {
+const addProductCollectionUser = async (payload, vendorID) => {
   try {
     const isCollectionExist = await productCollection.findOne({
       where: {
@@ -884,6 +931,7 @@ const addProductCollectionUser = async (payload, reqFiles) => {
       const data = {
         name: payload?.name,
         desc: payload?.desc,
+        vendorId: vendorID,
       };
       const result = await productCollection.create(data);
       if (result) {
