@@ -10,7 +10,7 @@ const getReturnPoliciesUser = async (vendorID) => {
     const isPolicyExist = await returnPolicies.findAll({
       where: {
         isActive: true,
-        vendorId: vendorID,
+        ...(vendorID && { vendorId: vendorID }),
       },
       include: [
         {
