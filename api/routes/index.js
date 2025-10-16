@@ -20,6 +20,7 @@ const warehouseRoutes = require("./warehouseRoutes");
 const blogRoutes = require("./blogRoutes");
 const orderMngRoutes = require("./orderMngRoutes");
 const globalSettingRoutes = require("./globalSettingRoutes");
+const pushCompaignRoutes = require("./pushCompaignRoutes");
 
 router.get("/", (req, res) => {
   res.send("Welcome to la-fetch backend");
@@ -44,5 +45,6 @@ router.use("/", warehouseRoutes);
 router.use("/", blogRoutes);
 router.use("/", orderMngRoutes);
 router.use("/", globalSettingRoutes);
+router.use("/", pushCompaignRoutes);
 
 module.exports = router;

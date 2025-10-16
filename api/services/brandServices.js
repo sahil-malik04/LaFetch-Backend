@@ -53,7 +53,7 @@ const viewBrandUser = async (params) => {
     });
 
     const productList = await products.findAll({
-      where: { brandId: params?.brandId },
+      where: { brandId: params?.brandId, status: true },
     });
 
     return successResponse(statusCode.SUCCESS.OK, "Success!", {

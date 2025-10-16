@@ -8,12 +8,10 @@ const promotions = sequelize.define("promotions", {
     primaryKey: true,
     autoIncrement: true,
   },
-
   name: {
     type: DataTypes.STRING,
     allowNull: false, // Internal campaign name
   },
-
   discountType: {
     type: DataTypes.ENUM("percentage"), // extensible later
     allowNull: false,

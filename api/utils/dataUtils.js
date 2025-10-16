@@ -31,10 +31,13 @@ const allowedOrigins = [
   "http://15.207.223.79:3000",
 ];
 
+const scopes = "https://www.googleapis.com/auth/firebase.messaging";
+
 module.exports = {
   otpStartRange,
   otpEndRange,
   responseMessages,
   ROLES,
   allowedOrigins,
+  scopes,
 };
