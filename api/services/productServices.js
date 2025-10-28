@@ -3,7 +3,6 @@ const { statusCode } = require("../utils/statusCode");
 const products = require("../models/productsModel");
 const brands = require("../models/brandsModel");
 const category = require("../models/categoryModel");
-const warehouse = require("../models/warehouseModel");
 const { responseMessages } = require("../utils/dataUtils");
 const banners = require("../models/bannerModel");
 const productVariants = require("../models/productVariantModel");
@@ -12,10 +11,11 @@ const { uploadToS3 } = require("../utils/s3Uploader");
 const productSizeCharts = require("../models/productSizeChartsModel");
 const shopifyAccounts = require("../models/shopifyAccountsModel");
 const productCollection = require("../models/productCollectionModel");
-const { Op } = require("sequelize");
+const { Op, Sequelize } = require("sequelize");
 const { sequelize } = require("../db/dbConfig");
-const users = require("../models/userModel");
 const banner_products = require("../models/bannerProducts");
+const inventories = require("../models/inventoriesModel");
+const vendors = require("../models/vendorsModel");
 
 // products
 const getProductsUser = async (query) => {
@@ -35,8 +35,29 @@ const getProductsUser = async (query) => {
       whereClause.catId = catId;
     }
 
+    const includeClause = [];
+
+    if (query?.of) {
+      includeClause.push({
+        model: brands,
+        required: true,
+        include: [
+          {
+            model: vendors,
+            where: { id: query?.of },
+            attributes: [],
+            through: { attributes: [] },
+            required: true,
+          },
+        ],
+        attributes: [],
+      });
+    }
+
     const result = await products.findAll({
       where: whereClause,
+      include: includeClause,
+      order: [["id", "DESC"]],
     });
 
     return successResponse(statusCode.SUCCESS.OK, "Success!", result);
@@ -54,7 +75,7 @@ const getProductByIdUser = async (params) => {
       where: {
         id: params?.productId,
       },
-      include: [brands, category, warehouse],
+      include: [brands, category],
     });
     if (product) {
       const variants = await productVariants.findAll({
@@ -100,7 +121,6 @@ const updateProductUser = async (params, body, reqFiles) => {
         catId: body?.catId,
         subCatId: body?.subCatId,
         brandId: body?.brandId,
-        warehouseId: body?.warehouseId,
 
         isFeatured: body?.isFeatured,
 
@@ -125,6 +145,11 @@ const updateProductUser = async (params, body, reqFiles) => {
         sellingAmount: body?.sellingAmount,
         netAmount: body?.netAmount,
         collectionID: body?.collectionID,
+
+        weight: body?.weight,
+        length: body?.length,
+        breadth: body?.breadth,
+        height: body?.height,
         updatedAt: new Date(),
       };
       // Handle multiple image uploads
@@ -153,15 +178,23 @@ const updateProductUser = async (params, body, reqFiles) => {
             lowestPrice = price;
           }
 
-          await productVariants.create({
+          const variantData = {
             productId: result.id,
             title: variantEdge.title,
             sku: variantEdge.sku,
             price: price,
-            compareAtPrice: parseFloat(variantEdge.compareAtPrice),
-            inventoryQuantity: variantEdge.inventoryQuantity,
             selectedOptions: variantEdge.selectedOptions,
-          });
+          };
+          const isVariantAdded = await productVariants.create(variantData);
+
+          let inventoryData = {
+            variantId: isVariantAdded.id,
+            availableStock: variantEdge.inventoryQuantity,
+            warehouseId: variantEdge.warehouseId,
+            lastSyncedAt: new Date(),
+          };
+
+          await inventories.create(inventoryData);
         }
 
         if (lowestPrice !== Number.POSITIVE_INFINITY) {
@@ -229,7 +262,6 @@ const onboardProductUser = async (body, reqFiles) => {
       catId: body?.catId,
       subCatId: body?.subCatId,
       brandId: body?.brandId,
-      warehouseId: body?.warehouseId,
 
       isFeatured: body?.isFeatured,
 
@@ -256,6 +288,11 @@ const onboardProductUser = async (body, reqFiles) => {
       lfMsp: body?.lfMsp,
       sellingAmount: body?.sellingAmount,
       netAmount: body?.netAmount,
+      
+      weight: body?.weight,
+      length: body?.length,
+      breadth: body?.breadth,
+      height: body?.height,
     };
     // Handle multiple image uploads
     if (reqFiles?.image && reqFiles.image.length > 0) {
@@ -283,15 +320,24 @@ const onboardProductUser = async (body, reqFiles) => {
           lowestPrice = price;
         }
 
-        await productVariants.create({
-          productId: result.id,
-          title: variantEdge.title,
+        const variantData = {
+          title: variantEdge.title.toUpperCase(),
           sku: variantEdge.sku,
           price: price,
-          compareAtPrice: parseFloat(variantEdge.compareAtPrice),
-          inventoryQuantity: variantEdge.inventoryQuantity,
           selectedOptions: variantEdge.selectedOptions,
-        });
+          productId: result.id,
+        };
+
+        const isVariantAdded = await productVariants.create(variantData);
+
+        let inventoryData = {
+          variantId: isVariantAdded.id,
+          availableStock: variantEdge.inventoryQuantity,
+          warehouseId: variantEdge.warehouseId,
+          lastSyncedAt: new Date(),
+        };
+
+        await inventories.create(inventoryData);
       }
 
       if (lowestPrice !== Number.POSITIVE_INFINITY) {
@@ -322,13 +368,27 @@ const updateProductVariantUser = async (params, body) => {
         title: body?.title,
         sku: body?.sku,
         price: body?.price,
-        compareAtPrice: body?.compareAtPrice,
-        inventoryQuantity: body?.inventoryQuantity,
         selectedOptions: body?.selectedOptions,
         updatedAt: new Date(),
       };
       const result = await isVariantExist.update(data);
       if (result) {
+        const findInventory = await inventories.findOne({
+          where: {
+            variantId: params?.variantId,
+          },
+        });
+        if (findInventory) {
+          let inventoryData = {
+            variantId: params?.variantId,
+            availableStock: body.inventoryQuantity,
+            reservedStock: body.reservedStock,
+            warehouseId: body.warehouseId,
+            lastSyncedAt: new Date(),
+          };
+          await inventories.update(inventoryData);
+        }
+
         return successResponse(
           statusCode.SUCCESS.OK,
           "Product variant updated successfully!"
@@ -356,13 +416,20 @@ const deleteProductVariantUser = async (params) => {
       },
     });
     if (isVariantExist) {
-      const deleteVariant = await isVariantExist.destroy();
-      if (deleteVariant) {
-        return successResponse(
-          statusCode.SUCCESS.OK,
-          "Product variant deleted successfully!"
-        );
+      const inventory = await inventories.findOne({
+        where: { variantId: params?.variantId },
+      });
+
+      if (inventory) {
+        await inventories.destroy();
       }
+
+      await productVariants.destroy();
+
+      return successResponse(
+        statusCode.SUCCESS.OK,
+        "Product variant and inventory deleted successfully!"
+      );
     } else {
       return rejectResponse(
         statusCode.CLIENT_ERROR.NOT_FOUND,
@@ -379,33 +446,46 @@ const deleteProductVariantUser = async (params) => {
 
 const deleteProductUser = async (params) => {
   try {
-    const deletedVariants = await productVariants.destroy({
-      where: {
-        productId: params?.productId,
-      },
+    // all variants of the product
+    const variants = await productVariants.findAll({
+      where: { productId: params?.productId },
+      attributes: ["id"], // just need IDs
     });
-    if (deletedVariants > 0) {
-      const deleteProduct = await products.destroy({
-        where: {
-          id: params?.productId,
-        },
+
+    const variantIds = variants.map((v) => v.id);
+
+    // delete inventories for these variants
+    if (variantIds.length > 0) {
+      await inventories.destroy({
+        where: { variantId: variantIds },
       });
-      if (deleteProduct) {
-        return successResponse(
-          statusCode.SUCCESS.OK,
-          "Product deleted successfully!"
-        );
-      }
+
+      // delete the variants themselves
+      await productVariants.destroy({
+        where: { id: variantIds },
+      });
+    }
+
+    // delete the product
+    const deletedProduct = await products.destroy({
+      where: { id: params?.productId },
+    });
+
+    if (deletedProduct) {
+      return successResponse(
+        statusCode.SUCCESS.OK,
+        "Product deleted successfully!"
+      );
     } else {
       return rejectResponse(
         statusCode.CLIENT_ERROR.NOT_FOUND,
-        responseMessages.PRODUCT_NOT_EXIST
+        "Product not found"
       );
     }
-  } catch (err) {
-    throw rejectResponse(
-      statusCode.SERVER_ERROR.INTERNAL_SERVER_ERROR,
-      err?.message
+  } catch (error) {
+    return rejectResponse(
+      statusCode.SERVER_ERROR.INTERNAL_SERVER,
+      error.message
     );
   }
 };
@@ -640,31 +720,52 @@ const syncProductsUser = async (query) => {
   }
 };
 
-const getSizeChartsUser = async (query) => {
+const getSizeChartsUser = async (vendorID) => {
   try {
+    const includeClause = [
+      {
+        model: brands,
+        attributes: ["id", "name"],
+      },
+      {
+        model: category,
+        as: "superCategory",
+        attributes: ["id", "name"],
+      },
+      {
+        model: category,
+        as: "category",
+        attributes: ["id", "name"],
+      },
+      {
+        model: category,
+        as: "subCategory",
+        attributes: ["id", "name"],
+      },
+    ];
+
+    if (vendorID) {
+      includeClause.push({
+        model: brands,
+        required: true,
+        attributes: ["id", "name"],
+        include: [
+          {
+            model: vendors,
+            where: { id: vendorID },
+            attributes: [],
+            through: { attributes: [] },
+            required: true,
+          },
+        ],
+      });
+    }
+
     const result = await productSizeCharts.findAll({
-      include: [
-        {
-          model: brands,
-          attributes: ["id", "name"],
-        },
-        {
-          model: category,
-          as: "superCategory",
-          attributes: ["id", "name"],
-        },
-        {
-          model: category,
-          as: "category",
-          attributes: ["id", "name"],
-        },
-        {
-          model: category,
-          as: "subCategory",
-          attributes: ["id", "name"],
-        },
-      ],
+      include: includeClause,
+      order: [["id", "DESC"]],
     });
+
     return successResponse(statusCode.SUCCESS.OK, "Success!", result);
   } catch (err) {
     throw rejectResponse(
@@ -817,9 +918,16 @@ const getSizeChartByIdUser = async (params) => {
   }
 };
 
-const getProductCollectionsUser = async () => {
+const getProductCollectionsUser = async (query) => {
   try {
-    const result = await productCollection.findAll();
+    const whereClause = {};
+
+    if (query?.of) {
+      whereClause.vendorId = query?.of;
+    }
+    const result = await productCollection.findAll({
+      where: whereClause,
+    });
     return successResponse(statusCode.SUCCESS.OK, "Success!", result);
   } catch (err) {
     throw rejectResponse(
@@ -829,7 +937,7 @@ const getProductCollectionsUser = async () => {
   }
 };
 
-const addProductCollectionUser = async (payload, reqFiles) => {
+const addProductCollectionUser = async (payload, vendorID) => {
   try {
     const isCollectionExist = await productCollection.findOne({
       where: {
@@ -845,6 +953,7 @@ const addProductCollectionUser = async (payload, reqFiles) => {
       const data = {
         name: payload?.name,
         desc: payload?.desc,
+        vendorId: vendorID,
       };
       const result = await productCollection.create(data);
       if (result) {
@@ -1067,6 +1176,105 @@ const productSuggestionUser = async (query) => {
   }
 };
 
+const getBrandProductsUser = async (payload) => {
+  try {
+    const result = await products.findAll({
+      where: {
+        brandId: payload?.brandId,
+      },
+      attributes: ["id", "title"],
+    });
+    return successResponse(
+      statusCode.SUCCESS.OK,
+      "Data fetched successfully!",
+      result
+    );
+  } catch (error) {
+    return rejectResponse(
+      statusCode.SERVER_ERROR.INTERNAL_SERVER_ERROR,
+      "Something went wrong!"
+    );
+  }
+};
+
+const viewProductVariantsUser = async (payload) => {
+  try {
+    const result = await productVariants.findAll({
+      where: {
+        productId: payload?.productId,
+      },
+      attributes: ["id", "title", "sku", "price"],
+      include: [
+        {
+          model: inventories,
+          attributes: ["id", "availableStock", "reservedStock"],
+        },
+      ],
+    });
+    return successResponse(
+      statusCode.SUCCESS.OK,
+      "Product variants fetched successfully!",
+      result
+    );
+  } catch (error) {
+    return rejectResponse(
+      statusCode.SERVER_ERROR.INTERNAL_SERVER_ERROR,
+      "Something went wrong!"
+    );
+  }
+};
+
+const sortProductsUser = async (query) => {
+  try {
+    const { sort } = query;
+
+    // Default sort (e.g., latest)
+    let order = [["createdAt", "DESC"]];
+
+    switch (sort) {
+      case "price_asc":
+        order = [[Sequelize.literal('"sellingAmount"'), "ASC"]]; // lowercase matches DB
+        break;
+
+      case "price_desc":
+        order = [[Sequelize.literal('"sellingAmount"'), "DESC"]];
+        break;
+
+      case "rating":
+        order = [[Sequelize.literal("rating"), "DESC"]];
+        break;
+
+      case "discount":
+        order = [
+          [Sequelize.literal('((mrp - "sellingAmount") / mrp) * 100'), "DESC"],
+        ];
+        break;
+
+      case "whats_new":
+        order = [["createdAt", "DESC"]];
+        break;
+
+      default:
+        order = [["createdAt", "DESC"]];
+    }
+
+    const result = await products.findAll({
+      order,
+    });
+
+    return successResponse(
+      statusCode.SUCCESS.OK,
+      "Products fetched and sorted successfully!",
+      result
+    );
+  } catch (error) {
+    return rejectResponse(
+      statusCode.SERVER_ERROR.INTERNAL_SERVER_ERROR,
+      "Something went wrong!"
+    );
+  }
+};
+
 module.exports = {
   getProductsUser,
   getProductByIdUser,
@@ -1094,4 +1302,7 @@ module.exports = {
   getCollectionWithProductsUser,
   productSearchUser,
   productSuggestionUser,
+  getBrandProductsUser,
+  viewProductVariantsUser,
+  sortProductsUser,
 };

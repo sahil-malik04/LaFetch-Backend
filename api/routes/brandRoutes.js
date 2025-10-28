@@ -10,12 +10,14 @@ const {
   deleteBrand,
   getBrandLinkedWarehouses,
 } = require("../controllers/brandController");
+const { isAuthorized } = require("../middleware/authMiddleware");
 
 router.get("/brands", getBrands);
 router.get("/view-brand/:brandId", viewBrand);
-router.patch("/brand/:brandId", makeBrandFeatured);
+router.patch("/brand/:brandId", isAuthorized, makeBrandFeatured);
 router.post(
   "/brand-onboard",
+  isAuthorized,
   upload.fields([
     { name: "logo" },
     { name: "video" },
@@ -31,6 +33,7 @@ router.post(
 );
 router.put(
   "/brand/:brandId",
+  isAuthorized,
   upload.fields([
     { name: "logo" },
     { name: "video" },
@@ -44,7 +47,11 @@ router.put(
   ]),
   editBrand
 );
-router.delete("/brand/:brandId", deleteBrand);
-router.get("/brand-linked-warehouses/:brandId", getBrandLinkedWarehouses);
+router.delete("/brand/:brandId", isAuthorized, deleteBrand);
+router.get(
+  "/brand-linked-warehouses/:brandId",
+  isAuthorized,
+  getBrandLinkedWarehouses
+);
 
 module.exports = router;

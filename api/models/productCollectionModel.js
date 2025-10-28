@@ -15,6 +15,10 @@ const productCollection = sequelize.define("product_collection", {
     type: DataTypes.STRING,
     allowNull: true,
   },
+  vendorId: {
+    type: DataTypes.INTEGER,
+    allowNull: true,
+  },
 });
 
 // sequelize

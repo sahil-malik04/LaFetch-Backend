@@ -50,6 +50,7 @@ const isAuthorized = async (req, res, next) => {
     });
 
     if (isAccountActive) {
+      req.user = authData;
       next();
     } else {
       return res.status(statusCode.CLIENT_ERROR.UNAUTHORIZED).send({

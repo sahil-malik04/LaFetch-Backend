@@ -1,5 +1,15 @@
 const jwt = require("jsonwebtoken");
 const CryptoJS = require("crypto-js");
+const fs = require("fs");
+const path = require("path");
+const { GoogleAuth } = require("google-auth-library");
+const { scopes } = require("./dataUtils");
+const serviceAccountPath = path.join(
+  __dirname,
+  "../../public/la-fetch-3b250-firebase-adminsdk-sf4o8-4482689bce.json"
+);
+
+const serviceAccount = JSON.parse(fs.readFileSync(serviceAccountPath, "utf-8"));
 // Function to get random number
 const getRandomNumber = (start, end) => {
   try {
@@ -49,6 +59,50 @@ const generatePassword = (length = 10) => {
   return password;
 };
 
+const getAccessToken = async () => {
+  const auth = new GoogleAuth({
+    credentials: serviceAccount,
+    scopes: [scopes],
+  });
+  const client = await auth.getClient();
+  const accessTokenResponse = await client.getAccessToken();
+  return accessTokenResponse.token;
+};
+
+const sendPushNotification = async (token, title, body, image, data = {}) => {
+  try {
+    const accessToken = await getAccessToken();
+    const projectId = process.env.FB_PROJECT_ID;
+
+    const url = `https://fcm.googleapis.com/v1/projects/${projectId}/messages:send`;
+
+    const payload = {
+      message: {
+        token,
+        notification: {
+          title,
+          body,
+          image,
+        },
+        data,
+      },
+    };
+
+    const response = await fetch(url, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+    });
+    const result = await response.json();
+    return result;
+  } catch (err) {
+    return err;
+  }
+};
+
 module.exports = {
   getRandomNumber,
   generateToken,
@@ -56,4 +110,5 @@ module.exports = {
   decryptText,
   generatePassword,
   encryptText,
+  sendPushNotification,
 };

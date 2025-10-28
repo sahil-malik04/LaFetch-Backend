@@ -25,6 +25,9 @@ const {
   getCollectionWithProductsUser,
   productSearchUser,
   productSuggestionUser,
+  getBrandProductsUser,
+  viewProductVariantsUser,
+  sortProductsUser,
 } = require("../services/productServices");
 
 const getProducts = async (req, res) => {
@@ -176,8 +179,8 @@ const syncProducts = async (req, res) => {
 
 const getSizeCharts = async (req, res) => {
   try {
-    const query = req.query;
-    const result = await getSizeChartsUser(query);
+    const vendorID = req.user.vendorID;
+    const result = await getSizeChartsUser(vendorID);
     res.status(result.status).json(result);
   } catch (err) {
     res.status(err?.status).json(err);
@@ -229,7 +232,8 @@ const getSizeChartById = async (req, res) => {
 
 const getProductCollections = async (req, res) => {
   try {
-    const result = await getProductCollectionsUser();
+    const query = req.query;
+    const result = await getProductCollectionsUser(query);
     res.status(result.status).json(result);
   } catch (err) {
     res.status(err?.status).json(err);
@@ -239,7 +243,8 @@ const getProductCollections = async (req, res) => {
 const addProductCollection = async (req, res) => {
   try {
     const body = req.body;
-    const result = await addProductCollectionUser(body);
+    const vendorID = req.user.vendorID;
+    const result = await addProductCollectionUser(body, vendorID);
     res.status(result.status).json(result);
   } catch (err) {
     res.status(err?.status).json(err);
@@ -297,6 +302,36 @@ const productSuggestion = async (req, res) => {
   }
 };
 
+const getBrandProducts = async (req, res) => {
+  try {
+    const payload = req.params;
+    const result = await getBrandProductsUser(payload);
+    res.status(result.status).json(result);
+  } catch (err) {
+    res.status(err?.status).json(err);
+  }
+};
+
+const viewProductVariants = async (req, res) => {
+  try {
+    const payload = req.params;
+    const result = await viewProductVariantsUser(payload);
+    res.status(result.status).json(result);
+  } catch (err) {
+    res.status(err?.status).json(err);
+  }
+};
+
+const sortProducts = async (req, res) => {
+  try {
+    const query = req.query;
+    const result = await sortProductsUser(query);
+    res.status(result.status).json(result);
+  } catch (err) {
+    res.status(err?.status).json(err);
+  }
+};
+
 module.exports = {
   getProducts,
   getProductById,
@@ -324,4 +359,7 @@ module.exports = {
   getCollectionWithProducts,
   productSearch,
   productSuggestion,
+  getBrandProducts,
+  viewProductVariants,
+  sortProducts
 };

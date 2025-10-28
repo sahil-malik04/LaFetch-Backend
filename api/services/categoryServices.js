@@ -176,10 +176,48 @@ const deleteCategoryUser = async (params) => {
   }
 };
 
+const getCategoryHierarchyUser = async () => {
+  try {
+    // fetch all categories
+    const allCategories = await category.findAll({
+      raw: true,
+      order: [["id", "ASC"]],
+    });
+
+    // build a lookup map for quick reference
+    const categoryMap = {};
+    allCategories.forEach((cat) => {
+      categoryMap[cat.id] = { ...cat, children: [] };
+    });
+
+    // build the tree hierarchy
+    const hierarchy = [];
+    allCategories.forEach((cat) => {
+      if (cat.parentId) {
+        // attach to its parent
+        if (categoryMap[cat.parentId]) {
+          categoryMap[cat.parentId].children.push(categoryMap[cat.id]);
+        }
+      } else {
+        // top-level category (super)
+        hierarchy.push(categoryMap[cat.id]);
+      }
+    });
+
+    return successResponse(statusCode.SUCCESS.OK, "Success!", hierarchy);
+  } catch (err) {
+    throw rejectResponse(
+      statusCode.SERVER_ERROR.INTERNAL_SERVER_ERROR,
+      err?.message
+    );
+  }
+};
+
 module.exports = {
   getCategoriesUser,
   getCategoryByIdUser,
   addCategoryUser,
   updateCategoryUser,
   deleteCategoryUser,
+  getCategoryHierarchyUser,
 };

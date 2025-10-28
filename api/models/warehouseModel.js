@@ -27,11 +27,15 @@ const warehouse = sequelize.define("warehouse", {
     type: DataTypes.STRING,
     allowNull: false,
   },
-  capacity: {
+  country: {
     type: DataTypes.STRING,
     allowNull: true,
   },
   contactNo: {
+    type: DataTypes.STRING,
+    allowNull: true,
+  },
+  capacity: {
     type: DataTypes.STRING,
     allowNull: true,
   },

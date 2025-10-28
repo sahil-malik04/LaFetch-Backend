@@ -11,6 +11,8 @@ const {
   requestCancel,
   orderHistoryAdmin,
   viewOrderHistory,
+  getFinancialLedgers,
+  getSettlements,
 } = require("../controllers/orderMngController");
 
 router.post("/place-order", isAuthorized, placeOrder);
@@ -29,5 +31,9 @@ router.post("/request-cancel", isAuthorized, requestCancel);
 
 router.get("/order-history", isAuthorized, orderHistoryAdmin);
 router.get("/view-order-history/:orderItemId", isAuthorized, viewOrderHistory);
+
+// accounting & settlement
+router.get("/get-financial-ledgers", isAuthorized, getFinancialLedgers)
+router.get("/get-settlements", isAuthorized, getSettlements)
 
 module.exports = router;

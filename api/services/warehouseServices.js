@@ -2,6 +2,8 @@ const { statusCode } = require("../utils/statusCode");
 const { successResponse, rejectResponse } = require("../utils/response");
 const warehouse = require("../models/warehouseModel");
 const { fn, col, where } = require("sequelize");
+const vendors = require("../models/vendorsModel");
+const brands = require("../models/brandsModel");
 
 const addWarehouseUser = async (payload) => {
   try {
@@ -23,6 +25,7 @@ const addWarehouseUser = async (payload) => {
         postalCode: payload?.postalCode,
         capacity: payload?.capacity,
         contactNo: payload?.contactNo,
+        country: payload?.country,
       };
       const result = await warehouse.create(data);
       if (result) {
@@ -37,9 +40,31 @@ const addWarehouseUser = async (payload) => {
   }
 };
 
-const getWarehousesUser = async (query) => {
+const getWarehousesUser = async (vendorID) => {
   try {
-    const result = await warehouse.findAll();
+    const includeClause = [];
+
+    if (vendorID) {
+      includeClause.push({
+        model: brands,
+        required: true,
+        include: [
+          {
+            model: vendors,
+            where: { id: vendorID },
+            attributes: [],
+            through: { attributes: [] },
+            required: true,
+          },
+        ],
+        attributes: [],
+        through: { attributes: [] },
+      });
+    }
+
+    const result = await warehouse.findAll({
+      include: includeClause,
+    });
     return successResponse(statusCode.SUCCESS.OK, "Success!", result);
   } catch (err) {
     throw rejectResponse(
@@ -65,6 +90,7 @@ const updateWarehouseUser = async (params, payload) => {
         postalCode: payload?.postalCode,
         capacity: payload?.capacity,
         contactNo: payload?.contactNo,
+        country: payload?.country,
         updatedAt: new Date(),
       };
       const result = await isWarehouseExist.update(data);

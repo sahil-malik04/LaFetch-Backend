@@ -85,27 +85,33 @@ const addWishlistBoardUser = async (payload) => {
 
 const deleteWishlistBoardUser = async (payload) => {
   try {
-    const deleteWishlist = await wishlist.destroy({
+    const findWishlist = await wishlist.findAll({
       where: {
         boardId: payload?.boardId,
       },
     });
 
-    if (deleteWishlist) {
-      const findBoard = await wishlistBoards.findOne({
+    if (findWishlist) {
+      await wishlist.destroy({
         where: {
-          id: payload?.boardId,
+          boardId: payload?.boardId,
         },
       });
-      if (findBoard) {
-        const result = await findBoard.destroy();
+    }
 
-        if (result) {
-          return successResponse(
-            statusCode.SUCCESS.OK,
-            "Wishlist Board deleted successfully!"
-          );
-        }
+    const findBoard = await wishlistBoards.findOne({
+      where: {
+        id: payload?.boardId,
+      },
+    });
+    if (findBoard) {
+      const result = await findBoard.destroy();
+
+      if (result) {
+        return successResponse(
+          statusCode.SUCCESS.OK,
+          "Wishlist Board deleted successfully!"
+        );
       }
     }
   } catch (err) {

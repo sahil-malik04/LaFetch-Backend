@@ -11,48 +11,53 @@ const onboardVendorUser = async (payload) => {
   try {
     const { name, email, phone } = payload;
 
-    const isVendorExist = await users.findOne({
-      where: {
-        email,
-        roleId: 2,
-      },
+    const existingVendor = await users.findOne({
+      where: { email, roleId: 2 },
     });
-    if (isVendorExist) {
+    if (existingVendor) {
       return rejectResponse(
         statusCode.CLIENT_ERROR.CONFLICT,
-        "Vendor Already Exist!"
+        "A vendor with this email already exists."
+      );
+    }
+
+    const existingPhone = await users.findOne({ where: { phone } });
+
+    if (existingPhone) {
+      return rejectResponse(
+        statusCode.CLIENT_ERROR.CONFLICT,
+        "This phone number is already registered."
+      );
+    }
+    const password = generatePassword();
+    const vendorCredentials = {
+      email,
+      password,
+    };
+
+    const userData = {
+      fullName: name,
+      email,
+      password: encryptText(password),
+      phone,
+      roleId: 2,
+    };
+    const createUser = await users.create(userData);
+    await vendors.create({
+      userId: createUser?.id,
+    });
+
+    if (createUser) {
+      return successResponse(
+        statusCode.SUCCESS.OK,
+        "Vendor onboarded successfully.",
+        vendorCredentials
       );
     } else {
-      const password = generatePassword();
-      const vendorCredentials = {
-        email,
-        password,
-      };
-
-      const userData = {
-        fullName: name,
-        email,
-        password: encryptText(password),
-        phone,
-        roleId: 2,
-      };
-      const createUser = await users.create(userData);
-      await vendors.create({
-        userId: createUser?.id,
-      });
-
-      if (createUser) {
-        return successResponse(
-          statusCode.SUCCESS.OK,
-          "Success!",
-          vendorCredentials
-        );
-      } else {
-        return rejectResponse(
-          statusCode.CLIENT_ERROR.CONFLICT,
-          "Error in creating the user!"
-        );
-      }
+      return rejectResponse(
+        statusCode.CLIENT_ERROR.CONFLICT,
+        "Error in creating the user!"
+      );
     }
   } catch (err) {
     throw rejectResponse(

@@ -5,11 +5,12 @@ const brands = require("../models/brandsModel");
 const vendors = require("../models/vendorsModel");
 const users = require("../models/userModel");
 
-const getReturnPoliciesUser = async () => {
+const getReturnPoliciesUser = async (vendorID) => {
   try {
     const isPolicyExist = await returnPolicies.findAll({
       where: {
         isActive: true,
+        ...(vendorID && { vendorId: vendorID }),
       },
       include: [
         {

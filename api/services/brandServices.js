@@ -21,8 +21,20 @@ const getBrandsUser = async (query) => {
       whereClause.isFeatured = false;
     }
 
+    const includeClause = [];
+
+    if (query?.of) {
+      includeClause.push({
+        model: vendors,
+        where: { id: query.of },
+        attributes: [],
+        through: { attributes: [] },
+      });
+    }
+
     const result = await brands.findAll({
       where: whereClause,
+      include: includeClause,
     });
 
     return successResponse(statusCode.SUCCESS.OK, "Success!", result);
@@ -41,7 +53,7 @@ const viewBrandUser = async (params) => {
     });
 
     const productList = await products.findAll({
-      where: { brandId: params?.brandId },
+      where: { brandId: params?.brandId, status: true },
     });
 
     return successResponse(statusCode.SUCCESS.OK, "Success!", {
