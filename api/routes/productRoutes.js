@@ -31,6 +31,7 @@ const {
   productSuggestion,
   getBrandProducts,
   viewProductVariants,
+  sortProducts,
 } = require("../controllers/productController");
 
 router.get("/products", getProducts);
@@ -118,5 +119,8 @@ router.post("/product-suggestion", isAuthorized, productSuggestion);
 
 router.get("/brand-products/:brandId", isAuthorized, getBrandProducts);
 router.get("/view-variants/:productId", isAuthorized, viewProductVariants);
+
+// filter-or-sort-products
+router.get("/sort-products", sortProducts);
 
 module.exports = router;

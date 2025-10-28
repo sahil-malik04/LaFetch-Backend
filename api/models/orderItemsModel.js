@@ -15,12 +15,7 @@ const order_items = sequelize.define("order_items", {
   discount: { type: DataTypes.DECIMAL(10, 2), defaultValue: 0 },
   tax: { type: DataTypes.DECIMAL(10, 2), defaultValue: 0 },
   total: { type: DataTypes.DECIMAL(10, 2), allowNull: false },
-
-  // Dimensions (snapshot of product at order time)
-  weight: { type: DataTypes.FLOAT, allowNull: true },
-  length: { type: DataTypes.FLOAT, allowNull: true },
-  breadth: { type: DataTypes.FLOAT, allowNull: true },
-  height: { type: DataTypes.FLOAT, allowNull: true },
+  warehouseId: { type: DataTypes.INTEGER, allowNull: true },
 });
 
 // sequelize

@@ -51,7 +51,15 @@ const products = sequelize.define("products", {
   msp: { type: DataTypes.FLOAT, allowNull: true },
   lfMsp: { type: DataTypes.FLOAT, allowNull: true },
   sellingAmount: { type: DataTypes.FLOAT, allowNull: true },
+
   netAmount: { type: DataTypes.FLOAT, allowNull: true },
+
+  // dimensions
+  weight: { type: DataTypes.FLOAT, allowNull: true },
+  length: { type: DataTypes.FLOAT, allowNull: true },
+  breadth: { type: DataTypes.FLOAT, allowNull: true },
+  height: { type: DataTypes.FLOAT, allowNull: true },
+
   addedFrom: {
     type: DataTypes.ENUM("admin", "vendor", "shopify"),
     allowNull: true,

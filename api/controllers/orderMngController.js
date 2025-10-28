@@ -8,6 +8,8 @@ const {
   requestCancelUser,
   orderHistoryAdminUser,
   viewOrderHistoryUser,
+  getFinancialLedgersUser,
+  getSettlementsUser,
 } = require("../services/orderMngServices");
 
 const placeOrder = async (req, res) => {
@@ -100,6 +102,24 @@ const viewOrderHistory = async (req, res) => {
   }
 };
 
+const getFinancialLedgers = async (req, res) => {
+  try {
+    const result = await getFinancialLedgersUser();
+    res.status(result.status).json(result);
+  } catch (err) {
+    res.status(err?.status).json(err);
+  }
+};
+
+const getSettlements = async (req, res) => {
+  try {
+    const result = await getSettlementsUser();
+    res.status(result.status).json(result);
+  } catch (err) {
+    res.status(err?.status).json(err);
+  }
+};
+
 module.exports = {
   placeOrder,
   orderHistory,
@@ -109,5 +129,7 @@ module.exports = {
   exchangeHistory,
   requestCancel,
   orderHistoryAdmin,
-  viewOrderHistory
+  viewOrderHistory,
+  getFinancialLedgers,
+  getSettlements
 };

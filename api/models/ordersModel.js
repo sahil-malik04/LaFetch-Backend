@@ -6,9 +6,15 @@ const orders = sequelize.define("orders", {
 
   // Relations
   userId: { type: DataTypes.INTEGER, allowNull: false },
+
+  // Shiprocket fields
   shiprocketOrderId: { type: DataTypes.STRING, allowNull: true },
+  shiprocketShipmentId: { type: DataTypes.STRING, allowNull: true },
+  shiprocketAwbCode: { type: DataTypes.STRING, allowNull: true },
+  shiprocketCourierName: { type: DataTypes.STRING, allowNull: true },
+
   deliveryPartnerId: { type: DataTypes.INTEGER, allowNull: true },
-  warehouseId: { type: DataTypes.INTEGER, allowNull: true },
+
   payoutId: { type: DataTypes.STRING, allowNull: true },
 
   // Financials
@@ -39,17 +45,10 @@ const orders = sequelize.define("orders", {
     defaultValue: DataTypes.NOW,
   },
 
-  paymentMethod: {
-    type: DataTypes.ENUM("cod", "prepaid"),
+  shippingAddressId: {
+    type: DataTypes.INTEGER,
     allowNull: false,
-    defaultValue: "prepaid",
   },
-  paymentStatus: {
-    type: DataTypes.ENUM("pending", "paid", "failed", "refunded"),
-    defaultValue: "pending",
-  },
-  paymentDate: { type: DataTypes.DATE, allowNull: true },
-
   deliveredAt: { type: DataTypes.DATE, allowNull: true },
   cancelledAt: { type: DataTypes.DATE, allowNull: true },
 

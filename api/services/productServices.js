@@ -11,7 +11,7 @@ const { uploadToS3 } = require("../utils/s3Uploader");
 const productSizeCharts = require("../models/productSizeChartsModel");
 const shopifyAccounts = require("../models/shopifyAccountsModel");
 const productCollection = require("../models/productCollectionModel");
-const { Op } = require("sequelize");
+const { Op, Sequelize } = require("sequelize");
 const { sequelize } = require("../db/dbConfig");
 const banner_products = require("../models/bannerProducts");
 const inventories = require("../models/inventoriesModel");
@@ -145,6 +145,11 @@ const updateProductUser = async (params, body, reqFiles) => {
         sellingAmount: body?.sellingAmount,
         netAmount: body?.netAmount,
         collectionID: body?.collectionID,
+
+        weight: body?.weight,
+        length: body?.length,
+        breadth: body?.breadth,
+        height: body?.height,
         updatedAt: new Date(),
       };
       // Handle multiple image uploads
@@ -283,6 +288,11 @@ const onboardProductUser = async (body, reqFiles) => {
       lfMsp: body?.lfMsp,
       sellingAmount: body?.sellingAmount,
       netAmount: body?.netAmount,
+      
+      weight: body?.weight,
+      length: body?.length,
+      breadth: body?.breadth,
+      height: body?.height,
     };
     // Handle multiple image uploads
     if (reqFiles?.image && reqFiles.image.length > 0) {
@@ -406,21 +416,20 @@ const deleteProductVariantUser = async (params) => {
       },
     });
     if (isVariantExist) {
-      const deleteVariant = await isVariantExist.destroy();
-      if (deleteVariant) {
-        const checkInventory = await inventories.findOne({
-          where: {
-            variantId: params?.variantId,
-          },
-        });
-        const deleteInventory = await checkInventory.destroy();
-        if (deleteInventory) {
-          return successResponse(
-            statusCode.SUCCESS.OK,
-            "Product variant and inventory deleted successfully!"
-          );
-        }
+      const inventory = await inventories.findOne({
+        where: { variantId: params?.variantId },
+      });
+
+      if (inventory) {
+        await inventories.destroy();
       }
+
+      await productVariants.destroy();
+
+      return successResponse(
+        statusCode.SUCCESS.OK,
+        "Product variant and inventory deleted successfully!"
+      );
     } else {
       return rejectResponse(
         statusCode.CLIENT_ERROR.NOT_FOUND,
@@ -437,33 +446,46 @@ const deleteProductVariantUser = async (params) => {
 
 const deleteProductUser = async (params) => {
   try {
-    const deletedVariants = await productVariants.destroy({
-      where: {
-        productId: params?.productId,
-      },
+    // all variants of the product
+    const variants = await productVariants.findAll({
+      where: { productId: params?.productId },
+      attributes: ["id"], // just need IDs
     });
-    if (deletedVariants > 0) {
-      const deleteProduct = await products.destroy({
-        where: {
-          id: params?.productId,
-        },
+
+    const variantIds = variants.map((v) => v.id);
+
+    // delete inventories for these variants
+    if (variantIds.length > 0) {
+      await inventories.destroy({
+        where: { variantId: variantIds },
       });
-      if (deleteProduct) {
-        return successResponse(
-          statusCode.SUCCESS.OK,
-          "Product deleted successfully!"
-        );
-      }
+
+      // delete the variants themselves
+      await productVariants.destroy({
+        where: { id: variantIds },
+      });
+    }
+
+    // delete the product
+    const deletedProduct = await products.destroy({
+      where: { id: params?.productId },
+    });
+
+    if (deletedProduct) {
+      return successResponse(
+        statusCode.SUCCESS.OK,
+        "Product deleted successfully!"
+      );
     } else {
       return rejectResponse(
         statusCode.CLIENT_ERROR.NOT_FOUND,
-        responseMessages.PRODUCT_NOT_EXIST
+        "Product not found"
       );
     }
-  } catch (err) {
-    throw rejectResponse(
-      statusCode.SERVER_ERROR.INTERNAL_SERVER_ERROR,
-      err?.message
+  } catch (error) {
+    return rejectResponse(
+      statusCode.SERVER_ERROR.INTERNAL_SERVER,
+      error.message
     );
   }
 };
@@ -1202,6 +1224,57 @@ const viewProductVariantsUser = async (payload) => {
   }
 };
 
+const sortProductsUser = async (query) => {
+  try {
+    const { sort } = query;
+
+    // Default sort (e.g., latest)
+    let order = [["createdAt", "DESC"]];
+
+    switch (sort) {
+      case "price_asc":
+        order = [[Sequelize.literal('"sellingAmount"'), "ASC"]]; // lowercase matches DB
+        break;
+
+      case "price_desc":
+        order = [[Sequelize.literal('"sellingAmount"'), "DESC"]];
+        break;
+
+      case "rating":
+        order = [[Sequelize.literal("rating"), "DESC"]];
+        break;
+
+      case "discount":
+        order = [
+          [Sequelize.literal('((mrp - "sellingAmount") / mrp) * 100'), "DESC"],
+        ];
+        break;
+
+      case "whats_new":
+        order = [["createdAt", "DESC"]];
+        break;
+
+      default:
+        order = [["createdAt", "DESC"]];
+    }
+
+    const result = await products.findAll({
+      order,
+    });
+
+    return successResponse(
+      statusCode.SUCCESS.OK,
+      "Products fetched and sorted successfully!",
+      result
+    );
+  } catch (error) {
+    return rejectResponse(
+      statusCode.SERVER_ERROR.INTERNAL_SERVER_ERROR,
+      "Something went wrong!"
+    );
+  }
+};
+
 module.exports = {
   getProductsUser,
   getProductByIdUser,
@@ -1231,4 +1304,5 @@ module.exports = {
   productSuggestionUser,
   getBrandProductsUser,
   viewProductVariantsUser,
+  sortProductsUser,
 };

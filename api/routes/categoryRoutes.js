@@ -7,6 +7,7 @@ const {
   updateCategory,
   deleteCategory,
   getCategoryById,
+  getCategoryHierarchy,
 } = require("../controllers/categoryController");
 const { isAuthorized } = require("../middleware/authMiddleware");
 
@@ -25,5 +26,6 @@ router.put(
   updateCategory
 );
 router.delete("/category/:categoryId", isAuthorized, deleteCategory);
+router.get("/category-hierarchy", isAuthorized, getCategoryHierarchy);
 
 module.exports = router;

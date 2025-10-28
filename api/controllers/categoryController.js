@@ -4,6 +4,7 @@ const {
   updateCategoryUser,
   deleteCategoryUser,
   getCategoryByIdUser,
+  getCategoryHierarchyUser,
 } = require("../services/categoryServices");
 
 const getCategories = async (req, res) => {
@@ -59,10 +60,20 @@ const deleteCategory = async (req, res) => {
   }
 };
 
+const getCategoryHierarchy = async (req, res) => {
+  try {
+    const result = await getCategoryHierarchyUser();
+    res.status(result.status).json(result);
+  } catch (err) {
+    res.status(err?.status).json(err);
+  }
+};
+
 module.exports = {
   getCategories,
   getCategoryById,
   addCategory,
   updateCategory,
   deleteCategory,
+  getCategoryHierarchy,
 };

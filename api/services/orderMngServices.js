@@ -8,42 +8,90 @@ const users = require("../models/userModel");
 const products = require("../models/productsModel");
 const exchangeOrders = require("../models/exchangeOrders");
 const returnOrders = require("../models/returnOrdersModel");
+const financialLedger = require("../models/financialLedgerModel");
+const settlements = require("../models/settlementsModel");
+const user_addresses = require("../models/userAddressesModel");
+const {
+  authenticateShiprocket,
+  placeShiprocket,
+  cancelShiprocketOrder,
+  returnShiprocketOrder,
+} = require("../utils/shipRocketAPIs");
+const inventories = require("../models/inventoriesModel");
+const warehouse = require("../models/warehouseModel");
+const brands = require("../models/brandsModel");
+const vendors = require("../models/vendorsModel");
+const productVariants = require("../models/productVariantModel");
 
 const placeOrderUser = async (payload) => {
   const transaction = await sequelize.transaction();
-
   try {
     const {
       userId,
-      warehouseId,
-      items, // array: [{ productId, variantId, quantity, unitPrice, discount, tax, total }]
+      shippingAddressId,
+      items,
       totalMRP,
       couponDiscount = 0,
       shippingCost = 0,
       tax = 0,
       total,
-      paymentMethod, // "cod" | "prepaid"
-      paymentInfo, // { provider, method, amount, providerPaymentId, providerOrderId, providerSignature }
+      paymentMethod,
+      paymentInfo,
     } = payload;
+
+    const itemsWithWarehouse = await Promise.all(
+      items.map(async (item) => {
+        const variant = await productVariants.findByPk(item.variantId, {
+          include: [
+            {
+              model: inventories,
+              attributes: ["id", "warehouseId"],
+              include: [
+                {
+                  model: warehouse,
+                  attributes: ["id", "name"],
+                },
+              ],
+            },
+            {
+              model: products,
+              attributes: ["id", "weight", "length", "breadth", "height"],
+            },
+          ],
+        });
+
+        if (!variant || !variant.inventory || !variant.inventory.warehouse) {
+          throw new Error(`No warehouse found for variant ${item.variantId}`);
+        }
+
+        const warehouseData = variant.inventory.warehouse;
+        const productInfo = variant.product;
+
+        return {
+          ...item,
+          warehouseId: warehouseData.id,
+          pickup_location: warehouseData.name,
+          productInfo,
+        };
+      })
+    );
 
     // 1. Create Order
     const newOrder = await orders.create(
       {
         userId,
-        warehouseId,
+        shippingAddressId,
         totalMRP,
         couponDiscount,
         shippingCost,
         tax,
         total,
-        paymentMethod,
-        paymentStatus: paymentMethod === "cod" ? "pending" : "pending", // prepaid → updated after gateway success
       },
       { transaction }
     );
 
     // 2. Create Order Items
-    for (const item of items) {
+    for (const item of itemsWithWarehouse) {
       await order_items.create(
         {
           orderId: newOrder.id,
@@ -54,16 +102,12 @@ const placeOrderUser = async (payload) => {
           discount: item.discount || 0,
           tax: item.tax || 0,
           total: item.total,
-          weight: item.weight || null,
-          length: item.length || null,
-          breadth: item.breadth || null,
-          height: item.height || null,
+          warehouseId: item.warehouseId,
         },
         { transaction }
       );
     }
 
-    // 3. Create Payment (only if prepaid)
     let paymentRecord = null;
     if (paymentMethod === "prepaid" && paymentInfo) {
       paymentRecord = await payments.create(
@@ -73,7 +117,7 @@ const placeOrderUser = async (payload) => {
           method: paymentInfo.method,
           amount: paymentInfo.amount,
           currency: "INR",
-          status: "initiated", // will be updated on success callback
+          status: "success",
           providerPaymentId: paymentInfo.providerPaymentId,
           providerOrderId: paymentInfo.providerOrderId,
           providerSignature: paymentInfo.providerSignature,
@@ -84,14 +128,94 @@ const placeOrderUser = async (payload) => {
 
     await transaction.commit();
 
-    return successResponse(
-      statusCode.SUCCESS.CREATED,
-      "Order placed successfully!",
-      {
-        order: newOrder,
-        payment: paymentRecord,
+    const loginRes = await authenticateShiprocket();
+    if (loginRes) {
+      const shiprocketToken = loginRes.token;
+
+      const findAddress = await user_addresses.findOne({
+        where: {
+          id: shippingAddressId,
+        },
+        include: [
+          {
+            model: users,
+            attributes: ["id", "email"],
+          },
+        ],
+      });
+
+      let shiprocketOrderRes;
+      for (const item of itemsWithWarehouse) {
+        const shiprocketOrderPayload = {
+          order_id: `ORDER-${newOrder.id}-${item.variantId}`,
+          order_date: new Date().toISOString().slice(0, 19).replace("T", " "),
+          pickup_location: item.pickup_location,
+          comment: "LaFetch Order",
+          billing_customer_name: findAddress?.contactName,
+          billing_last_name: "",
+          billing_address: findAddress?.line1,
+          billing_address_2: findAddress?.line2,
+          billing_city: findAddress?.city,
+          billing_pincode: findAddress?.postalCode,
+          billing_state: findAddress?.state,
+          billing_country: findAddress?.country,
+          billing_email: findAddress?.user?.email,
+          billing_phone: findAddress?.contactPhone,
+          shipping_is_billing: true,
+          order_items: [
+            {
+              name: item.productName,
+              sku: item.sku,
+              units: item.quantity,
+              selling_price: item.unitPrice,
+              hsn: item.hsn || "",
+            },
+          ],
+          payment_method: paymentMethod === "cod" ? "COD" : "Prepaid",
+          sub_total: total,
+          length: item.productInfo.length || 10,
+          breadth: item.productInfo.breadth || 10,
+          height: item.productInfo.height || 5,
+          weight: item.productInfo.weight || 0.5,
+        };
+
+        shiprocketOrderRes = await placeShiprocket(
+          shiprocketOrderPayload,
+          shiprocketToken
+        );
       }
-    );
+
+      // update your DB with Shiprocket IDs if successful
+      if (shiprocketOrderRes?.order_id && shiprocketOrderRes?.shipment_id) {
+        await orders.update(
+          {
+            shiprocketOrderId: shiprocketOrderRes.order_id,
+            shiprocketShipmentId: shiprocketOrderRes.shipment_id,
+          },
+          { where: { id: newOrder.id } }
+        );
+
+        return successResponse(
+          statusCode.SUCCESS.CREATED,
+          "Order placed successfully!",
+          {
+            order: newOrder,
+            payment: paymentRecord,
+            shiprocket: shiprocketOrderRes,
+          }
+        );
+      } else {
+        return rejectResponse(
+          statusCode.SERVER_ERROR.BAD_GATEWAY,
+          shiprocketOrderRes?.message
+        );
+      }
+    } else {
+      return rejectResponse(
+        statusCode.CLIENT_ERROR.UNAUTHORIZED,
+        "Error in generating shipRocket token!"
+      );
+    }
   } catch (err) {
     throw rejectResponse(
       statusCode.SERVER_ERROR.INTERNAL_SERVER_ERROR,
@@ -143,12 +267,32 @@ const orderHistoryUser = async (params) => {
 
 const requestReturnUser = async (body) => {
   try {
-    const { orderItemId, userId, reason } = body;
+    const { orderItemId, userId, reason, addressId, shipRocketId } = body;
 
     // 1. Check if order item exists and belongs to user
     const orderItem = await order_items.findOne({
       where: { id: orderItemId },
-      include: [{ model: orders, where: { userId } }],
+      include: [
+        {
+          model: orders,
+          where: { userId },
+        },
+        {
+          model: products,
+          include: [
+            {
+              model: brands,
+              attributes: ["name"],
+              include: [
+                {
+                  model: vendors, // assuming your model is named `vendors`
+                  attributes: ["id", "businessEmail"],
+                },
+              ],
+            },
+          ],
+        },
+      ],
     });
 
     if (!orderItem) {
@@ -175,16 +319,89 @@ const requestReturnUser = async (body) => {
       requestedAt: new Date(),
     });
 
-    // 4. Send response
-    return successResponse(
-      statusCode.SUCCESS.CREATED,
-      "Return request submitted successfully!",
-      newReturn
-    );
+    const findAddress = await user_addresses.findOne({
+      where: {
+        id: addressId,
+      },
+      include: [
+        {
+          model: users,
+          attributes: ["id", "email"],
+        },
+      ],
+    });
+
+    const findWarehouse = await inventories.findOne({
+      where: {
+        variantId: orderItem?.variantId,
+      },
+      include: [warehouse],
+    });
+
+    const loginRes = await authenticateShiprocket();
+
+    if (loginRes) {
+      const shiprocketToken = loginRes.token;
+
+      const shiprocketOrderPayload = {
+        order_id: shipRocketId,
+        order_date: orderItem.createdAt.toISOString().split("T")[0],
+        pickup_customer_name: findAddress?.contactName,
+        pickup_address: findAddress?.line1,
+        pickup_address_2: findAddress?.line2,
+        pickup_city: findAddress?.city,
+        pickup_state: findAddress?.state,
+        pickup_country: findAddress?.country,
+        pickup_pincode: findAddress?.postalCode,
+        pickup_email: findAddress?.user?.email,
+        pickup_phone: findAddress?.contactPhone,
+        shipping_customer_name: orderItem?.product?.brand?.name,
+        shipping_last_name: "",
+        shipping_address: findWarehouse?.warehouse?.address,
+        shipping_city: findWarehouse?.warehouse?.city,
+        shipping_country: findWarehouse?.warehouse?.country,
+        shipping_pincode: findWarehouse?.warehouse?.postalCode,
+        shipping_state: findWarehouse?.warehouse?.state,
+        shipping_email: orderItem?.product?.brand?.vendors[0]?.businessEmail,
+        shipping_phone: Number(findWarehouse?.warehouse?.contactNo) || "",
+        order_items: [
+          {
+            sku: orderItem?.product?.sku,
+            name: orderItem?.product?.title,
+            units: orderItem?.quantity,
+            selling_price: orderItem?.product?.sellingAmount,
+            discount: 0,
+            qc_enable: true,
+            hsn: "",
+            brand: "",
+            qc_size: "",
+          },
+        ],
+        payment_method: "PREPAID",
+        total_discount: "0",
+        sub_total: orderItem?.product?.sellingAmount,
+        length: orderItem?.product?.length,
+        breadth: orderItem?.product?.breadth,
+        height: orderItem?.product?.height,
+        weight: orderItem?.product?.weight,
+      };
+
+      const shiprocketOrderRes = await returnShiprocketOrder(
+        shiprocketOrderPayload,
+        shiprocketToken
+      );
+
+      // 4. Send response
+      return successResponse(
+        statusCode.SUCCESS.CREATED,
+        "Return request submitted successfully!",
+        shiprocketOrderRes
+      );
+    }
   } catch (err) {
     return rejectResponse(
       statusCode.SERVER_ERROR.INTERNAL_SERVER_ERROR,
-      err?.message
+      err?.response?.data?.message || err?.message
     );
   }
 };
@@ -325,7 +542,7 @@ const exchangeHistoryUser = async (params) => {
 
 const requestCancelUser = async (body) => {
   try {
-    const { orderItemId, userId, reason } = body;
+    const { orderItemId, userId, reason, shipRocketId } = body;
 
     const orderItem = await order_items.findOne({
       where: { id: orderItemId },
@@ -353,11 +570,22 @@ const requestCancelUser = async (body) => {
         cancelledAt: new Date(),
         internalNote: reason || null,
       });
-      return successResponse(
-        statusCode.SUCCESS.OK,
-        "Order cancelled successfully!",
-        orderItem.order
-      );
+
+      const loginRes = await authenticateShiprocket();
+      if (loginRes) {
+        const shiprocketToken = loginRes.token;
+
+        const cancelPayload = {
+          ids: [shipRocketId],
+        };
+
+        await cancelShiprocketOrder(cancelPayload, shiprocketToken);
+        return successResponse(
+          statusCode.SUCCESS.OK,
+          "Order cancelled successfully!",
+          orderItem.order
+        );
+      }
     } else {
       return rejectResponse(
         statusCode.CLIENT_ERROR.BAD_REQUEST,
@@ -500,6 +728,40 @@ const viewOrderHistoryUser = async (params) => {
   }
 };
 
+const getFinancialLedgersUser = async () => {
+  try {
+    const result = await financialLedger.findAll();
+
+    return successResponse(
+      statusCode.SUCCESS.OK,
+      "Financial ledgers fetched successfully!",
+      result
+    );
+  } catch (err) {
+    throw rejectResponse(
+      statusCode.SERVER_ERROR.INTERNAL_SERVER_ERROR,
+      err?.message
+    );
+  }
+};
+
+const getSettlementsUser = async () => {
+  try {
+    const result = await settlements.findAll();
+
+    return successResponse(
+      statusCode.SUCCESS.OK,
+      "settlements fetched successfully!",
+      result
+    );
+  } catch (err) {
+    throw rejectResponse(
+      statusCode.SERVER_ERROR.INTERNAL_SERVER_ERROR,
+      err?.message
+    );
+  }
+};
+
 module.exports = {
   placeOrderUser,
   orderHistoryUser,
@@ -510,4 +772,6 @@ module.exports = {
   requestCancelUser,
   orderHistoryAdminUser,
   viewOrderHistoryUser,
+  getFinancialLedgersUser,
+  getSettlementsUser,
 };
